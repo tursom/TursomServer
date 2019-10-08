@@ -1,0 +1,6 @@
+dependencies {
+    // kotlin 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:3.14.1")
+}

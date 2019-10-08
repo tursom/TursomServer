@@ -1,12 +1,18 @@
 dependencies {
     implementation project(":")
     implementation project(":utils")
-    // mongodb
-    implementation "org.mongodb:mongo-java-driver:+"
+    implementation project(":database")
+    // vert.x-jdbc-client
+    implementation 'io.vertx:vertx-jdbc-client:3.7.0'
     // cn.tusom.database.sqlite 依赖的库
     implementation 'org.xerial:sqlite-jdbc:3.21.0.1'
     // cn.tusom.database.mysql 依赖的库
     implementation group: 'mysql', name: 'mysql-connector-java', version: '+'
+    // spring
+    implementation 'org.springframework:spring-context:5.1.10.RELEASE'
+    implementation 'commons-dbutils:commons-dbutils:1.7'
+    // kotlin 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
     // 数据库与序列化部分可选
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
 }

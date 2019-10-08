@@ -19,7 +19,8 @@ object AsyncHttpRequest {
 		.retryOnConnectionFailure(true)
 		.build()
 	val socketClient: OkHttpClient = proxyClient()
-	val httpProxyClient: OkHttpClient = proxyClient(port = 8080, type = Proxy.Type.HTTP)
+	val httpProxyClient: OkHttpClient =
+        proxyClient(port = 8080, type = Proxy.Type.HTTP)
 	
 	
 	fun proxyClient(
@@ -64,10 +65,10 @@ object AsyncHttpRequest {
 		}
 		
 		return sendRequest(
-				client.newCall(
-						requestBuilder.build()
-				)
-		)
+            client.newCall(
+                requestBuilder.build()
+            )
+        )
 	}
 	
 	private suspend fun post(
@@ -106,11 +107,11 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient = defaultClient
 	) = post(
-			url,
-			RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+        headers,
+        client
+    )
 	
 	suspend fun post(
 		url: String,
@@ -118,11 +119,11 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient = defaultClient
 	) = post(
-			url,
-			RequestBody.create(MediaType.parse("application/octet-stream"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("application/octet-stream"), body),
+        headers,
+        client
+    )
 	
 	suspend fun post(
 		url: String,
@@ -130,17 +131,18 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient = defaultClient
 	) = post(
-			url,
-			RequestBody.create(MediaType.parse("application/octet-stream"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("application/octet-stream"), body),
+        headers,
+        client
+    )
 	
 	suspend fun getStr(
 		url: String,
 		param: Map<String, String>? = null,
 		headers: Map<String, String>? = null
-	): String = getStr(url, param, headers, defaultClient)
+	): String =
+        getStr(url, param, headers, defaultClient)
 	
 	@Suppress("BlockingMethodInNonBlockingContext")
 	suspend fun getStr(
@@ -162,7 +164,8 @@ object AsyncHttpRequest {
 		url: String,
 		param: Map<String, String>,
 		headers: Map<String, String>? = null
-	): String = postStr(url, param, headers, defaultClient)
+	): String =
+        postStr(url, param, headers, defaultClient)
 	
 	suspend fun postStr(
 		url: String,
@@ -181,7 +184,8 @@ object AsyncHttpRequest {
 		url: String,
 		body: String,
 		headers: Map<String, String>? = null
-	): String = postStr(url, body, headers, defaultClient)
+	): String =
+        postStr(url, body, headers, defaultClient)
 	
 	suspend fun postStr(
 		url: String,
@@ -189,17 +193,18 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient
 	): String = postStr(
-			url,
-			RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+        headers,
+        client
+    )
 	
 	suspend fun postStr(
 		url: String,
 		body: File,
 		headers: Map<String, String>? = null
-	): String = postStr(url, body, headers, defaultClient)
+	): String =
+        postStr(url, body, headers, defaultClient)
 	
 	suspend fun postStr(
 		url: String,
@@ -207,17 +212,22 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient
 	): String = postStr(
-			url,
-			RequestBody.create(MediaType.parse("application/octet-stream"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("application/octet-stream"), body),
+        headers,
+        client
+    )
 	
 	suspend fun getByteArray(
 		url: String,
 		param: Map<String, String>? = null,
 		headers: Map<String, String>? = null
-	): ByteArray = getByteArray(url, param, headers, defaultClient)
+	): ByteArray = getByteArray(
+        url,
+        param,
+        headers,
+        defaultClient
+    )
 	
 	@Suppress("BlockingMethodInNonBlockingContext")
 	suspend fun getByteArray(
@@ -241,7 +251,12 @@ object AsyncHttpRequest {
 		url: String,
 		param: Map<String, String>,
 		headers: Map<String, String>? = null
-	): ByteArray = postByteArray(url, param, headers, defaultClient)
+	): ByteArray = postByteArray(
+        url,
+        param,
+        headers,
+        defaultClient
+    )
 	
 	suspend fun postByteArray(
 		url: String,
@@ -260,7 +275,12 @@ object AsyncHttpRequest {
 		url: String,
 		body: String,
 		headers: Map<String, String>? = null
-	): ByteArray = postByteArray(url, body, headers, defaultClient)
+	): ByteArray = postByteArray(
+        url,
+        body,
+        headers,
+        defaultClient
+    )
 	
 	suspend fun postByteArray(
 		url: String,
@@ -268,17 +288,22 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient
 	): ByteArray = postByteArray(
-			url,
-			RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+        headers,
+        client
+    )
 	
 	suspend fun postByteArray(
 		url: String,
 		body: File,
 		headers: Map<String, String>? = null
-	): ByteArray = postByteArray(url, body, headers, defaultClient)
+	): ByteArray = postByteArray(
+        url,
+        body,
+        headers,
+        defaultClient
+    )
 	
 	suspend fun postByteArray(
 		url: String,
@@ -286,9 +311,9 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient
 	): ByteArray = postByteArray(
-			url,
-			RequestBody.create(MediaType.parse("application/octet-stream"), body),
-			headers,
-			client
-	)
+        url,
+        RequestBody.create(MediaType.parse("application/octet-stream"), body),
+        headers,
+        client
+    )
 }

@@ -1,3 +1,3 @@
 rootProject.name = 'TursomServer'
-include 'web', 'aop', 'database', 'socket', 'utils'
+include 'web', 'aop', 'database', 'database:database-async', 'socket', 'utils', 'utils:xml', 'utils:async-http', 'web:netty-web'
 
