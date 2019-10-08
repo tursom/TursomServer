@@ -1,0 +1,14 @@
+dependencies {
+    implementation project(":")
+    implementation "com.google.code.gson:gson:2.8.2"
+    // 数据库与序列化部分可选
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+    // kotlin 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    // 解析XML
+    implementation group: 'dom4j', name: 'dom4j', version: '1.6.1'
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:3.14.1")
+    // 计算对象大小
+    implementation 'org.apache.lucene:lucene-core:4.0.0'
+}

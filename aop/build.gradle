@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(":utils")
+    // 解析XML
+    implementation group: 'dom4j', name: 'dom4j', version: '1.6.1'
+}

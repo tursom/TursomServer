@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(":")
+    implementation project(":utils")
+    implementation group: "io.netty", name: "netty-all", version: "4.1.33.Final"
+    // kotlin 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+}
