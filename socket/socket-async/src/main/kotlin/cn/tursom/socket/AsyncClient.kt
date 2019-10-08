@@ -39,18 +39,4 @@ object AsyncClient {
 		}
 		return AsyncAioSocket(socketChannel)
 	}
-	
-	suspend fun connectCached(host: String, port: Int): AsyncAioSocket {
-		@Suppress("BlockingMethodInNonBlockingContext")
-		return connectCached(AsynchronousSocketChannel.open()!!, host, port)
-	}
-	
-	suspend fun connectCached(socketChannel: AsynchronousSocketChannel, host: String, port: Int): AsyncAioSocket {
-		suspendCoroutine<Void?> { cont ->
-			socketChannel.connect(InetSocketAddress(host, port) as SocketAddress, cont,
-                handler
-            )
-		}
-		return AsyncCachedAioSocket(socketChannel)
-	}
 }
