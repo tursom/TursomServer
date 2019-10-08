@@ -1,11 +1,10 @@
-package cn.tursom.socket.server.nio
+package cn.tursom.socket.server
 
 import cn.tursom.socket.INioProtocol
 import cn.tursom.socket.niothread.INioThread
 import cn.tursom.socket.niothread.IWorkerGroup
 import cn.tursom.socket.niothread.ThreadPoolNioThread
 import cn.tursom.socket.niothread.ThreadPoolWorkerGroup
-import cn.tursom.socket.server.ISocketServer
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
@@ -48,33 +47,33 @@ class GroupNioServer(
 		val nioThread = ThreadPoolNioThread("nioAccepter") { nioThread ->
 			val selector = nioThread.selector
 			if (selector.isOpen) {
-				forEachKey(selector) { key ->
-					try {
-						when {
-							key.isAcceptable -> {
-								val serverChannel = key.channel() as ServerSocketChannel
-								var channel = serverChannel.accept()
-								while (channel != null) {
-									channel.configureBlocking(false)
-									workerGroup.register(channel) { (key, thread) ->
-										protocol.handleConnect(key, thread)
-									}
-									channel = serverChannel.accept()
-								}
-							}
-						}
-					} catch (e: Throwable) {
-						try {
-							protocol.exceptionCause(key, nioThread, e)
-						} catch (e1: Throwable) {
-							e.printStackTrace()
-							e1.printStackTrace()
-							key.cancel()
-							key.channel().close()
-						}
-					}
-					nioThread.execute(this)
-				}
+                forEachKey(selector) { key ->
+                    try {
+                        when {
+                            key.isAcceptable -> {
+                                val serverChannel = key.channel() as ServerSocketChannel
+                                var channel = serverChannel.accept()
+                                while (channel != null) {
+                                    channel.configureBlocking(false)
+                                    workerGroup.register(channel) { (key, thread) ->
+                                        protocol.handleConnect(key, thread)
+                                    }
+                                    channel = serverChannel.accept()
+                                }
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        try {
+                            protocol.exceptionCause(key, nioThread, e)
+                        } catch (e1: Throwable) {
+                            e.printStackTrace()
+                            e1.printStackTrace()
+                            key.cancel()
+                            key.channel().close()
+                        }
+                    }
+                    nioThread.execute(this)
+                }
 			}
 		}
 		listenThreads.add(nioThread)

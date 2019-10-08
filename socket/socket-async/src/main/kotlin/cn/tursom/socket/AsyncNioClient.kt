@@ -1,6 +1,5 @@
-package cn.tursom.socket.client
+package cn.tursom.socket
 
-import cn.tursom.socket.AsyncNioSocket
 import cn.tursom.socket.niothread.WorkerLoopNioThread
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey

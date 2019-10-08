@@ -1,7 +1,5 @@
-package cn.tursom.socket.client
+package cn.tursom.socket
 
-import cn.tursom.socket.AsyncCachedAioSocket
-import cn.tursom.socket.AsyncAioSocket
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
@@ -35,7 +33,9 @@ object AsyncClient {
 	
 	suspend fun connect(socketChannel: AsynchronousSocketChannel, host: String, port: Int): AsyncAioSocket {
 		suspendCoroutine<Void?> { cont ->
-			socketChannel.connect(InetSocketAddress(host, port) as SocketAddress, cont, handler)
+			socketChannel.connect(InetSocketAddress(host, port) as SocketAddress, cont,
+                handler
+            )
 		}
 		return AsyncAioSocket(socketChannel)
 	}
@@ -47,7 +47,9 @@ object AsyncClient {
 	
 	suspend fun connectCached(socketChannel: AsynchronousSocketChannel, host: String, port: Int): AsyncAioSocket {
 		suspendCoroutine<Void?> { cont ->
-			socketChannel.connect(InetSocketAddress(host, port) as SocketAddress, cont, handler)
+			socketChannel.connect(InetSocketAddress(host, port) as SocketAddress, cont,
+                handler
+            )
 		}
 		return AsyncCachedAioSocket(socketChannel)
 	}

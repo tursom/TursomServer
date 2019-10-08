@@ -2,7 +2,6 @@ package cn.tursom.socket.server
 
 import cn.tursom.core.getTAG
 import cn.tursom.socket.BaseSocket
-import java.io.File
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
@@ -47,121 +46,118 @@ open class ThreadPoolSocketServer
 	queueSize: Int = 1,
 	keepAliveTime: Long = 60_000L,
 	timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
-	startImmediately: Boolean = false,
 	handler: BaseSocket.() -> Unit
 ) : SocketServer(handler) {
-	
-	var socket = Socket()
-	private val pool: ThreadPoolExecutor
-	private var serverSocket: ServerSocket
 
-	/**
-	 * 为了在构造函数中自动启动服务，我们需要封闭start()，防止用户重载start()
-	 */
-	private fun start() {
-		Thread(this).start()
-	}
-	
-	/**
-	 * 主要作用：
-	 * 循环接受连接请求
-	 * 讲接收的连接交给handler处理
-	 * 连接初期异常处理
-	 * 自动关闭套接字服务器与线程池
-	 */
-	final override fun run() {
-		while (!serverSocket.isClosed) {
-			try {
-				socket = serverSocket.accept()
-				println("$TAG: run(): get connect: $socket")
-				pool.execute {
-					socket.use {
-						BaseSocket(it).handler()
-					}
-				}
-			} catch (e: IOException) {
-				if (pool.isShutdown || serverSocket.isClosed) {
-					System.err.println("server closed")
-					break
-				}
-				e.printStackTrace()
-			} catch (e: SocketException) {
-				e.printStackTrace()
-				break
-			} catch (e: RejectedExecutionException) {
-				socket.getOutputStream()?.write(poolIsFull)
-			} catch (e: Exception) {
-				e.printStackTrace()
-				break
-			}
-		}
-		whenClose()
-		close()
-		System.err.println("server closed")
-	}
-	
-	/**
-	 * 关闭服务器套接字
-	 */
-	private fun closeServer() {
-		if (!serverSocket.isClosed) {
-			serverSocket.close()
-		}
-	}
-	
-	/**
-	 * 关闭线程池
-	 */
-	private fun shutdownPool() {
-		if (!pool.isShutdown) {
-			pool.shutdown()
-		}
-	}
-	
-	/**
-	 * 服务器是否已经关闭
-	 */
-	@Suppress("unused")
-	fun isClosed() = pool.isShutdown || serverSocket.isClosed
-	
-	/**
-	 * 关闭服务器
-	 */
-	override fun close() {
-		shutdownPool()
-		closeServer()
-	}
-	
-	/**
-	 * 关闭服务器时执行
-	 */
-	open fun whenClose() {
-	}
-	
-	/**
-	 * 线程池满时返回给客户端的信息
-	 */
-	open val poolIsFull
-		get() = Companion.poolIsFull
+	constructor(
+		port: Int,
+		handler: BaseSocket.() -> Unit
+	) : this(port, 1, 1, 60_000L, TimeUnit.MILLISECONDS, handler)
 
-	private data class ServerConfigData(
-		val port: Int = 0,
-		val threads: Int = 1,
-		val queueSize: Int = 1,
-		val timeout: Long = 0L,
-		val startImmediately: Boolean = false
-	)
-	
-	companion object {
-		val TAG = getTAG(this::class.java)
-		val poolIsFull = "server pool is full".toByteArray()
-	}
+    var socket = Socket()
+    private val pool: ThreadPoolExecutor =
+        ThreadPoolExecutor(threads, threads, keepAliveTime, timeUnit, LinkedBlockingQueue(queueSize))
+    private var serverSocket: ServerSocket = ServerSocket(port)
 
-	init {
-		pool = ThreadPoolExecutor(threads, threads, keepAliveTime, timeUnit, LinkedBlockingQueue(queueSize))
-		serverSocket = ServerSocket(port)
-		if (startImmediately) {
-			start()
-		}
-	}
+    /**
+     * 为了在构造函数中自动启动服务，我们需要封闭start()，防止用户重载start()
+     */
+    private fun start() {
+        Thread(this).start()
+    }
+
+    /**
+     * 主要作用：
+     * 循环接受连接请求
+     * 讲接收的连接交给handler处理
+     * 连接初期异常处理
+     * 自动关闭套接字服务器与线程池
+     */
+    final override fun run() {
+        while (!serverSocket.isClosed) {
+            try {
+                socket = serverSocket.accept()
+                println("$TAG: run(): get connect: $socket")
+                pool.execute {
+                    socket.use {
+                        BaseSocket(it).handler()
+                    }
+                }
+            } catch (e: IOException) {
+                if (pool.isShutdown || serverSocket.isClosed) {
+                    System.err.println("server closed")
+                    break
+                }
+                e.printStackTrace()
+            } catch (e: SocketException) {
+                e.printStackTrace()
+                break
+            } catch (e: RejectedExecutionException) {
+                socket.getOutputStream()?.write(poolIsFull)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                break
+            }
+        }
+        whenClose()
+        close()
+        System.err.println("server closed")
+    }
+
+    /**
+     * 关闭服务器套接字
+     */
+    private fun closeServer() {
+        if (!serverSocket.isClosed) {
+            serverSocket.close()
+        }
+    }
+
+    /**
+     * 关闭线程池
+     */
+    private fun shutdownPool() {
+        if (!pool.isShutdown) {
+            pool.shutdown()
+        }
+    }
+
+    /**
+     * 服务器是否已经关闭
+     */
+    @Suppress("unused")
+    fun isClosed() = pool.isShutdown || serverSocket.isClosed
+
+    /**
+     * 关闭服务器
+     */
+    override fun close() {
+        shutdownPool()
+        closeServer()
+    }
+
+    /**
+     * 关闭服务器时执行
+     */
+    open fun whenClose() {
+    }
+
+    /**
+     * 线程池满时返回给客户端的信息
+     */
+    open val poolIsFull
+        get() = Companion.poolIsFull
+
+    private data class ServerConfigData(
+        val port: Int = 0,
+        val threads: Int = 1,
+        val queueSize: Int = 1,
+        val timeout: Long = 0L,
+        val startImmediately: Boolean = false
+    )
+
+    companion object {
+        val TAG = getTAG(this::class.java)
+        val poolIsFull = "server pool is full".toByteArray()
+    }
 }

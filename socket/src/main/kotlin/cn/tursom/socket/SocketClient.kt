@@ -1,6 +1,5 @@
-package cn.tursom.socket.client
+package cn.tursom.socket
 
-import cn.tursom.socket.BaseSocket
 import java.io.IOException
 import java.net.Socket
 import java.net.SocketException

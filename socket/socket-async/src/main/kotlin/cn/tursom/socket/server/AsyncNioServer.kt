@@ -1,9 +1,8 @@
-package cn.tursom.socket.server.nio
+package cn.tursom.socket.server
 
 import cn.tursom.socket.AsyncNioSocket
 import cn.tursom.socket.INioProtocol
 import cn.tursom.socket.niothread.INioThread
-import cn.tursom.socket.server.ISocketServer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.nio.channels.SelectionKey
@@ -18,21 +17,21 @@ class AsyncNioServer(
 	backlog: Int = 50,
 	val handler: suspend AsyncNioSocket.() -> Unit
 ) : ISocketServer by NioServer(port, object : INioProtocol by AsyncNioSocket.nioSocketProtocol {
-	override fun handleConnect(key: SelectionKey, nioThread: INioThread) {
-		GlobalScope.launch {
-			val socket = AsyncNioSocket(key, nioThread)
-			try {
-				socket.handler()
-			} catch (e: Exception) {
-				e.printStackTrace()
-			} finally {
-				try {
-					socket.close()
-				} catch (e: Exception) {
-				}
-			}
-		}
-	}
+    override fun handleConnect(key: SelectionKey, nioThread: INioThread) {
+        GlobalScope.launch {
+            val socket = AsyncNioSocket(key, nioThread)
+            try {
+                socket.handler()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                try {
+                    socket.close()
+                } catch (e: Exception) {
+                }
+            }
+        }
+    }
 }, backlog) {
 	/**
 	 * 次要构造方法，为使用Spring的同学们准备的

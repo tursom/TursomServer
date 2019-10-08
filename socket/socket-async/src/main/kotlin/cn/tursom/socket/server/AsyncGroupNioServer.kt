@@ -1,9 +1,8 @@
-package cn.tursom.socket.server.nio
+package cn.tursom.socket.server
 
 import cn.tursom.socket.AsyncNioSocket
 import cn.tursom.socket.INioProtocol
 import cn.tursom.socket.niothread.INioThread
-import cn.tursom.socket.server.ISocketServer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.nio.channels.SelectionKey
@@ -18,20 +17,25 @@ class AsyncGroupNioServer(
 	val threads: Int = Runtime.getRuntime().availableProcessors(),
 	backlog: Int = 50,
 	val handler: suspend AsyncNioSocket.() -> Unit
-) : ISocketServer by GroupNioServer(port, threads, object : INioProtocol by AsyncNioSocket.nioSocketProtocol {
-	override fun handleConnect(key: SelectionKey, nioThread: INioThread) {
-		GlobalScope.launch {
-			val socket = AsyncNioSocket(key, nioThread)
-			try {
-				socket.handler()
-			} catch (e: Exception) {
-				e.printStackTrace()
-			} finally {
+) : ISocketServer by GroupNioServer(
+	port,
+	threads,
+	object : INioProtocol by AsyncNioSocket.nioSocketProtocol {
+		override fun handleConnect(key: SelectionKey, nioThread: INioThread) {
+			GlobalScope.launch {
+				val socket = AsyncNioSocket(key, nioThread)
 				try {
-					nioThread.execute { socket.close() }
+					socket.handler()
 				} catch (e: Exception) {
+					e.printStackTrace()
+				} finally {
+					try {
+						nioThread.execute { socket.close() }
+					} catch (e: Exception) {
+					}
 				}
 			}
 		}
-	}
-}, backlog)
+	},
+	backlog
+)
