@@ -6,7 +6,7 @@ import java.nio.channels.SelectableChannel
 class ThreadPoolWorkerGroup(
 	val poolSize: Int = Runtime.getRuntime().availableProcessors(),
 	val groupName: String = "",
-	override val isDaemon: Boolean = true,
+	override val isDaemon: Boolean = false,
 	val worker: (thread: INioThread) -> Unit
 ) : IWorkerGroup {
 	val workerGroup = Array(poolSize) {

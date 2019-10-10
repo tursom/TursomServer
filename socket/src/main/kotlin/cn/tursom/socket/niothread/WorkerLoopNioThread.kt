@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class WorkerLoopNioThread(
 	val threadName: String = "nioLoopThread",
 	override val selector: Selector = Selector.open(),
-	override val isDaemon: Boolean = true,
+	override val isDaemon: Boolean = false,
 	override val workLoop: (thread: INioThread) -> Unit
 ) : INioThread {
 	private var onWakeup: AtomicBoolean = AtomicBoolean(false)

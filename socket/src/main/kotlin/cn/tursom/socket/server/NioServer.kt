@@ -30,7 +30,7 @@ class NioServer(
         protocol: INioProtocol,
         backLog: Int = 50
     ) : this(port, protocol, backLog, { name, workLoop ->
-        WorkerLoopNioThread(name, workLoop = workLoop)
+        WorkerLoopNioThread(name, workLoop = workLoop, isDaemon = false)
     })
 
     override fun run() {
