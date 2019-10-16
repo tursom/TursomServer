@@ -86,6 +86,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
                         buffer,
                         it,
                         timer.exec(timeout) {
+                            key.attach(null)
                             try {
                                 it.resumeWithException(TimeoutException())
                             } catch (e: Exception) {
@@ -112,6 +113,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
                         buffer,
                         it,
                         timer.exec(timeout) {
+                            key.attach(null)
                             try {
                                 it.resumeWithException(TimeoutException())
                             } catch (e: Exception) {
@@ -138,6 +140,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
                         buffer,
                         it,
                         timer.exec(timeout) {
+                            key.attach(null)
                             try {
                                 it.resumeWithException(TimeoutException())
                             } catch (e: Exception) {
@@ -164,6 +167,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
                         buffer,
                         it,
                         timer.exec(timeout) {
+                            key.attach(null)
                             try {
                                 it.resumeWithException(TimeoutException())
                             } catch (e: Exception) {
@@ -210,7 +214,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
 
             override fun handleRead(key: SelectionKey, nioThread: INioThread) {
                 key.interestOps(0)
-                val context = key.attachment() as Context
+                val context = key.attachment() as Context? ?: return
                 context.timeoutTask?.cancel()
                 if (context is SingleContext) {
                     val channel = key.channel() as SocketChannel
@@ -226,7 +230,7 @@ class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INi
 
             override fun handleWrite(key: SelectionKey, nioThread: INioThread) {
                 key.interestOps(0)
-                val context = key.attachment() as Context
+                val context = key.attachment() as Context? ?: return
                 context.timeoutTask?.cancel()
                 if (context is SingleContext) {
                     val channel = key.channel() as SocketChannel
