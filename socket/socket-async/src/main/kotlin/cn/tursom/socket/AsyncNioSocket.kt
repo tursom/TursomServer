@@ -18,246 +18,204 @@ import kotlin.coroutines.suspendCoroutine
  * 但是对于一般的应用而言是足够使用的
  */
 class AsyncNioSocket(override val key: SelectionKey, override val nioThread: INioThread) : IAsyncNioSocket {
-    override val channel: SocketChannel = key.channel() as SocketChannel
+  override val channel: SocketChannel = key.channel() as SocketChannel
 
-    override suspend fun read(buffer: ByteBuffer): Int {
-        if (buffer.remaining() == 0) return -1
-        return try {
-            suspendCoroutine {
-                key.attach(SingleContext(buffer, it))
-                readMode()
-                nioThread.wakeup()
-            }
-        } catch (e: Exception) {
-            waitMode()
-            throw RuntimeException(e)
+  private suspend inline fun <T> operate(crossinline action: (Continuation<T>) -> Unit): T {
+    return try {
+      suspendCoroutine {
+        action(it)
+      }
+    } catch (e: Exception) {
+      waitMode()
+      throw RuntimeException(e)
+    }
+  }
+
+  override suspend fun read(buffer: ByteBuffer): Int {
+    if (buffer.remaining() == 0) return emptyBufferCode
+    return operate {
+      key.attach(SingleContext(buffer, it))
+      readMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun read(buffer: Array<out ByteBuffer>): Long {
+    if (buffer.isEmpty()) return emptyBufferLongCode
+    return operate {
+      key.attach(MultiContext(buffer, it))
+      readMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun write(buffer: ByteBuffer): Int {
+    if (buffer.remaining() == 0) return emptyBufferCode
+    return operate {
+      key.attach(SingleContext(buffer, it))
+      writeMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun write(buffer: Array<out ByteBuffer>): Long {
+    if (buffer.isEmpty()) return emptyBufferLongCode
+    return operate {
+      key.attach(MultiContext(buffer, it))
+      writeMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun read(buffer: ByteBuffer, timeout: Long): Int {
+    if (timeout <= 0) return read(buffer)
+    if (buffer.remaining() == 0) return emptyBufferCode
+    return operate {
+      key.attach(
+          SingleContext(
+              buffer,
+              it,
+              timer.exec(timeout) {
+                key.attach(null)
+                it.resumeWithException(TimeoutException())
+              })
+      )
+      readMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long {
+    if (timeout <= 0) return read(buffer)
+    if (buffer.isEmpty()) return emptyBufferLongCode
+    return operate {
+      key.attach(
+          MultiContext(
+              buffer,
+              it,
+              timer.exec(timeout) {
+                key.attach(null)
+                it.resumeWithException(TimeoutException())
+              })
+      )
+      readMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun write(buffer: ByteBuffer, timeout: Long): Int {
+    if (timeout <= 0) return write(buffer)
+    if (buffer.remaining() == 0) return emptyBufferCode
+    return operate {
+      key.attach(
+          SingleContext(
+              buffer,
+              it,
+              timer.exec(timeout) {
+                key.attach(null)
+                it.resumeWithException(TimeoutException())
+              })
+      )
+      writeMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
+    if (timeout <= 0) return write(buffer)
+    if (buffer.isEmpty()) return emptyBufferLongCode
+    return operate {
+      key.attach(
+          MultiContext(
+              buffer,
+              it,
+              timer.exec(timeout) {
+                key.attach(null)
+                it.resumeWithException(TimeoutException())
+              })
+      )
+      writeMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override fun close() {
+    nioThread.execute {
+      channel.close()
+      key.cancel()
+    }
+  }
+
+  interface Context {
+    val cont: Continuation<*>
+    val timeoutTask: TimerTask? get() = null
+  }
+
+  class SingleContext(
+      val buffer: ByteBuffer,
+      override val cont: Continuation<Int>,
+      override val timeoutTask: TimerTask? = null
+  ) : Context
+
+  class MultiContext(
+      val buffer: Array<out ByteBuffer>,
+      override val cont: Continuation<Long>,
+      override val timeoutTask: TimerTask? = null
+  ) : Context
+
+  companion object {
+    val nioSocketProtocol = object : INioProtocol {
+      override fun handleConnect(key: SelectionKey, nioThread: INioThread) {}
+
+      override fun handleRead(key: SelectionKey, nioThread: INioThread) {
+        key.interestOps(0)
+        val context = key.attachment() as Context? ?: return
+        context.timeoutTask?.cancel()
+        if (context is SingleContext) {
+          val channel = key.channel() as SocketChannel
+          val readSize = channel.read(context.buffer)
+          context.cont.resume(readSize)
+        } else {
+          context as MultiContext
+          val channel = key.channel() as SocketChannel
+          val readSize = channel.read(context.buffer)
+          context.cont.resume(readSize)
         }
-    }
+      }
 
-    override suspend fun read(buffer: Array<out ByteBuffer>): Long {
-        if (buffer.size == 0) return -1
-        return try {
-            suspendCoroutine {
-                key.attach(MultiContext(buffer, it))
-                readMode()
-                nioThread.wakeup()
-            }
-        } catch (e: Exception) {
-            waitMode()
-            throw RuntimeException(e)
+      override fun handleWrite(key: SelectionKey, nioThread: INioThread) {
+        key.interestOps(0)
+        val context = key.attachment() as Context? ?: return
+        context.timeoutTask?.cancel()
+        if (context is SingleContext) {
+          val channel = key.channel() as SocketChannel
+          val readSize = channel.write(context.buffer)
+          context.cont.resume(readSize)
+        } else {
+          context as MultiContext
+          val channel = key.channel() as SocketChannel
+          val readSize = channel.write(context.buffer)
+          context.cont.resume(readSize)
         }
-    }
+      }
 
-    override suspend fun write(buffer: ByteBuffer): Int {
-        if (buffer.remaining() == 0) return -1
-        return try {
-            suspendCoroutine {
-                key.attach(SingleContext(buffer, it))
-                writeMode()
-                nioThread.wakeup()
-            }
-        } catch (e: Exception) {
-            waitMode()
-            throw Exception(e)
+      override fun exceptionCause(key: SelectionKey, nioThread: INioThread, e: Throwable) {
+        key.interestOps(0)
+        val context = key.attachment() as Context?
+        if (context != null)
+          context.cont.resumeWithException(e)
+        else {
+          key.cancel()
+          key.channel().close()
+          e.printStackTrace()
         }
+      }
     }
 
-    override suspend fun write(buffer: Array<out ByteBuffer>): Long {
-        if (buffer.isEmpty()) return -1
-        return try {
-            suspendCoroutine {
-                key.attach(MultiContext(buffer, it))
-                writeMode()
-                nioThread.wakeup()
-            }
-        } catch (e: Exception) {
-            waitMode()
-            throw Exception(e)
-        }
-    }
+    //val timer = StaticWheelTimer.timer
+    val timer = WheelTimer.timer
 
-    override suspend fun read(buffer: ByteBuffer, timeout: Long): Int {
-        if (timeout <= 0) return read(buffer)
-        if (buffer.remaining() == 0) return -1
-        return try {
-            val result: Int = suspendCoroutine {
-                key.attach(
-                    SingleContext(
-                        buffer,
-                        it,
-                        timer.exec(timeout) {
-                            key.attach(null)
-                            try {
-                                it.resumeWithException(TimeoutException())
-                            } catch (e: Exception) {
-                            }
-                        })
-                )
-                readMode()
-                nioThread.wakeup()
-            }
-            result
-        } catch (e: Exception) {
-            waitMode()
-            throw RuntimeException(e)
-        }
-    }
-
-    override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long {
-        if (timeout <= 0) return read(buffer)
-        if (buffer.isEmpty()) return -1
-        return try {
-            val result: Long = suspendCoroutine {
-                key.attach(
-                    MultiContext(
-                        buffer,
-                        it,
-                        timer.exec(timeout) {
-                            key.attach(null)
-                            try {
-                                it.resumeWithException(TimeoutException())
-                            } catch (e: Exception) {
-                            }
-                        })
-                )
-                readMode()
-                nioThread.wakeup()
-            }
-            result
-        } catch (e: Exception) {
-            waitMode()
-            throw Exception(e)
-        }
-    }
-
-    override suspend fun write(buffer: ByteBuffer, timeout: Long): Int {
-        if (timeout <= 0) return write(buffer)
-        if (buffer.remaining() == 0) return -1
-        return try {
-            val result: Int = suspendCoroutine {
-                key.attach(
-                    SingleContext(
-                        buffer,
-                        it,
-                        timer.exec(timeout) {
-                            key.attach(null)
-                            try {
-                                it.resumeWithException(TimeoutException())
-                            } catch (e: Exception) {
-                            }
-                        })
-                )
-                writeMode()
-                nioThread.wakeup()
-            }
-            result
-        } catch (e: Exception) {
-            waitMode()
-            throw Exception(e)
-        }
-    }
-
-    override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
-        if (timeout <= 0) return write(buffer)
-        if (buffer.isEmpty()) return -1
-        return try {
-            val result: Long = suspendCoroutine {
-                key.attach(
-                    MultiContext(
-                        buffer,
-                        it,
-                        timer.exec(timeout) {
-                            key.attach(null)
-                            try {
-                                it.resumeWithException(TimeoutException())
-                            } catch (e: Exception) {
-                            }
-                        })
-                )
-                writeMode()
-                nioThread.wakeup()
-            }
-            result
-        } catch (e: Exception) {
-            waitMode()
-            throw Exception(e)
-        }
-    }
-
-    override fun close() {
-        nioThread.execute {
-            channel.close()
-            key.cancel()
-        }
-    }
-
-    interface Context {
-        val cont: Continuation<*>
-        val timeoutTask: TimerTask? get() = null
-    }
-
-    class SingleContext(
-        val buffer: ByteBuffer,
-        override val cont: Continuation<Int>,
-        override val timeoutTask: TimerTask? = null
-    ) : Context
-
-    class MultiContext(
-        val buffer: Array<out ByteBuffer>,
-        override val cont: Continuation<Long>,
-        override val timeoutTask: TimerTask? = null
-    ) : Context
-
-    companion object {
-        val nioSocketProtocol = object : INioProtocol {
-            override fun handleConnect(key: SelectionKey, nioThread: INioThread) {}
-
-            override fun handleRead(key: SelectionKey, nioThread: INioThread) {
-                key.interestOps(0)
-                val context = key.attachment() as Context? ?: return
-                context.timeoutTask?.cancel()
-                if (context is SingleContext) {
-                    val channel = key.channel() as SocketChannel
-                    val readSize = channel.read(context.buffer)
-                    context.cont.resume(readSize)
-                } else {
-                    context as MultiContext
-                    val channel = key.channel() as SocketChannel
-                    val readSize = channel.read(context.buffer)
-                    context.cont.resume(readSize)
-                }
-            }
-
-            override fun handleWrite(key: SelectionKey, nioThread: INioThread) {
-                key.interestOps(0)
-                val context = key.attachment() as Context? ?: return
-                context.timeoutTask?.cancel()
-                if (context is SingleContext) {
-                    val channel = key.channel() as SocketChannel
-                    val readSize = channel.write(context.buffer)
-                    context.cont.resume(readSize)
-                } else {
-                    context as MultiContext
-                    val channel = key.channel() as SocketChannel
-                    val readSize = channel.write(context.buffer)
-                    context.cont.resume(readSize)
-                }
-            }
-
-            override fun exceptionCause(key: SelectionKey, nioThread: INioThread, e: Throwable) {
-                key.interestOps(0)
-                val context = key.attachment() as Context?
-                if (context != null)
-                    context.cont.resumeWithException(e)
-                else {
-                    key.cancel()
-                    key.channel().close()
-                    e.printStackTrace()
-                }
-            }
-        }
-
-        //val timer = StaticWheelTimer.timer
-        val timer = WheelTimer.timer
-    }
+    const val emptyBufferCode = 0
+    const val emptyBufferLongCode = 0L
+  }
 }

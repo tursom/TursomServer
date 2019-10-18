@@ -21,22 +21,22 @@ data class Demo(
 )
 
 fun main() {
-// 获取数据库访问协助对象
-val helper = SQLiteHelper("demo.db")
+  // 获取数据库访问协助对象
+  val helper = SQLiteHelper("demo.db")
 
-// 插入数据
-helper.insert(Demo(name = "tursom"))
+  // 插入数据
+  helper.insert(Demo(name = "tursom"))
 
-// 更新数据
-helper.update(Demo(name = "tursom", money = 100.0), where = ClauseMaker.make {
+  // 更新数据
+  helper.update(Demo(name = "tursom", money = 100.0), where = ClauseMaker.make {
     !Demo::name equal "tursom"
-})
+  })
 
-// 获取数据
-val data = helper.select(Demo::class.java, where = ClauseMaker {
+  // 获取数据
+  val data = helper.select(Demo::class.java, where = ClauseMaker {
     (!Demo::id greaterThan !0) and (!Demo::id lessThan !10)
-})
+  })
 
-// 删除数据
-helper.delete(Demo::class.java.tableName, where = ClauseMaker.make { !Demo::name equal "tursom" })
+  // 删除数据
+  helper.delete(Demo::class.java.tableName, where = ClauseMaker.make { !Demo::name equal "tursom" })
 }
