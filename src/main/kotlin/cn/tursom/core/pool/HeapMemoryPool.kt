@@ -6,7 +6,7 @@ import cn.tursom.core.datastruct.ArrayBitSet
 import java.nio.ByteBuffer
 
 @Suppress("MemberVisibilityCanBePrivate")
-class HeapMemoryPool(val blockSize: Int = 1024, val blockCount: Int = 16) : MemoryPool {
+class HeapMemoryPool(override val blockSize: Int = 1024, override val blockCount: Int = 16) : MemoryPool {
 	private val memoryPool = ByteBuffer.allocate(blockSize * blockCount)
 	private val bitMap = ArrayBitSet(blockCount.toLong())
 

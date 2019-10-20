@@ -1,9 +1,8 @@
 package cn.tursom.socket
 
-import cn.tursom.core.*
-import java.io.*
+import cn.tursom.core.put
+import java.io.Closeable
 import java.net.Socket
-import java.net.SocketTimeoutException
 
 /**
  * 对基础的Socket做了些许封装

@@ -16,8 +16,8 @@ class AsyncGroupNioServer(
     override val port: Int,
     val threads: Int = Runtime.getRuntime().availableProcessors(),
     backlog: Int = 50,
-    val handler: suspend AsyncNioSocket.() -> Unit
-) : ISocketServer by GroupNioServer(
+    override val handler: suspend AsyncNioSocket.() -> Unit
+) : IAsyncNioServer, ISocketServer by GroupNioServer(
     port,
     threads,
     object : INioProtocol by AsyncNioSocket.nioSocketProtocol {

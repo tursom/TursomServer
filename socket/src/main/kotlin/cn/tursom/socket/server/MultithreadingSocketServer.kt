@@ -4,29 +4,37 @@ import cn.tursom.core.cpuNumber
 import cn.tursom.socket.BaseSocket
 import java.net.ServerSocket
 
+/**
+ * 这是一个自动启用多个线程来处理请求的套接字服务器
+ */
 class MultithreadingSocketServer(
     private val serverSocket: ServerSocket,
     private val threadNumber: Int = cpuNumber,
-    val exception: Exception.() -> Unit = {
-      printStackTrace()
-    },
     override val handler: BaseSocket.() -> Unit
-) : SocketServer {
+) : ISimpleSocketServer {
   override val port = serverSocket.localPort
 
   constructor(
       port: Int,
       threadNumber: Int = cpuNumber,
-      exception: Exception.() -> Unit = {
-        printStackTrace()
-      },
       handler: BaseSocket.() -> Unit
-  ) : this(ServerSocket(port), threadNumber, exception, handler)
+  ) : this(ServerSocket(port), threadNumber, handler)
 
   constructor(
       port: Int,
       handler: BaseSocket.() -> Unit
-  ) : this(port, cpuNumber, { printStackTrace() }, handler)
+  ) : this(port, cpuNumber, handler)
+
+  constructor(
+      port: Int,
+      threadNumber: Int = cpuNumber,
+      handler: ISimpleSocketServer.Handler
+  ) : this(ServerSocket(port), threadNumber, handler::handle)
+
+  constructor(
+      port: Int,
+      handler: ISimpleSocketServer.Handler
+  ) : this(port, cpuNumber, handler::handle)
 
   private val threadList = ArrayList<Thread>()
 
@@ -38,7 +46,7 @@ class MultithreadingSocketServer(
             try {
               BaseSocket(it).handler()
             } catch (e: Exception) {
-              e.exception()
+              e.printStackTrace()
             }
           }
         }

@@ -3,7 +3,6 @@ package cn.tursom.socket.server
 import cn.tursom.socket.AsyncAioSocket
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.Closeable
 import java.net.InetSocketAddress
 import java.nio.channels.AsynchronousCloseException
 import java.nio.channels.AsynchronousServerSocketChannel

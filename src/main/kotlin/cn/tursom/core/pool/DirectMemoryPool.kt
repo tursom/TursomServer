@@ -5,46 +5,46 @@ import cn.tursom.core.bytebuffer.NioAdvanceByteBuffer
 import cn.tursom.core.datastruct.ArrayBitSet
 import java.nio.ByteBuffer
 
-class DirectMemoryPool(val blockSize: Int = 1024, val blockCount: Int = 16) : MemoryPool {
-	private val memoryPool = ByteBuffer.allocateDirect(blockSize * blockCount)
-	private val bitMap = ArrayBitSet(blockCount.toLong())
+class DirectMemoryPool(override val blockSize: Int = 1024, override val blockCount: Int = 16) : MemoryPool {
+  private val memoryPool = ByteBuffer.allocateDirect(blockSize * blockCount)
+  private val bitMap = ArrayBitSet(blockCount.toLong())
 
-	/**
-	 * @return token
-	 */
-	override fun allocate(): Int = synchronized(this) {
-		val index = bitMap.firstDown()
-		if (index in 0 until blockCount) {
-			bitMap.up(index)
-			index.toInt()
-		} else {
-			-1
-		}
-	}
+  /**
+   * @return token
+   */
+  override fun allocate(): Int = synchronized(this) {
+    val index = bitMap.firstDown()
+    if (index in 0 until blockCount) {
+      bitMap.up(index)
+      index.toInt()
+    } else {
+      -1
+    }
+  }
 
-	override fun free(token: Int) {
-		if (token in 0 until blockCount) synchronized(this) {
-			bitMap.down(token.toLong())
-		}
-	}
+  override fun free(token: Int) {
+    if (token in 0 until blockCount) synchronized(this) {
+      bitMap.down(token.toLong())
+    }
+  }
 
-	override fun getMemory(token: Int): ByteBuffer? = if (token in 0 until blockCount) {
-		synchronized(this) {
-			memoryPool.limit((token + 1) * blockSize)
-			memoryPool.position(token * blockSize)
-			return memoryPool.slice()
-		}
-	} else {
-		null
-	}
+  override fun getMemory(token: Int): ByteBuffer? = if (token in 0 until blockCount) {
+    synchronized(this) {
+      memoryPool.limit((token + 1) * blockSize)
+      memoryPool.position(token * blockSize)
+      return memoryPool.slice()
+    }
+  } else {
+    null
+  }
 
-	override fun getAdvanceByteBuffer(token: Int): AdvanceByteBuffer? = if (token in 0 until blockCount) {
-		synchronized(this) {
-			memoryPool.limit((token + 1) * blockSize)
-			memoryPool.position(token * blockSize)
-			return NioAdvanceByteBuffer(memoryPool.slice())
-		}
-	} else {
-		null
-	}
+  override fun getAdvanceByteBuffer(token: Int): AdvanceByteBuffer? = if (token in 0 until blockCount) {
+    synchronized(this) {
+      memoryPool.limit((token + 1) * blockSize)
+      memoryPool.position(token * blockSize)
+      return NioAdvanceByteBuffer(memoryPool.slice())
+    }
+  } else {
+    null
+  }
 }

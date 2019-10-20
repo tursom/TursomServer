@@ -47,7 +47,7 @@ class ThreadPoolSocketServer
     keepAliveTime: Long = 60_000L,
     timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
     override val handler: BaseSocket.() -> Unit
-) : SocketServer {
+) : ISimpleSocketServer {
 
   constructor(
       port: Int,

@@ -15,8 +15,8 @@ import java.nio.channels.SelectionKey
 class AsyncNioServer(
     override val port: Int,
     backlog: Int = 50,
-    val handler: suspend AsyncNioSocket.() -> Unit
-) : ISocketServer by NioServer(port, object : INioProtocol by AsyncNioSocket.nioSocketProtocol {
+    override val handler: suspend AsyncNioSocket.() -> Unit
+) : IAsyncNioServer, ISocketServer by NioServer(port, object : INioProtocol by AsyncNioSocket.nioSocketProtocol {
   override fun handleConnect(key: SelectionKey, nioThread: INioThread) {
     GlobalScope.launch {
       val socket = AsyncNioSocket(key, nioThread)
