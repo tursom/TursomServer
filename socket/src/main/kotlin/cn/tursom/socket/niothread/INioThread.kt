@@ -7,7 +7,8 @@ import java.nio.channels.Selector
 import java.util.concurrent.Callable
 
 /**
- * 一个 nio 工作线程，一个线程只有一个 Selector
+ * 一个 nio 工作线程
+ * 一个线程对应一个 Selector （选择器）
  */
 interface INioThread : Closeable {
 	val selector: Selector
@@ -20,6 +21,9 @@ interface INioThread : Closeable {
 		if (Thread.currentThread() != thread) selector.wakeup()
 	}
 
+	/**
+	 * 将通道注册到线程对应的选择器上
+	 */
 	fun register(channel: SelectableChannel, ops: Int, onComplete: (key: SelectionKey) -> Unit) {
 		if (Thread.currentThread() == thread) {
 			val key = channel.register(selector, ops)

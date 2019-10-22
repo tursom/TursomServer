@@ -4,6 +4,10 @@ import cn.tursom.core.bytebuffer.AdvanceByteBuffer
 import cn.tursom.core.bytebuffer.NioAdvanceByteBuffer
 import java.nio.ByteBuffer
 
+/**
+ * 内存池，提供批量的等大小的 ByteBuffer
+ * 使用 allocate 分配内存，使用 getMemory 或 getAdvanceByteBuffer 获得内存，使用 free 释放内存
+ */
 interface MemoryPool {
   val blockSize: Int
   val blockCount: Int

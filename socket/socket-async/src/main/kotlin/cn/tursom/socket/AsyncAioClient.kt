@@ -1,7 +1,5 @@
 package cn.tursom.socket
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import java.nio.channels.AsynchronousSocketChannel
@@ -14,15 +12,11 @@ import kotlin.coroutines.suspendCoroutine
 object AsyncAioClient {
   private val handler = object : CompletionHandler<Void, Continuation<Void?>> {
     override fun completed(result: Void?, attachment: Continuation<Void?>) {
-      GlobalScope.launch {
-        attachment.resume(result)
-      }
+      attachment.resume(result)
     }
 
     override fun failed(exc: Throwable, attachment: Continuation<Void?>) {
-      GlobalScope.launch {
-        attachment.resumeWithException(exc)
-      }
+      attachment.resumeWithException(exc)
     }
   }
 

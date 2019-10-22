@@ -7,10 +7,15 @@ import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.pool.usingAdvanceByteBuffer
 import cn.tursom.socket.AsyncNioSocket
 
+/**
+ * 带内存池的 NIO 套接字服务器。<br />
+ * 其构造函数是标准写法的改造，会向 handler 方法传入一个 AdvanceByteBuffer，默认是 DirectAdvanceByteBuffer，
+ * 当内存池用完之后会换为 ByteArrayAdvanceByteBuffer。
+ */
 class BuffedAsyncNioServer(
     port: Int,
-    backlog: Int = 50,
     memoryPool: MemoryPool,
+    backlog: Int = 50,
     handler: suspend AsyncNioSocket.(buffer: AdvanceByteBuffer) -> Unit
 ) : IAsyncNioServer by AsyncNioServer(port, backlog, {
   memoryPool.usingAdvanceByteBuffer {
@@ -23,5 +28,5 @@ class BuffedAsyncNioServer(
       blockCount: Int = 128,
       backlog: Int = 50,
       handler: suspend AsyncNioSocket.(buffer: AdvanceByteBuffer) -> Unit
-  ) : this(port, backlog, DirectMemoryPool(blockSize, blockCount), handler)
+  ) : this(port, DirectMemoryPool(blockSize, blockCount), backlog, handler)
 }
