@@ -68,7 +68,7 @@ val unsafe by lazy {
 fun <T> Class<T>.unsafeInstance() = unsafe.allocateInstance(this) as T
 
 val Class<*>.actualTypeArguments: Array<out Type>
-	get() = (genericSuperclass as ParameterizedType).actualTypeArguments
+  get() = (genericSuperclass as ParameterizedType).actualTypeArguments
 
 fun Class<*>.isInheritanceFrom(parent: Class<*>) = parent.isAssignableFrom(this)
 

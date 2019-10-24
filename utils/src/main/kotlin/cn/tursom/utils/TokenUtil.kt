@@ -1,0 +1,71 @@
+package cn.tursom.utils
+
+import cn.tursom.core.base64
+import cn.tursom.core.base64decode
+import cn.tursom.core.digest
+import cn.tursom.core.toHexString
+import java.lang.Exception
+import kotlin.experimental.xor
+
+
+open class TokenUtil {
+  @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
+  enum class DigestType(val digest: String) {
+    MD5("MD5"), SHA256("SHA-256"), SHA512("SHA-512");
+
+    val digestBase64: String = digest.base64()
+  }
+
+  fun <T> generate(secretKey: String, data: T, timeout: Long = 30 * 60 * 1000, type: DigestType = DigestType.MD5): String {
+    val head = type.digestBase64
+    val body = gson.toJson(TokenBody(System.currentTimeMillis(), timeout, data)).base64()
+    val encryptSource = "$head.$body".toByteArray()
+    val encryptKey = secretKey.toByteArray()
+    encryptSource.forEachIndexed { index, _ ->
+      encryptSource[index] = encryptSource[index] xor encryptKey[index % encryptKey.size]
+    }
+    val encrypt = encryptSource.digest(type.digest)!!.toHexString()
+    return "$head.$body.$encrypt"
+  }
+
+  @Throws(TokenException::class)
+  fun <T : Any> decode(secretKey: String, token: String, dataClazz: Class<T>): T {
+    val splitToken = token.split(".")
+    if (splitToken.size != 3) {
+      throw WrongTokenSyntaxException()
+    }
+    val signature = encrypt(secretKey, "${splitToken[0]}.${splitToken[1]}".toByteArray(), splitToken[0].base64decode())
+    if (signature != splitToken[2]) {
+      throw WrongSignatureException()
+    }
+    val decode = gson.fromJson<TokenBody<T>>(splitToken[1].base64decode())
+    if (decode.tim + decode.exp < System.currentTimeMillis()) {
+      throw TokenTimeoutException()
+    }
+    return gson.fromJson(gson.toJson(decode.dat), dataClazz)
+  }
+
+  open fun encrypt(secretKey: String, encryptSource: ByteArray, type: String): String {
+    val inner = secretKey.toByteArray().digest(type)!!
+    encryptSource.forEachIndexed { index, _ ->
+      encryptSource[index] = encryptSource[index] xor inner[index % inner.size]
+    }
+    val digest1 = encryptSource.digest(type)!!
+    digest1.forEachIndexed { index, _ ->
+      digest1[index] = digest1[index] xor inner[index % inner.size]
+    }
+    return digest1.digest(type)!!.toHexString()!!
+  }
+
+  data class TokenBody<T>(val tim: Long, val exp: Long, val dat: T)
+
+  open class TokenException : Exception()
+  class WrongTokenSyntaxException : TokenException()
+  class WrongSignatureException : TokenException()
+  class TokenTimeoutException : TokenException()
+
+  companion object {
+    @JvmStatic
+    val instance = TokenUtil()
+  }
+}
