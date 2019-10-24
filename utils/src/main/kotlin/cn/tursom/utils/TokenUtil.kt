@@ -56,7 +56,7 @@ open class TokenUtil {
   open fun toJson(bean: Any): String = gson.toJson(bean)
   open fun <T> fromJson(json: String, clazz: Class<T>): T = gson.fromJson(json, clazz)
 
-  private inline fun <reified T : Any> fromJson(json: String): T = gson.fromJson(json, T::class.java)
+  private inline fun <reified T : Any> fromJson(json: String): T = fromJson(json, T::class.java)
 
   data class TokenBody<T>(val tim: Long, val exp: Long, val dat: T)
 
