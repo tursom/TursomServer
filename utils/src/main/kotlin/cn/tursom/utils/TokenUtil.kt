@@ -20,11 +20,7 @@ open class TokenUtil {
     val head = type.digestBase64
     val body = toJson(TokenBody(System.currentTimeMillis(), timeout, data)).base64()
     val encryptSource = "$head.$body".toByteArray()
-    val encryptKey = secretKey.toByteArray()
-    encryptSource.forEachIndexed { index, _ ->
-      encryptSource[index] = encryptSource[index] xor encryptKey[index % encryptKey.size]
-    }
-    val encrypt = encryptSource.digest(type.digest)!!.toHexString()
+    val encrypt = encrypt(secretKey, encryptSource, type.digest)
     return "$head.$body.$encrypt"
   }
 
@@ -74,4 +70,3 @@ open class TokenUtil {
     val instance = TokenUtil()
   }
 }
-
