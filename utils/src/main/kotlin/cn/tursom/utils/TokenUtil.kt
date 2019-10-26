@@ -38,7 +38,7 @@ open class TokenUtil {
     if (decode.tim + decode.exp < System.currentTimeMillis()) {
       throw TokenTimeoutException()
     }
-    return fromJson(toJson(decode.dat), dataClazz)
+    return fromJson(toJson(decode.dat!!), dataClazz)
   }
 
   open fun encrypt(secretKey: String, encryptSource: ByteArray, type: String): String {
@@ -58,7 +58,7 @@ open class TokenUtil {
 
   private inline fun <reified T : Any> fromJson(json: String): T = fromJson(json, T::class.java)
 
-  data class TokenBody<T>(val tim: Long, val exp: Long, val dat: T)
+  data class TokenBody<T>(val tim: Long = System.currentTimeMillis(), val exp: Long = 0L, val dat: T? = null)
 
   open class TokenException : Exception()
   class WrongTokenSyntaxException : TokenException()
