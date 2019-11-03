@@ -1,5 +1,6 @@
 package cn.tursom.datagram.client
 
+import cn.tursom.datagram.UdpPackageSize.defaultLen
 import java.io.Closeable
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -38,13 +39,5 @@ class UdpClient(
 	
 	override fun close() {
 		socket.close()
-	}
-	
-	@Suppress("MemberVisibilityCanBePrivate")
-	companion object {
-		//定义不同环境下数据报的最大大小
-		const val LANNetLen = 1472
-		const val internetLen = 548
-		const val defaultLen = internetLen
 	}
 }
