@@ -1,13 +1,10 @@
 package cn.tursom.datagram.broadcast
 
-import cn.tursom.core.toUTF8String
 import cn.tursom.datagram.UdpPackageSize.LANNetLen
-import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.*
-import kotlin.concurrent.thread
 
 class BroadcastServer(val port: Int, val bufSize: Int = LANNetLen) {
   private val socket = DatagramSocket()
