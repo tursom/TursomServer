@@ -23,7 +23,7 @@ class AsyncNioServer(
       try {
         socket.handler()
       } catch (e: Exception) {
-        e.printStackTrace()
+        Exception(e).printStackTrace()
       } finally {
         try {
           socket.close()
@@ -41,7 +41,7 @@ class AsyncNioServer(
       backlog: Int = 50,
       handler: Handler
   ) : this(port, backlog, { handler.handle(this) })
-
+  
   interface Handler {
     fun handle(socket: AsyncNioSocket)
   }

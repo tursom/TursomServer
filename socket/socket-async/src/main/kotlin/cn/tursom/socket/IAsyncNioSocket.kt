@@ -3,6 +3,7 @@ package cn.tursom.socket
 import cn.tursom.socket.niothread.INioThread
 import cn.tursom.core.bytebuffer.AdvanceByteBuffer
 import cn.tursom.core.bytebuffer.writeNioBuffer
+import cn.tursom.core.logE
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.nio.channels.SelectionKey
@@ -12,7 +13,7 @@ interface IAsyncNioSocket : AsyncSocket {
   val channel: SocketChannel
   val key: SelectionKey
   val nioThread: INioThread
-
+  
   fun waitMode() {
     if (Thread.currentThread() == nioThread.thread) {
       if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
@@ -21,16 +22,21 @@ interface IAsyncNioSocket : AsyncSocket {
       nioThread.wakeup()
     }
   }
-
+  
   fun readMode() {
+    //logE("readMode()")
     if (Thread.currentThread() == nioThread.thread) {
       if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
     } else {
-      nioThread.execute { if (key.isValid) key.interestOps(SelectionKey.OP_READ) }
+      nioThread.execute {
+        //logE("readMode() interest")
+        if (key.isValid) key.interestOps(SelectionKey.OP_READ)
+        //logE("readMode interestOps ${key.isValid} ${key.interestOps()}")
+      }
       nioThread.wakeup()
     }
   }
-
+  
   fun writeMode() {
     if (Thread.currentThread() == nioThread.thread) {
       if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
@@ -39,7 +45,7 @@ interface IAsyncNioSocket : AsyncSocket {
       nioThread.wakeup()
     }
   }
-
+  
   suspend fun read(buffer: ByteBuffer): Int = read(arrayOf(buffer)).toInt()
   suspend fun write(buffer: ByteBuffer): Int = write(arrayOf(buffer)).toInt()
   suspend fun read(buffer: Array<out ByteBuffer>): Long
@@ -55,7 +61,7 @@ interface IAsyncNioSocket : AsyncSocket {
     }
     return readSize
   }
-
+  
   suspend fun recv(buffer: ByteBuffer, timeout: Long): Int {
     if (buffer.remaining() == 0) return emptyBufferCode
     val readSize = read(buffer, timeout)
@@ -64,7 +70,7 @@ interface IAsyncNioSocket : AsyncSocket {
     }
     return readSize
   }
-
+  
   suspend fun recv(buffers: Array<out ByteBuffer>, timeout: Long): Long {
     if (buffers.isEmpty()) return emptyBufferLongCode
     val readSize = read(buffers, timeout)
@@ -73,7 +79,7 @@ interface IAsyncNioSocket : AsyncSocket {
     }
     return readSize
   }
-
+  
   suspend fun recv(buffer: AdvanceByteBuffer, timeout: Long = 0): Int {
     return if (buffer.bufferCount == 1) {
       buffer.writeNioBuffer {
@@ -87,7 +93,7 @@ interface IAsyncNioSocket : AsyncSocket {
       value
     }
   }
-
+  
   companion object {
     const val emptyBufferCode = 0
     const val emptyBufferLongCode = 0L

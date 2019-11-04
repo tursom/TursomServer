@@ -1,5 +1,7 @@
 package cn.tursom.socket.server
 
+import cn.tursom.core.log
+import cn.tursom.core.logE
 import cn.tursom.socket.INioProtocol
 import cn.tursom.socket.niothread.INioThread
 import cn.tursom.socket.niothread.WorkerLoopNioThread
@@ -19,12 +21,12 @@ class NioServer(
 ) : ISocketServer {
   private val listenChannel = ServerSocketChannel.open()
   private val threadList = ConcurrentLinkedDeque<INioThread>()
-
+  
   init {
     listenChannel.socket().bind(InetSocketAddress(port), backLog)
     listenChannel.configureBlocking(false)
   }
-
+  
   constructor(
       port: Int,
       protocol: INioProtocol,
@@ -32,22 +34,23 @@ class NioServer(
   ) : this(port, protocol, backLog, { name, workLoop ->
     WorkerLoopNioThread(name, workLoop = workLoop, isDaemon = false)
   })
-
+  
   override fun run() {
     val nioThread = nioThreadGenerator("nio worker", LoopHandler(protocol)::handle)
     nioThread.register(listenChannel, SelectionKey.OP_ACCEPT) {}
     threadList.add(nioThread)
   }
-
+  
   override fun close() {
     listenChannel.close()
     threadList.forEach {
       it.close()
     }
   }
-
+  
   class LoopHandler(val protocol: INioProtocol) {
     fun handle(nioThread: INioThread) {
+      //logE("wake up")
       val selector = nioThread.selector
       if (selector.isOpen) {
         if (selector.select(TIMEOUT) != 0) {
@@ -55,6 +58,7 @@ class NioServer(
           while (keyIter.hasNext()) run whileBlock@{
             val key = keyIter.next()
             keyIter.remove()
+            //logE("selected key: $key: ${key.attachment()}")
             try {
               when {
                 key.isAcceptable -> {
@@ -90,7 +94,7 @@ class NioServer(
       }
     }
   }
-
+  
   companion object {
     private const val TIMEOUT = 1000L
   }

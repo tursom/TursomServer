@@ -48,4 +48,8 @@ class HeapMemoryPool(override val blockSize: Int = 1024, override val blockCount
 	} else {
 		null
 	}
+	
+	override fun toString(): String {
+		return "HeapMemoryPool(blockSize=$blockSize, blockCount=$blockCount, bitMap=$bitMap)"
+	}
 }

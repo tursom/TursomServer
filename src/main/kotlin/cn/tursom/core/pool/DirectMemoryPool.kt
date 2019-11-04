@@ -47,4 +47,8 @@ class DirectMemoryPool(override val blockSize: Int = 1024, override val blockCou
   } else {
     null
   }
+  
+  override fun toString(): String {
+    return "DirectMemoryPool(blockSize=$blockSize, blockCount=$blockCount, bitMap=$bitMap)"
+  }
 }

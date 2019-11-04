@@ -80,8 +80,8 @@ class NettyAdvanceByteBuffer(val byteBuf: ByteBuf) : AdvanceByteBuffer {
 	override fun getFloat(): Float = byteBuf.readFloat()
 	override fun getDouble(): Double = byteBuf.readDouble()
 
-	override fun getBytes(): ByteArray {
-		val bytes = ByteArray(byteBuf.readableBytes())
+	override fun getBytes(size: Int): ByteArray {
+		val bytes = ByteArray(size)
 		byteBuf.readBytes(bytes)
 		return bytes
 	}
@@ -139,5 +139,8 @@ class NettyAdvanceByteBuffer(val byteBuf: ByteBuf) : AdvanceByteBuffer {
 	override fun put(byteArray: ByteArray, startIndex: Int, endIndex: Int) {
 		byteBuf.writeBytes(byteArray, startIndex, endIndex - startIndex)
 	}
-
+	
+	override fun toString(): String {
+		return "NettyAdvanceByteBuffer(byteBuf=$byteBuf, readMode=$readMode)"
+	}
 }

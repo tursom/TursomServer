@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 interface MemoryPool {
   val blockSize: Int
   val blockCount: Int
-
+  
   fun allocate(): Int
   fun free(token: Int)
   fun getMemory(token: Int): ByteBuffer?
@@ -23,6 +23,8 @@ interface MemoryPool {
       null
     }
   }
+  
+  override fun toString(): String
 }
 
 
