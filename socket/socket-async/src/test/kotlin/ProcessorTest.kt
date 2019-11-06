@@ -1,5 +1,6 @@
 import cn.tursom.core.bytebuffer.ByteArrayAdvanceByteBuffer
-import cn.tursom.core.log
+import cn.tursom.core.bytebuffer.HeapNioAdvanceByteBuffer
+import cn.tursom.core.logE
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.core.pool.usingAdvanceByteBuffer
 import cn.tursom.socket.AsyncNioClient
@@ -7,23 +8,23 @@ import cn.tursom.socket.server.AsyncNioServer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.Thread.sleep
-import java.net.SocketException
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicInteger
 
 fun main() {
   // 服务器端口，可任意指定
-  val port = 12345
-  
+  val port = 12346
+
   // 创建一个直接内存池，每个块是1024字节，共有256个快
-  val memoryPool = DirectMemoryPool(1024, 256)
+  val memoryPool = DirectMemoryPool(1024, 512)
   // 创建服务器对象
   val server = AsyncNioServer(port) {
+    //log("get new connection")
     // 这里处理业务逻辑，套接字对象被以 this 的方式传进来
     // 从内存池中获取一个内存块
     memoryPool.usingAdvanceByteBuffer {
       // 检查是否获取成功，不成功就创建一个堆缓冲
-      val buffer = it ?: ByteArrayAdvanceByteBuffer(1024)
+      val buffer = it ?: HeapNioAdvanceByteBuffer(1024)
       try {
         while (true) {
           buffer.clear()
@@ -38,39 +39,47 @@ fun main() {
           //log("server send [$writeSize] bytes")
         }
       } catch (e: TimeoutException) {
+        e.printStackTrace()
       }
       // 代码块结束后，框架会自动释放连接
     }
   }
   server.run()
-  
-  val connectionCount = 300
-  val dataPerConn = 10
+
+  val connectionCount = 1000
+  val dataPerConn = 1
   val testData = "testData".toByteArray()
-  
-  val remain = AtomicInteger(connectionCount)
-  
+
+  val remain = AtomicInteger(connectionCount * dataPerConn)
+
   val clientMemoryPool = DirectMemoryPool(1024, connectionCount)
-  
+
   val start = System.currentTimeMillis()
-  
+
   repeat(connectionCount) {
     GlobalScope.launch {
       val socket = AsyncNioClient.connect("127.0.0.1", port)
       clientMemoryPool.usingAdvanceByteBuffer {
         // 检查是否获取成功，不成功就创建一个堆缓冲
-        val buffer = it ?: ByteArrayAdvanceByteBuffer(1024)
         try {
+          //val buffer = it!!
+          val buffer = ByteArrayAdvanceByteBuffer(1024)
           repeat(dataPerConn) {
             buffer.clear()
             buffer.put(testData)
             //log("client sending: [${buffer.readableSize}] ${buffer.toString(buffer.readableSize)}")
             val writeSize = socket.write(buffer)
+            if (writeSize == 0) {
+              logE("write size is zero")
+            } else if (writeSize < 0) {
+              return@usingAdvanceByteBuffer
+            }
             //log("client write [$writeSize] bytes")
             //log(buffer.toString())
             val readSize = socket.read(buffer)
             //log(buffer.toString())
             //log("client recv: [$readSize:${buffer.readableSize}] ${buffer.toString(buffer.readableSize)}")
+            remain.decrementAndGet()
           }
         } catch (e: Exception) {
           Exception(e).printStackTrace()
@@ -78,15 +87,14 @@ fun main() {
           socket.close()
         }
       }
-      remain.decrementAndGet()
     }
   }
-  
+
   while (remain.get() != 0) {
     println(remain.get())
     sleep(500)
   }
-  
+
   val end = System.currentTimeMillis()
   println(end - start)
   server.close()

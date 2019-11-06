@@ -32,18 +32,5 @@ class AsyncNioServer(
       }
     }
   }
-}, backlog) {
-  /**
-   * 次要构造方法，为使用Spring的同学们准备的
-   */
-  constructor(
-      port: Int,
-      backlog: Int = 50,
-      handler: Handler
-  ) : this(port, backlog, { handler.handle(this) })
-  
-  interface Handler {
-    fun handle(socket: AsyncNioSocket)
-  }
-}
+}, backlog)
 
