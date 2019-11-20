@@ -3,13 +3,14 @@ package cn.tursom.core.buffer.impl
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.HeapByteBufferUtil
 
-class HeapByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
+class HeapByteBuffer(
+  private var buffer: java.nio.ByteBuffer,
+  override var writePosition: Int = 0,
+  override var readPosition: Int = 0
+) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocate(size))
   constructor(bytes: ByteArray, offset: Int = 0, size: Int = bytes.size - offset)
-      : this(HeapByteBufferUtil.wrap(bytes, offset, size)) {
-    readPosition = offset
-    writePosition = offset + size
-  }
+    : this(HeapByteBufferUtil.wrap(bytes, offset, size), offset, offset + size)
 
   init {
     assert(buffer.hasArray())
@@ -19,8 +20,7 @@ class HeapByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
   override val array: ByteArray get() = buffer.array()
   override val capacity: Int get() = buffer.capacity()
   override val arrayOffset: Int get() = buffer.arrayOffset()
-  override var writePosition: Int = 0
-  override var readPosition: Int = 0
+
   override var resized: Boolean = false
 
   override fun readBuffer(): java.nio.ByteBuffer {
@@ -47,9 +47,9 @@ class HeapByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
     writePosition = buffer.limit()
   }
 
-  override fun slice(offset: Int, size: Int): ByteBuffer {
-    buffer.limit(offset + size)
-    buffer.position(offset)
+  override fun slice(position: Int, size: Int): ByteBuffer {
+    buffer.limit(position + size)
+    buffer.position(position)
     return HeapByteBuffer(buffer.slice())
   }
 

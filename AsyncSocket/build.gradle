@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(":")
+
+    // kotlin 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+}

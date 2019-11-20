@@ -39,8 +39,8 @@ class NettyByteBuffer(val byteBuf: ByteBuf) : ByteBuffer {
     byteBuf.discardReadBytes()
   }
 
-  override fun slice(offset: Int, size: Int): ByteBuffer {
-    return NettyByteBuffer(byteBuf.slice(offset, size))
+  override fun slice(position: Int, size: Int): ByteBuffer {
+    return NettyByteBuffer(byteBuf.slice(position, size))
   }
 
   override fun resize(newSize: Int): Boolean {

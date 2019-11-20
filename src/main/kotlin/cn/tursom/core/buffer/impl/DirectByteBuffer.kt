@@ -37,9 +37,9 @@ class DirectByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
     writePosition = buffer.limit()
   }
 
-  override fun slice(offset: Int, size: Int): ByteBuffer {
-    buffer.limit(offset + size)
-    buffer.position(offset)
+  override fun slice(position: Int, size: Int): ByteBuffer {
+    buffer.limit(position + size)
+    buffer.position(position)
     return DirectByteBuffer(buffer.slice())
   }
 

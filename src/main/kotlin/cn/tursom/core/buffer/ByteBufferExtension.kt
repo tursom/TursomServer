@@ -77,3 +77,17 @@ fun SocketChannel.write(buffers: Array<out ByteBuffer>): Long {
 }
 
 fun Array<out ByteBuffer>.asMultipleByteBuffer() = ArrayByteBuffer(*this)
+
+val Collection<ByteBuffer>.readable: Int
+  get() {
+    var size = 0
+    forEach { size += it.readable }
+    return size
+  }
+
+val Collection<ByteBuffer>.writeable: Int
+  get() {
+    var size = 0
+    forEach { size += it.writeable }
+    return size
+  }

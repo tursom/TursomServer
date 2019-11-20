@@ -64,7 +64,7 @@ interface ByteBuffer : Closeable {
   }
 
   fun reset()
-  fun slice(offset: Int, size: Int): ByteBuffer
+  fun slice(position: Int, size: Int): ByteBuffer
 
   /**
    * @return 底层 nio buffer 是否已更新

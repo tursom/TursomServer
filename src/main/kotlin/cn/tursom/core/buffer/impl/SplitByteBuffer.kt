@@ -28,8 +28,8 @@ class SplitByteBuffer(
     }
   }
 
-  override fun slice(offset: Int, size: Int): ByteBuffer {
-    return SplitByteBuffer(parent, childCount, agent.slice(offset, size))
+  override fun slice(position: Int, size: Int): ByteBuffer {
+    return SplitByteBuffer(parent, childCount, agent.slice(position, size))
   }
 
   override fun resize(newSize: Int): Boolean {

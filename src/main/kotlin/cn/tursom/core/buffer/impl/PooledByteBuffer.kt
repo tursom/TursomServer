@@ -38,8 +38,8 @@ class PooledByteBuffer(
     return successful
   }
 
-  override fun slice(offset: Int, size: Int): ByteBuffer {
-    return SplitByteBuffer(this, childCount, agent.slice(offset, size))
+  override fun slice(position: Int, size: Int): ByteBuffer {
+    return SplitByteBuffer(this, childCount, agent.slice(position, size))
   }
 
   override fun toString(): String {
