@@ -1,6 +1,6 @@
 package cn.tursom.web.netty
 
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.web.ExceptionContent
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
@@ -17,9 +17,9 @@ class NettyExceptionContent(
 		ctx.write(Unpooled.wrappedBuffer(bytes, offset, length))
 	}
 
-	override fun write(buffer: AdvanceByteBuffer) {
+	override fun write(buffer: ByteBuffer) {
 		when (buffer) {
-			is NettyAdvanceByteBuffer -> ctx.write(buffer.byteBuf)
+			is NettyByteBuffer -> ctx.write(buffer.byteBuf)
 			else -> write(buffer.getBytes())
 		}
 	}

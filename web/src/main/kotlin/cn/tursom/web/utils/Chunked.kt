@@ -1,11 +1,11 @@
 package cn.tursom.web.utils
 
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
 
 interface Chunked {
 	val progress: Long
 	val length: Long
 	val endOfInput: Boolean
-	fun readChunk(): AdvanceByteBuffer
+	fun readChunk(): ByteBuffer
 	fun close()
 }

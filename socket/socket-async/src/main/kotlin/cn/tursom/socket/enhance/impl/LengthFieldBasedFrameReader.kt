@@ -1,37 +1,37 @@
 package cn.tursom.socket.enhance.impl
 
+import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.socket.IAsyncNioSocket
 import cn.tursom.socket.enhance.SocketReader
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
-import cn.tursom.core.bytebuffer.ByteArrayAdvanceByteBuffer
 
 class LengthFieldBasedFrameReader(
-	val prevReader: SocketReader<AdvanceByteBuffer>
-) : SocketReader<AdvanceByteBuffer> {
+	val prevReader: SocketReader<ByteBuffer>
+) : SocketReader<ByteBuffer> {
 	constructor(socket: IAsyncNioSocket) : this(SimpSocketReader(socket))
 
-	override suspend fun get(buffer: AdvanceByteBuffer, timeout: Long): AdvanceByteBuffer {
+	override suspend fun get(buffer: ByteBuffer, timeout: Long): ByteBuffer {
 		val rBuf = prevReader.get(buffer, timeout)
 		val blockSize = rBuf.getInt()
-		if (rBuf.readableSize == blockSize) {
+		if (rBuf.readable == blockSize) {
 			return rBuf
-		} else if (rBuf.readableSize > blockSize) {
+		} else if (rBuf.readable > blockSize) {
 			return if (rBuf.hasArray) {
-				val retBuf = ByteArrayAdvanceByteBuffer(rBuf.array, rBuf.readOffset, blockSize)
+				val retBuf = HeapByteBuffer(rBuf.array, rBuf.readOffset, blockSize)
 				rBuf.readPosition += blockSize
 				retBuf
 			} else {
-				val targetBuffer = ByteArrayAdvanceByteBuffer(blockSize)
+				val targetBuffer = HeapByteBuffer(blockSize)
 				rBuf.writeTo(targetBuffer)
 				targetBuffer
 			}
 		}
 
-		val targetBuffer = ByteArrayAdvanceByteBuffer(blockSize)
+		val targetBuffer = HeapByteBuffer(blockSize)
 		rBuf.writeTo(targetBuffer)
-		while (targetBuffer.writeableSize != 0) {
+		while (targetBuffer.writeable != 0) {
 			val rBuf2 = prevReader.get(buffer, timeout)
-			if (rBuf2.readableSize == 0) return targetBuffer
+			if (rBuf2.readable == 0) return targetBuffer
 			rBuf2.writeTo(targetBuffer)
 		}
 		return targetBuffer

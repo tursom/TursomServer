@@ -1,7 +1,5 @@
 package cn.tursom.socket
 
-import cn.tursom.core.log
-import cn.tursom.core.logE
 import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.socket.niothread.INioThread

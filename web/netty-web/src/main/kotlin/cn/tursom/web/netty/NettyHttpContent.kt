@@ -1,7 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.core.buf
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.web.AdvanceHttpContent
 import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
@@ -37,7 +37,7 @@ open class NettyHttpContent(
     val headers: HttpHeaders get() = msg.headers()
     protected val paramMap by lazy { RequestParser.parse(msg) }
     override val cookieMap by lazy { getHeader("Cookie")?.let { decodeCookie(it) } ?: mapOf() }
-    override val body = msg.content()?.let { NettyAdvanceByteBuffer(it) }
+    override val body = msg.content()?.let { NettyByteBuffer(it) }
 
     val responseMap = HashMap<String, Any>()
     val responseListMap = HashMap<String, ArrayList<Any>>()
@@ -45,7 +45,7 @@ open class NettyHttpContent(
     override var responseCode: Int = 200
     override var responseMessage: String? = null
     override val method: String get() = httpMethod.name()
-    val chunkedList = ArrayList<AdvanceByteBuffer>()
+    val chunkedList = ArrayList<ByteBuffer>()
 
     override fun getHeader(header: String): String? {
         return headers[header]
@@ -99,7 +99,7 @@ open class NettyHttpContent(
         responseBody.write(bytes, offset, size)
     }
 
-    override fun write(buffer: AdvanceByteBuffer) {
+    override fun write(buffer: ByteBuffer) {
         buffer.writeTo(responseBody)
     }
 
@@ -115,8 +115,8 @@ open class NettyHttpContent(
         finish(Unpooled.wrappedBuffer(buffer, offset, size))
     }
 
-    override fun finish(buffer: AdvanceByteBuffer) {
-        if (buffer is NettyAdvanceByteBuffer) {
+    override fun finish(buffer: ByteBuffer) {
+        if (buffer is NettyByteBuffer) {
             finish(buffer.byteBuf)
         } else {
             super.finish(buffer)
@@ -173,7 +173,7 @@ open class NettyHttpContent(
         ctx.write(response)
     }
 
-    override fun addChunked(buffer: AdvanceByteBuffer) {
+    override fun addChunked(buffer: ByteBuffer) {
         chunkedList.add(buffer)
     }
 

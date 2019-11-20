@@ -1,22 +1,26 @@
 package cn.tursom.socket.enhance.impl
 
+import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.socket.IAsyncNioSocket
 import cn.tursom.socket.enhance.SocketWriter
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
-import cn.tursom.core.bytebuffer.ByteArrayAdvanceByteBuffer
 
 class StringWriter(
-    val prevWriter: SocketWriter<AdvanceByteBuffer>
+  val prevWriter: SocketWriter<ByteBuffer>
 ) : SocketWriter<String> {
-    constructor(socket: IAsyncNioSocket) : this(LengthFieldPrependWriter(socket))
+  constructor(socket: IAsyncNioSocket) : this(LengthFieldPrependWriter(socket))
 
-    override suspend fun put(value: String, timeout: Long) {
-        val buf = ByteArrayAdvanceByteBuffer(value.toByteArray())
-        buf.writePosition = buf.limit
-        prevWriter.put(buf, timeout)
-    }
+  override suspend fun put(value: String) {
+    val buf = HeapByteBuffer(value.toByteArray())
+    buf.writePosition = buf.capacity
+    prevWriter.put(buf)
+  }
 
-	override fun close() {
-		prevWriter.close()
-	}
+  override suspend fun flush(timeout: Long) {
+    prevWriter.flush(timeout)
+  }
+
+  override fun close() {
+    prevWriter.close()
+  }
 }

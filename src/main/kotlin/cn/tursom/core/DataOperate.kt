@@ -2,7 +2,7 @@
 
 package cn.tursom.core
 
-import cn.tursom.core.bytebuffer.HeapByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
 import java.io.*
 import java.nio.ByteOrder
 
@@ -544,7 +544,7 @@ private val ByteArrayOutputStream_count = ByteArrayOutputStream::class.java.getD
 val ByteArrayOutputStream.buf get() = ByteArrayOutputStream_buf.get(this) as ByteArray
 val ByteArrayOutputStream.count get() = ByteArrayOutputStream_count.get(this) as Int
 
-fun ByteArray.toByteBuffer() = HeapByteBuffer.wrap(this, 0, size)
+fun ByteArray.toByteBuffer() = HeapByteBuffer(this, 0, size)
 
 inline fun <T> Array<T>.forEachIndex(fromIndex: Int, toIndex: Int, action: (T) -> Unit) {
 	for (i in fromIndex..toIndex) {

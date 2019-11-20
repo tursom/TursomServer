@@ -9,13 +9,13 @@ package cn.tursom.utils.bytebuffer
  * will support
  */
 
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.isStatic
 import cn.tursom.core.unsafe
 
 class UnsupportedException : Exception()
 
-fun AdvanceByteBuffer.serialize(obj: Any) {
+fun ByteBuffer.serialize(obj: Any) {
 	when (obj) {
 		is Char -> put(obj)
 		is Short -> put(obj)
@@ -80,7 +80,7 @@ fun AdvanceByteBuffer.serialize(obj: Any) {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> AdvanceByteBuffer.unSerialize(clazz: Class<T>): T {
+fun <T> ByteBuffer.unSerialize(clazz: Class<T>): T {
 	when {
 		clazz == Byte::class.java -> {
 			return get() as T
@@ -188,6 +188,7 @@ fun <T> AdvanceByteBuffer.unSerialize(clazz: Class<T>): T {
 			return newArray as T
 		}
 		else -> {
+			//TODO
 			val instance = try {
 				clazz.newInstance()
 			} catch (e: Throwable) {
@@ -203,6 +204,6 @@ fun <T> AdvanceByteBuffer.unSerialize(clazz: Class<T>): T {
 	}
 }
 
-inline fun <reified T : Any> AdvanceByteBuffer.unSerialize(): T {
+inline fun <reified T : Any> ByteBuffer.unSerialize(): T {
 	return unSerialize(T::class.java)
 }

@@ -1,17 +1,26 @@
 package cn.tursom.socket.enhance.impl
 
+import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.socket.IAsyncNioSocket
 import cn.tursom.socket.enhance.SocketWriter
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class SimpSocketWriter(
-    val socket: IAsyncNioSocket
-) : SocketWriter<AdvanceByteBuffer> {
-    override suspend fun put(value: AdvanceByteBuffer, timeout: Long) {
-        socket.write(value, timeout)
-    }
+  val socket: IAsyncNioSocket
+) : SocketWriter<ByteBuffer> {
+  private val bufferQueue = ConcurrentLinkedQueue<ByteBuffer>()
+  override suspend fun put(value: ByteBuffer) {
+    bufferQueue.offer(value)
+  }
 
-	override fun close() {
-		socket.close()
-	}
+  override suspend fun flush(timeout: Long) {
+    val buffers = bufferQueue.toTypedArray()
+    bufferQueue.clear()
+    socket.write(buffers, timeout)
+    buffers.forEach { it.close() }
+  }
+
+  override fun close() {
+    socket.close()
+  }
 }

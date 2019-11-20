@@ -1,112 +1,93 @@
 package cn.tursom.core.timer
 
+import cn.tursom.core.CurrentTimeMillisClock
 import java.lang.Thread.sleep
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReferenceArray
 import kotlin.concurrent.thread
 
 
+@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 class WheelTimer(
     val tick: Long = 200,
-    val wheelSize: Int = 512
+    val wheelSize: Int = 512,
+    val name: String = "wheelTimerLooper",
+    val taskQueueFactory: () -> TaskQueue = { NonLockTaskQueue() }
 ) : Timer {
   var closed = false
-  val taskQueueArray = Array(wheelSize) { TaskQueue() }
+  val taskQueueArray = AtomicReferenceArray(Array(wheelSize) { taskQueueFactory() })
+  @Volatile
   private var position = 0
-  
+
   override fun exec(timeout: Long, task: () -> Unit): TimerTask {
-    val index = ((timeout / tick + position + if (timeout % tick == 0L) 0 else 1) % wheelSize).toInt()
+    //val index = ((timeout / tick + position + if (timeout % tick == 0L) 0 else 1) % wheelSize).toInt()
+    val index = ((timeout / tick + position) % wheelSize).toInt()
     return taskQueueArray[index].offer(task, timeout)
   }
-  
+
   init {
-    thread(isDaemon = true, name = "wheelTimerLooper") {
-      val startTime = System.currentTimeMillis()
+    //ScheduledThreadPoolExecutor(1) { runnable ->
+    //  val thread = Thread(runnable, name)
+    //  thread.isDaemon = true
+    //  thread
+    //}.scheduleAtFixedRate(tick, tick, TimeUnit.MILLISECONDS) {
+    //  val outTimeQueue = taskQueueFactory()
+    //  val newQueue = taskQueueFactory()
+    //  val taskQueue = taskQueueArray.getAndSet(position++, newQueue)
+    //  position %= wheelSize
+    //  while (true) {
+    //    val task = taskQueue.take() ?: break
+    //    if (task.canceled) {
+    //
+    //      continue
+    //    } else if (task.isOutTime) {
+    //      outTimeQueue.offer(task)
+    //    } else {
+    //      newQueue.offer(task)
+    //    }
+    //  }
+    //
+    //  runNow(outTimeQueue)
+    //}
+    thread(isDaemon = true, name = name) {
+      val startTime = CurrentTimeMillisClock.now
       while (!closed) {
         position %= wheelSize
-        
-        val newQueue = TaskQueue()
-        val taskQueue = taskQueueArray[position]
-        taskQueueArray[position] = newQueue
-        
-        val time = System.currentTimeMillis()
-        var node = taskQueue.root.next
-        while (node != null) {
-          node = if (node.isOutTime(time)) {
-            val sNode = node
-            threadPool.execute { sNode.task() }
-            node.next
+
+        val outTimeQueue = taskQueueFactory()
+        val newQueue = taskQueueFactory()
+        val taskQueue = taskQueueArray.getAndSet(position++, newQueue)
+
+        while (true) {
+          val node = taskQueue.take() ?: break
+          if (node.canceled) {
+            continue
+          } else if (node.isOutTime) {
+            outTimeQueue.offer(node)
+            //runNow(node)
           } else {
-            val next = node.next
             newQueue.offer(node)
-            next
           }
         }
-        
-        position++
-        val nextSleep = startTime + tick * position - System.currentTimeMillis()
+
+        runNow(outTimeQueue)
+
+        val nextSleep = startTime + tick * position - CurrentTimeMillisClock.now
         if (nextSleep > 0) sleep(tick)
       }
     }
   }
-  
-  
-  class TaskQueue {
-    val root: TaskNode = TaskNode(0, {}, null, null)
-    
-    fun offer(task: () -> Unit, timeout: Long): TaskNode {
-      synchronized(root) {
-        val insert = TaskNode(timeout, task, root, root.next)
-        root.next = insert
-        insert.next?.prev = insert
-        return insert
-      }
-    }
-    
-    fun offer(node: TaskNode): TaskNode {
-      synchronized(root) {
-        node.next = root.next
-        node.next = node
-        node.next?.prev = node
-        return node
-      }
-    }
-    
-    inner class TaskNode(
-        val timeout: Long,
-        val task: () -> Unit,
-        var prev: TaskNode?,
-        var next: TaskNode?
-    ) : TimerTask {
-      val outTime = System.currentTimeMillis() + timeout
-      val isOutTime get() = System.currentTimeMillis() > outTime
-      
-      fun isOutTime(time: Long) = time > outTime
-      
-      override fun run() = task()
-      
-      override fun cancel() {
-        synchronized(root) {
-          prev?.next = next
-          next?.prev = prev
-        }
-      }
-    }
-  }
-  
+
   companion object {
-    val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-        object : ThreadFactory {
-          var threadNumber = 0
-          override fun newThread(r: Runnable): Thread {
-            val thread = Thread(r)
-            thread.isDaemon = true
-            thread.name = "wheelTimerWorker-$threadNumber"
-            return thread
-          }
-        })
     val timer by lazy { WheelTimer(200, 1024) }
     val smoothTimer by lazy { WheelTimer(20, 128) }
+    fun ScheduledThreadPoolExecutor.scheduleAtFixedRate(
+        var2: Long,
+        var4: Long,
+        var6: TimeUnit,
+        var1: () -> Unit
+    ): ScheduledFuture<*> = scheduleAtFixedRate(var1, var2, var4, var6)
   }
 }

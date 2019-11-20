@@ -1,55 +1,21 @@
 package cn.tursom.core.pool
 
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
-import cn.tursom.core.bytebuffer.NioAdvanceByteBuffer
-import cn.tursom.core.datastruct.ArrayBitSet
-import java.nio.ByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
+
 
 @Suppress("MemberVisibilityCanBePrivate")
-class HeapMemoryPool(override val blockSize: Int = 1024, override val blockCount: Int = 16) : MemoryPool {
-	private val memoryPool = ByteBuffer.allocate(blockSize * blockCount)
-	private val bitMap = ArrayBitSet(blockCount.toLong())
-
-	/**
-	 * @return token
-	 */
-	override fun allocate(): Int = synchronized(this) {
-		val index = bitMap.firstDown()
-		if (index in 0 until blockCount) {
-			bitMap.up(index)
-			index.toInt()
-		} else {
-			-1
-		}
-	}
-
-	override fun free(token: Int) {
-		if (token in 0 until blockCount) synchronized(this) {
-			bitMap.down(token.toLong())
-		}
-	}
-
-	override fun getMemory(token: Int): ByteBuffer? = if (token in 0 until blockCount) {
-		synchronized(this) {
-			memoryPool.limit((token + 1) * blockSize)
-			memoryPool.position(token * blockSize)
-			return memoryPool.slice()
-		}
-	} else {
-		null
-	}
-
-	override fun getAdvanceByteBuffer(token: Int): AdvanceByteBuffer? = if (token in 0 until blockCount) {
-		synchronized(this) {
-			memoryPool.limit((token + 1) * blockSize)
-			memoryPool.position(token * blockSize)
-			return NioAdvanceByteBuffer(memoryPool.slice())
-		}
-	} else {
-		null
-	}
-	
-	override fun toString(): String {
-		return "HeapMemoryPool(blockSize=$blockSize, blockCount=$blockCount, bitMap=$bitMap)"
-	}
+class HeapMemoryPool(
+  blockSize: Int = 1024,
+  blockCount: Int = 16,
+  emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = { HeapByteBuffer(it) }
+) : AbstractMemoryPool(
+  blockSize,
+  blockCount,
+  emptyPoolBuffer,
+  HeapByteBuffer(java.nio.ByteBuffer.allocate(blockSize * blockCount))
+) {
+  override fun toString(): String {
+    return "HeapMemoryPool(blockSize=$blockSize, blockCount=$blockCount, allocated=$allocated)"
+  }
 }

@@ -1,33 +1,38 @@
 package cn.tursom.socket.enhance.impl
 
+import cn.tursom.buffer.MultipleByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.ArrayByteBuffer
 import cn.tursom.socket.IAsyncNioSocket
 import cn.tursom.socket.enhance.SocketWriter
-import cn.tursom.core.bytebuffer.AdvanceByteBuffer
-import cn.tursom.core.bytebuffer.ByteArrayAdvanceByteBuffer
-import cn.tursom.core.bytebuffer.MultiAdvanceByteBuffer
 import cn.tursom.core.pool.DirectMemoryPool
+import cn.tursom.core.pool.ExpandableMemoryPool
 
 
 class LengthFieldPrependWriter(
-	val prevWriter: SocketWriter<AdvanceByteBuffer>
-) : SocketWriter<AdvanceByteBuffer> {
-	constructor(socket: IAsyncNioSocket) : this(SimpSocketWriter(socket))
+  val prevWriter: SocketWriter<ByteBuffer>
+) : SocketWriter<ByteBuffer> {
+  constructor(socket: IAsyncNioSocket) : this(SimpSocketWriter(socket))
 
-	override suspend fun put(value: AdvanceByteBuffer, timeout: Long) {
-		val memToken = directMemoryPool.allocate()
-		val buffer = directMemoryPool.getAdvanceByteBuffer(memToken) ?: ByteArrayAdvanceByteBuffer(4)
-		buffer.put(value.readableSize)
-		prevWriter.put(MultiAdvanceByteBuffer(buffer, value))
-		directMemoryPool.free(memToken)
-	}
+  override suspend fun put(value: ByteBuffer) {
+    val buffer = directMemoryPool.getMemory()
+    buffer.put(value.readable)
+    prevWriter.put(buffer)
+    prevWriter.put(value)
+    buffer.close()
+  }
 
-	override fun close() {
-		prevWriter.close()
-	}
+  override suspend fun flush(timeout: Long) {
+    prevWriter.flush()
+  }
 
-	companion object {
-		@JvmStatic
-		private val directMemoryPool = DirectMemoryPool(4, 1024)
-	}
+  override fun close() {
+    prevWriter.close()
+  }
+
+  companion object {
+    @JvmStatic
+    private val directMemoryPool = ExpandableMemoryPool { DirectMemoryPool(4, 64) }
+  }
 }
 

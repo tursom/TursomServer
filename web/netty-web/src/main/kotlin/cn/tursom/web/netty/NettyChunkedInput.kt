@@ -14,14 +14,14 @@ class NettyChunkedInput(val chunked: Chunked) : ChunkedInput<ByteBuf> {
 
 	override fun readChunk(ctx: ChannelHandlerContext?): ByteBuf {
 		val buf = chunked.readChunk()
-		return if (buf is NettyAdvanceByteBuffer) buf.byteBuf
-		else Unpooled.wrappedBuffer(buf.nioBuffer)
+		return if (buf is NettyByteBuffer) buf.byteBuf
+		else Unpooled.wrappedBuffer(buf.readBuffer())
 	}
 
 	override fun readChunk(allocator: ByteBufAllocator?): ByteBuf {
 		val buf = chunked.readChunk()
-		return if (buf is NettyAdvanceByteBuffer) buf.byteBuf
-		else Unpooled.wrappedBuffer(buf.nioBuffer)
+		return if (buf is NettyByteBuffer) buf.byteBuf
+		else Unpooled.wrappedBuffer(buf.readBuffer())
 	}
 
 	override fun close() = chunked.close()

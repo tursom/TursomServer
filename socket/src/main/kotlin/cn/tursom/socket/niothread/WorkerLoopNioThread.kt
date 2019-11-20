@@ -1,10 +1,8 @@
 package cn.tursom.socket.niothread
 
-import cn.tursom.core.timer.WheelTimer
 import java.nio.channels.Selector
 import java.util.concurrent.Callable
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.atomic.AtomicBoolean
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 class WorkerLoopNioThread(
