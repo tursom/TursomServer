@@ -21,4 +21,10 @@ class StringWriter(
   override fun close() {
     prevWriter.close()
   }
+
+  override suspend fun writeAndFlush(value: String, timeout: Long): Long = if (stringList.isEmpty()) {
+    prevWriter.writeAndFlush(HeapByteBuffer(value.toByteArray()), timeout)
+  } else {
+    super.writeAndFlush(value, timeout)
+  }
 }

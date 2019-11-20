@@ -15,8 +15,8 @@ interface SocketWriter<T> : Closeable {
     value.forEach { write(it) }
   }
 
-  suspend fun writeAndFlush(value: T, timeout: Long) {
+  suspend fun writeAndFlush(value: T, timeout: Long = 0): Long {
     write(value)
-    flush(timeout)
+    return flush(timeout)
   }
 }

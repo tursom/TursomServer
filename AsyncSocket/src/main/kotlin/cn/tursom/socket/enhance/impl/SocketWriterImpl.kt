@@ -22,6 +22,14 @@ class SocketWriterImpl(
     return read
   }
 
+  override suspend fun writeAndFlush(value: ByteBuffer, timeout: Long): Long {
+    return if (bufList.isEmpty()) {
+      socket.write(value, timeout).toLong()
+    } else {
+      super.writeAndFlush(value, timeout)
+    }
+  }
+
   override fun close() {
     socket.close()
   }
