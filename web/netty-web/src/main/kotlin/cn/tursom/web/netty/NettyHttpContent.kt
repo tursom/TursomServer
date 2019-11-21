@@ -5,6 +5,7 @@ import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.web.AdvanceHttpContent
 import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.CompositeByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
@@ -41,11 +42,12 @@ open class NettyHttpContent(
 
   val responseMap = HashMap<String, Any>()
   val responseListMap = HashMap<String, ArrayList<Any>>()
-  override val responseBody = ByteArrayOutputStream()
+  //override val responseBody = ByteArrayOutputStream()
   override var responseCode: Int = 200
   override var responseMessage: String? = null
   override val method: String get() = httpMethod.name()
   val chunkedList = ArrayList<ByteBuffer>()
+  val responseBodyBuf: CompositeByteBuf = ctx.alloc().compositeBuffer()!!
 
   override fun getHeader(header: String): String? {
     return headers[header]
@@ -88,27 +90,36 @@ open class NettyHttpContent(
   }
 
   override fun write(message: String) {
-    responseBody.write(message.toByteArray())
+    responseBodyBuf.addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
+    //responseBody.write(message.toByteArray())
   }
 
   override fun write(byte: Byte) {
-    responseBody.write(byte.toInt())
+    val buffer = ctx.alloc().buffer(1).writeByte(byte.toInt())
+    responseBodyBuf.addComponent(buffer)
+    //responseBody.write(byte.toInt())
   }
 
   override fun write(bytes: ByteArray, offset: Int, size: Int) {
-    responseBody.write(bytes, offset, size)
+    responseBodyBuf.addComponent(Unpooled.wrappedBuffer(bytes, offset, size))
+    //responseBody.write(bytes, offset, size)
   }
 
   override fun write(buffer: ByteBuffer) {
-    buffer.writeTo(responseBody)
+    //buffer.writeTo(responseBody)
+    responseBodyBuf.addComponent(if (buffer is NettyByteBuffer) {
+      buffer.byteBuf
+    } else {
+      Unpooled.wrappedBuffer(buffer.readBuffer())
+    })
   }
 
   override fun reset() {
-    responseBody.reset()
+    responseBodyBuf.clear()
   }
 
   override fun finish() {
-    finish(responseBody.buf, 0, responseBody.size())
+    finish(responseBodyBuf)
   }
 
   override fun finish(buffer: ByteArray, offset: Int, size: Int) {
@@ -132,13 +143,13 @@ open class NettyHttpContent(
   fun finish(response: FullHttpResponse) {
     val heads = response.headers()
     addHeaders(
-      heads, mapOf(
-      HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
-      HttpHeaderNames.CONTENT_LENGTH to response.content().readableBytes(),
-      HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE
+      heads,
+      mapOf(
+        HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
+        HttpHeaderNames.CONTENT_LENGTH to response.content().readableBytes(),
+        HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE
+      )
     )
-    )
-
     ctx.writeAndFlush(response)
   }
 

@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlinVersion = '1.3.50'
+    ext.kotlinVersion = '1.3.60'
 
     repositories {
         mavenLocal()
@@ -11,6 +11,7 @@ buildscript {
 }
 
 allprojects {
+    apply plugin: "maven-publish"
     apply plugin: 'java'
     apply plugin: 'kotlin'
 
@@ -45,5 +46,24 @@ allprojects {
 
     artifacts {
         archives sourcesJar
+    }
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/tursom/TursomServer")
+                credentials {
+                    println project.findProperty("gpr.user")
+                    //username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                    username = "tursom"
+                    password = project.findProperty("gpr.key") ?: System.getenv("PASSWORD")
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
+            }
+        }
     }
 }

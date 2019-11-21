@@ -20,7 +20,7 @@ interface HttpContent {
   val body: ByteBuffer?
   val clientIp: SocketAddress
   val method: String
-  val responseBody: ByteArrayOutputStream
+  //val responseBody: ByteArrayOutputStream
   val cookieMap: Map<String, Cookie>
   val realIp
     get() = getHeader("X-Forwarded-For") ?: clientIp.toString().let { str ->
@@ -46,7 +46,9 @@ interface HttpContent {
   fun write(buffer: ByteBuffer)
   fun reset()
 
-  fun finish() = finish(responseBody.buf, 0, responseBody.count)
+  //fun finish() = finish(responseBody.buf, 0, responseBody.count)
+
+  fun finish()
   fun finish(buffer: ByteArray, offset: Int = 0, size: Int = buffer.size - offset)
   fun finish(buffer: ByteBuffer) {
     finish(buffer.array, buffer.readOffset, buffer.readAllSize())
@@ -189,11 +191,11 @@ interface HttpContent {
     finish(302)
   }
 
-  fun noCache() {
-    setResponseHeader("Cache-Control", "no-cache")
-  }
+  fun noCache() = cacheControl(CacheControl.NoCache)
+  fun noStore() = cacheControl(CacheControl.NoStore)
 
-  fun noStore() {
-    setResponseHeader("Cache-Control", "no-store")
+  fun finish(msg: String) {
+    write(msg)
+    finish()
   }
 }
