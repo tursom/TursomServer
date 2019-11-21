@@ -174,4 +174,26 @@ interface HttpContent {
   )
 
   fun setContextType(type: Any) = setResponseHeader("Content-Type", type)
+
+  fun jump(url: String) = temporaryMoved(url)
+  fun moved(url: String) = permanentlyMoved(url)
+
+  fun permanentlyMoved(url: String) {
+    setResponseHeader("Location", url)
+    finish(301)
+  }
+
+  fun temporaryMoved(url: String) {
+    noStore()
+    setResponseHeader("Location", url)
+    finish(302)
+  }
+
+  fun noCache() {
+    setResponseHeader("Cache-Control", "no-cache")
+  }
+
+  fun noStore() {
+    setResponseHeader("Cache-Control", "no-store")
+  }
 }
