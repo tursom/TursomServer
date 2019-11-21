@@ -1,14 +1,11 @@
 package cn.tursom.web
 
-import cn.tursom.core.buf
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.count
 import cn.tursom.core.urlDecode
 import cn.tursom.web.utils.CacheControl
 import cn.tursom.web.utils.Chunked
 import cn.tursom.web.utils.Cookie
 import cn.tursom.web.utils.SameSite
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
 import java.net.SocketAddress
@@ -51,7 +48,12 @@ interface HttpContent {
   fun finish()
   fun finish(buffer: ByteArray, offset: Int = 0, size: Int = buffer.size - offset)
   fun finish(buffer: ByteBuffer) {
-    finish(buffer.array, buffer.readOffset, buffer.readAllSize())
+    if (buffer.hasArray) {
+      finish(buffer.array, buffer.readOffset, buffer.readAllSize())
+    } else {
+      write(buffer)
+      finish()
+    }
     buffer.close()
   }
 

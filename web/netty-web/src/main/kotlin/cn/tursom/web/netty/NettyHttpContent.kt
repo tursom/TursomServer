@@ -1,6 +1,5 @@
 package cn.tursom.web.netty
 
-import cn.tursom.core.buf
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.web.AdvanceHttpContent
 import cn.tursom.web.utils.Chunked
@@ -10,7 +9,6 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedFile
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
 import java.util.*
@@ -110,7 +108,9 @@ open class NettyHttpContent(
     responseBodyBuf.addComponent(if (buffer is NettyByteBuffer) {
       buffer.byteBuf
     } else {
-      Unpooled.wrappedBuffer(buffer.readBuffer())
+      val buf = Unpooled.wrappedBuffer(buffer.readBuffer())
+      buffer.clear()
+      buf
     })
   }
 
