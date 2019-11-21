@@ -2,15 +2,18 @@ package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.buffer.ByteBuffer
 
-class DirectByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
+class DirectByteBuffer(
+  private var buffer: java.nio.ByteBuffer,
+  override var writePosition: Int = 0,
+  override var readPosition: Int = 0
+) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocateDirect(size))
 
   override val hasArray: Boolean = false
   override val array: ByteArray get() = buffer.array()
   override val capacity: Int get() = buffer.capacity()
   override val arrayOffset: Int = 0
-  override var writePosition: Int = 0
-  override var readPosition: Int = 0
+
   override var resized: Boolean = false
 
   override fun readBuffer(): java.nio.ByteBuffer {
@@ -37,10 +40,10 @@ class DirectByteBuffer(private var buffer: java.nio.ByteBuffer) : ByteBuffer {
     writePosition = buffer.limit()
   }
 
-  override fun slice(position: Int, size: Int): ByteBuffer {
+  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
     buffer.limit(position + size)
     buffer.position(position)
-    return DirectByteBuffer(buffer.slice())
+    return DirectByteBuffer(buffer.slice(), readPosition, writePosition)
   }
 
   override fun resize(newSize: Int): Boolean {

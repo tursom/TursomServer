@@ -9,6 +9,7 @@ class HeapByteBuffer(
   override var readPosition: Int = 0
 ) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocate(size))
+  constructor(string: String) : this(string.toByteArray())
   constructor(bytes: ByteArray, offset: Int = 0, size: Int = bytes.size - offset)
     : this(HeapByteBufferUtil.wrap(bytes, offset, size), offset, offset + size)
 
@@ -47,10 +48,10 @@ class HeapByteBuffer(
     writePosition = buffer.limit()
   }
 
-  override fun slice(position: Int, size: Int): ByteBuffer {
+  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
     buffer.limit(position + size)
     buffer.position(position)
-    return HeapByteBuffer(buffer.slice())
+    return HeapByteBuffer(buffer.slice(), readPosition, writePosition)
   }
 
   override fun resize(newSize: Int): Boolean {

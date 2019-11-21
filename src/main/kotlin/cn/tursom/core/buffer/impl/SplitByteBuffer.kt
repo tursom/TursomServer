@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class SplitByteBuffer(
-    private val parent: ByteBuffer,
-    private val childCount: AtomicInteger,
-    override val agent: ByteBuffer
+  private val parent: ByteBuffer,
+  private val childCount: AtomicInteger,
+  override val agent: ByteBuffer
 ) : ProxyByteBuffer, ByteBuffer by agent {
   init {
     childCount.incrementAndGet()
@@ -28,8 +28,8 @@ class SplitByteBuffer(
     }
   }
 
-  override fun slice(position: Int, size: Int): ByteBuffer {
-    return SplitByteBuffer(parent, childCount, agent.slice(position, size))
+  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
+    return SplitByteBuffer(parent, childCount, agent.slice(position, size, readPosition, writePosition))
   }
 
   override fun resize(newSize: Int): Boolean {

@@ -29,8 +29,18 @@ class LengthFieldBasedFrameReader(
       val buffer = prevReader.read(pool, timeout - (CurrentTimeMillisClock.now - startTime))
       readSize += buffer.readable
       bufList.add(if (readSize > maxSize) {
-        lastRead = buffer.slice(buffer.readPosition + readSize - maxSize, buffer.capacity - readSize - maxSize)
-        buffer.slice(buffer.readPosition, readSize - maxSize)
+        lastRead = buffer.slice(
+          buffer.readPosition + readSize - maxSize,
+          buffer.capacity - readSize - maxSize,
+          0,
+          buffer.capacity - readSize - maxSize
+        )
+        buffer.slice(
+          buffer.readPosition,
+          readSize - maxSize,
+          0,
+          readSize - maxSize
+        )
       } else {
         buffer
       })

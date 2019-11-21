@@ -15,61 +15,55 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 import io.netty.handler.stream.ChunkedWriteHandler
 
 class NettyHttpServer(
-	override val port: Int,
-	handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
-	bodySize: Int = 512 * 1024,
-	autoRun: Boolean = false
+  override val port: Int,
+  handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
+  bodySize: Int = 512 * 1024,
+  autoRun: Boolean = false
 ) : HttpServer {
-	constructor(
-		port: Int,
-		bodySize: Int = 512 * 1024,
-		autoRun: Boolean = false,
-		handler: (content: NettyHttpContent) -> Unit
-	) : this(
-		port,
-		object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
-			override fun handle(content: NettyHttpContent) {
-				handler(content)
-			}
+  constructor(
+    port: Int,
+    bodySize: Int = 512 * 1024,
+    autoRun: Boolean = false,
+    handler: (content: NettyHttpContent) -> Unit
+  ) : this(
+    port,
+    object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
+      override fun handle(content: NettyHttpContent) = handler(content)
+    },
+    bodySize,
+    autoRun
+  )
 
-			override fun exception(e: NettyExceptionContent) {
-				e.cause.printStackTrace()
-			}
-		},
-		bodySize,
-		autoRun
-	)
+  val httpHandler = NettyHttpHandler(handler)
+  private val group = NioEventLoopGroup()
+  private val b = ServerBootstrap().group(group)
+    .channel(NioServerSocketChannel::class.java)
+    .childHandler(object : ChannelInitializer<SocketChannel>() {
+      override fun initChannel(ch: SocketChannel) {
+        ch.pipeline()
+          .addLast("decoder", HttpRequestDecoder())
+          .addLast("encoder", HttpResponseEncoder())
+          .addLast("aggregator", HttpObjectAggregator(bodySize))
+          .addLast("http-chunked", ChunkedWriteHandler())
+          .addLast("handle", httpHandler)
+      }
+    })
+    .option(ChannelOption.SO_BACKLOG, 1024) // determining the number of connections queued
+    .option(ChannelOption.SO_REUSEADDR, true)
+    .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE)
+  private lateinit var future: ChannelFuture
 
-	val httpHandler = NettyHttpHandler(handler)
-	private val group = NioEventLoopGroup()
-	private val b = ServerBootstrap().group(group)
-		.channel(NioServerSocketChannel::class.java)
-		.childHandler(object : ChannelInitializer<SocketChannel>() {
-			override fun initChannel(ch: SocketChannel) {
-				ch.pipeline()
-					.addLast("decoder", HttpRequestDecoder())
-					.addLast("encoder", HttpResponseEncoder())
-					.addLast("aggregator", HttpObjectAggregator(bodySize))
-					.addLast("http-chunked", ChunkedWriteHandler())
-					.addLast("handle", httpHandler)
-			}
-		})
-		.option(ChannelOption.SO_BACKLOG, 1024) // determining the number of connections queued
-		.option(ChannelOption.SO_REUSEADDR, true)
-		.childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE)
-	private lateinit var future: ChannelFuture
+  init {
+    if (autoRun) run()
+  }
 
-	init {
-		if (autoRun) run()
-	}
+  override fun run() {
+    future = b.bind(port)
+    future.sync()
+  }
 
-	override fun run() {
-		future = b.bind(port)
-		future.sync()
-	}
-
-	override fun close() {
-		future.cancel(false)
-		future.channel().close()
-	}
+  override fun close() {
+    future.cancel(false)
+    future.channel().close()
+  }
 }

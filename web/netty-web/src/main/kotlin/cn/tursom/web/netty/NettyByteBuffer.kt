@@ -4,7 +4,18 @@ import cn.tursom.core.buffer.ByteBuffer
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
 
-class NettyByteBuffer(val byteBuf: ByteBuf) : ByteBuffer {
+class NettyByteBuffer(
+  val byteBuf: ByteBuf
+) : ByteBuffer {
+  constructor(
+    byteBuf: ByteBuf,
+    readPosition: Int = byteBuf.readerIndex(),
+    writePosition: Int = byteBuf.writerIndex()
+  ) : this(byteBuf) {
+    this.writePosition = writePosition
+    this.readPosition = readPosition
+  }
+
   override val hasArray: Boolean get() = byteBuf.hasArray()
   override var writePosition: Int
     get() = byteBuf.writerIndex()
@@ -39,8 +50,8 @@ class NettyByteBuffer(val byteBuf: ByteBuf) : ByteBuffer {
     byteBuf.discardReadBytes()
   }
 
-  override fun slice(position: Int, size: Int): ByteBuffer {
-    return NettyByteBuffer(byteBuf.slice(position, size))
+  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
+    return NettyByteBuffer(byteBuf.slice(position, size), readPosition, writePosition)
   }
 
   override fun resize(newSize: Int): Boolean {
