@@ -5,6 +5,7 @@ interface HttpHandler<in T : HttpContent, in E : ExceptionContent> {
 
 	fun exception(e: E) {
 		e.cause.printStackTrace()
+		e.finish()
 	}
 
 	operator fun invoke(content: T) {

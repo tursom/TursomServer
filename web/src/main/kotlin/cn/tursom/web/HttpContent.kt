@@ -10,7 +10,7 @@ import java.io.File
 import java.io.RandomAccessFile
 import java.net.SocketAddress
 
-interface HttpContent {
+interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
   val uri: String
   var responseCode: Int
   var responseMessage: String?
@@ -24,17 +24,12 @@ interface HttpContent {
       str.substring(1, str.indexOf(':').let { if (it < 1) str.length else it - 1 })
     }
 
-  fun getHeader(header: String): String?
-  fun getHeaders(): List<Map.Entry<String, String>>
-
   fun getParam(param: String): String?
   fun getParams(): Map<String, List<String>>
   fun getParams(param: String): List<String>?
 
   operator fun get(name: String) = (getHeader(name) ?: getParam(name))?.urlDecode
 
-  fun setResponseHeader(name: String, value: Any)
-  fun addResponseHeader(name: String, value: Any)
   operator fun set(name: String, value: Any) = setResponseHeader(name, value)
 
   fun write(message: String)
@@ -115,38 +110,7 @@ interface HttpContent {
 
   fun usingCache() = finish(304)
 
-  fun setCacheTag(tag: Any) = setResponseHeader("Etag", tag)
-  fun getCacheTag(): String? = getHeader("If-None-Match")
-
-  fun cacheControl(
-    cacheControl: CacheControl,
-    maxAge: Int? = null,
-    mustRevalidate: Boolean = false
-  ) = setResponseHeader(
-    "Cache-Control", "$cacheControl${
-  if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""}${
-  if (mustRevalidate) ", must-revalidate" else ""
-  }"
-  )
-
   fun getCookie(name: String): Cookie? = cookieMap[name]
-
-  fun addCookie(
-    name: String,
-    value: Any,
-    maxAge: Int = 0,
-    domain: String? = null,
-    path: String? = null,
-    sameSite: SameSite? = null
-  ) = addResponseHeader(
-    "Set-Cookie",
-    "$name=$value${
-    if (maxAge > 0) "; Max-Age=$maxAge" else ""}${
-    if (domain != null) "; Domain=$domain" else ""}${
-    if (path != null) "; Path=$path" else ""}${
-    if (sameSite != null) ": SameSite=$sameSite" else ""
-    }"
-  )
 
   fun setCookie(
     name: String,

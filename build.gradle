@@ -53,7 +53,6 @@ allprojects {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/tursom/TursomServer")
                 credentials {
-                    println project.findProperty("gpr.user")
                     //username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
                     username = "tursom"
                     password = project.findProperty("gpr.key") ?: System.getenv("PASSWORD")

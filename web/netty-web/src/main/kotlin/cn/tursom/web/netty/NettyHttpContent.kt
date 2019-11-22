@@ -11,17 +11,13 @@ import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedFile
 import java.io.File
 import java.io.RandomAccessFile
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.set
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class NettyHttpContent(
   val ctx: ChannelHandlerContext,
   val msg: FullHttpRequest
-) : AdvanceHttpContent {
+) : AdvanceHttpContent, NettyResponseHeaderAdapter() {
   override val uri: String by lazy {
     var uri = msg.uri()
     while (uri.contains("//")) {
@@ -38,10 +34,13 @@ open class NettyHttpContent(
   override val cookieMap by lazy { getHeader("Cookie")?.let { decodeCookie(it) } ?: mapOf() }
   override val body = msg.content()?.let { NettyByteBuffer(it) }
 
-  val responseMap = HashMap<String, Any>()
-  val responseListMap = HashMap<String, ArrayList<Any>>()
   //override val responseBody = ByteArrayOutputStream()
-  override var responseCode: Int = 200
+  var responseStatus: HttpResponseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
+  override var responseCode: Int
+    get() = responseStatus.code()
+    set(value) {
+      responseStatus = HttpResponseStatus.valueOf(value)
+    }
   override var responseMessage: String? = null
   override val method: String get() = httpMethod.name()
   val chunkedList = ArrayList<ByteBuffer>()
@@ -72,19 +71,6 @@ open class NettyHttpContent(
       paramMap[key] = ArrayList()
     }
     (paramMap[key] as ArrayList).add(value)
-  }
-
-  override fun setResponseHeader(name: String, value: Any) {
-    responseMap[name] = value
-  }
-
-  override fun addResponseHeader(name: String, value: Any) {
-    val list = responseListMap[name] ?: run {
-      val newList = ArrayList<Any>()
-      responseListMap[name] = newList
-      newList
-    }
-    list.add(value)
   }
 
   override fun write(message: String) {
@@ -134,7 +120,7 @@ open class NettyHttpContent(
     }
   }
 
-  fun finish(buf: ByteBuf) = finish(buf, HttpResponseStatus.valueOf(responseCode))
+  fun finish(buf: ByteBuf) = finish(buf, responseStatus)
   fun finish(buf: ByteBuf, responseCode: HttpResponseStatus) {
     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseCode, buf)
     finish(response)
@@ -153,26 +139,10 @@ open class NettyHttpContent(
     ctx.writeAndFlush(response)
   }
 
-  fun addHeaders(heads: HttpHeaders, defaultHeaders: Map<out CharSequence, Any>) {
-    responseListMap.forEach { (t, u) ->
-      u.forEach {
-        heads.add(t, it)
-      }
-    }
-
-    defaultHeaders.forEach { (t, u) ->
-      heads.set(t, u)
-    }
-
-    responseMap.forEach { (t, u) ->
-      heads.set(t, u)
-    }
-  }
-
   override fun writeChunkedHeader() {
     val response = DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
     response.status = if (responseMessage != null) HttpResponseStatus(responseCode, responseMessage)
-    else HttpResponseStatus.valueOf(responseCode)
+    else responseStatus
     val heads = response.headers()
     addHeaders(
       heads, mapOf(

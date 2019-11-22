@@ -3,14 +3,14 @@ package cn.tursom.web
 import cn.tursom.core.buffer.ByteBuffer
 
 
-interface ExceptionContent {
-	val cause: Throwable
+interface ExceptionContent : ResponseHeaderAdapter {
+  val cause: Throwable
+  var responseCode: Int
+  fun write(message: String)
+  fun write(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size - offset)
+  fun write(buffer: ByteBuffer) {
+    write(buffer.getBytes())
+  }
 
-	fun write(message: String)
-	fun write(bytes: ByteArray, offset: Int = 0, length: Int = bytes.size - offset)
-	fun write(buffer: ByteBuffer) {
-		write(buffer.getBytes())
-	}
-
-	fun finish()
+  fun finish()
 }

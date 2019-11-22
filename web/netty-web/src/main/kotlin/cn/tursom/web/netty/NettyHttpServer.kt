@@ -51,14 +51,13 @@ class NettyHttpServer(
     .option(ChannelOption.SO_BACKLOG, 1024) // determining the number of connections queued
     .option(ChannelOption.SO_REUSEADDR, true)
     .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE)
-  private lateinit var future: ChannelFuture
+  private val future: ChannelFuture = b.bind(port)
 
   init {
     if (autoRun) run()
   }
 
   override fun run() {
-    future = b.bind(port)
     future.sync()
   }
 
