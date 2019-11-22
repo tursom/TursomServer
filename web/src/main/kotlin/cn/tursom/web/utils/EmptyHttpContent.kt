@@ -18,6 +18,7 @@ class EmptyHttpContent(
   override val cookieMap: Map<String, String> = mapOf()
 ) : HttpContent {
   override fun getHeader(header: String): String? = null
+  override fun getHeaders(header: String): List<String> = listOf()
   override fun getHeaders(): List<Map.Entry<String, String>> = listOf()
   override fun getParam(param: String): String? = null
   override fun getParams(): Map<String, List<String>> = mapOf()

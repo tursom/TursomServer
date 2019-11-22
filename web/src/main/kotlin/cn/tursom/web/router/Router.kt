@@ -1,6 +1,6 @@
 package cn.tursom.web.router
 
-interface IRouter<T> {
+interface Router<T> {
 	fun addSubRoute(route: String, value: T?, onDestroy: ((oldValue: T) -> Unit)? = null)
 	fun delRoute(route: String)
 

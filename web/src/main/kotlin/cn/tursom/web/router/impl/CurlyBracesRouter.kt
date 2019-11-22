@@ -1,6 +1,6 @@
 package cn.tursom.web.router.impl
 
-import cn.tursom.web.router.IRouter
+import cn.tursom.web.router.Router
 
 /**
  * 匹配类似
@@ -9,7 +9,7 @@ import cn.tursom.web.router.IRouter
  * /java/a{mod}/id
  * /java/a{mod}_i/id
  */
-class CurlyBracesRouter<T> : IRouter<T> {
+class CurlyBracesRouter<T> : Router<T> {
 	override fun addSubRoute(route: String, value: T?, onDestroy: ((oldValue: T) -> Unit)?) {
 		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 	}

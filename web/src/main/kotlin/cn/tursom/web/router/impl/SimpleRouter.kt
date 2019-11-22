@@ -1,7 +1,7 @@
 package cn.tursom.web.router.impl
 
 import cn.tursom.core.datastruct.StringRadixTree
-import cn.tursom.web.router.IRouter
+import cn.tursom.web.router.Router
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -10,7 +10,7 @@ import kotlin.concurrent.write
  * 基于 Radix Tree，功能少，速度快。
  * 不支持参数解析，仅支持解析固定路径
  */
-class SimpleRouter<T> : IRouter<T> {
+class SimpleRouter<T> : Router<T> {
 	private val router = StringRadixTree<T?>()
 	private val lock = ReentrantReadWriteLock()
 

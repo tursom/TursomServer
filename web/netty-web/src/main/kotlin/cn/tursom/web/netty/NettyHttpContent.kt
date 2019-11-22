@@ -50,8 +50,12 @@ open class NettyHttpContent(
     return headers[header]
   }
 
-  override fun getHeaders(): List<Map.Entry<String, String>> {
-    return headers.toList()
+  override fun getHeaders(header: String): List<String> {
+    return headers.getAll(header)
+  }
+
+  override fun getHeaders(): Iterable<Map.Entry<String, String>> {
+    return headers
   }
 
   override fun getParams(): Map<String, List<String>> {

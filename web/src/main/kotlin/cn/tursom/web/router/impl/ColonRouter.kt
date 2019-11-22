@@ -15,7 +15,7 @@ import cn.tursom.web.router.impl.colonnode.PlaceholderColonNode
  * 		/route/aaa/:bbb/ccc
  */
 @Suppress("unused", "unused", "MemberVisibilityCanBePrivate", "UNUSED_PARAMETER")
-class ColonRouter<T> : IRouter<T> {
+class ColonRouter<T> : Router<T> {
 	private val rootNode = ColonNode<T>(listOf(""), 0)
 	val root: IColonNode<T> = rootNode
 
