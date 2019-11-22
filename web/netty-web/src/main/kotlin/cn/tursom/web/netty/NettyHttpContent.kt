@@ -54,10 +54,6 @@ open class NettyHttpContent(
     return headers.toList()
   }
 
-  override fun getParam(param: String): String? {
-    return paramMap[param]?.get(0)
-  }
-
   override fun getParams(): Map<String, List<String>> {
     return paramMap
   }

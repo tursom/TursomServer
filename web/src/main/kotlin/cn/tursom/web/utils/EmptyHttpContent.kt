@@ -15,8 +15,7 @@ class EmptyHttpContent(
   override val body: ByteBuffer? = null,
   override val clientIp: SocketAddress = InetSocketAddress(0),
   override val method: String = "GET",
-  //override val responseBody: ByteArrayOutputStream = ByteArrayOutputStream(0),
-  override val cookieMap: Map<String, Cookie> = mapOf()
+  override val cookieMap: Map<String, String> = mapOf()
 ) : HttpContent {
   override fun getHeader(header: String): String? = null
   override fun getHeaders(): List<Map.Entry<String, String>> = listOf()
