@@ -26,7 +26,11 @@ abstract class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   }
 
   override fun handle(content: T) {
-    val handler = router[content.uri].first
+    val router = getRouter(content.method)
+    var handler = router[content.uri].first
+    if (handler == null) {
+      handler = this.router[content.uri].first
+    }
     if (handler != null) {
       handler(content)
     } else {
