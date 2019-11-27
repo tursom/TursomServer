@@ -8,21 +8,18 @@ import cn.tursom.web.router.mapping.*
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
-abstract class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
+  target: Any? = null,
   val routerMaker: () -> Router<(T) -> Unit> = { SimpleRouter() }
 ) : HttpHandler<T, E> {
+
   private val router: Router<(T) -> Unit> = routerMaker()
   private val routerMap: HashMap<String, Router<(T) -> Unit>> = HashMap()
 
   init {
-    val clazz = this.javaClass
-    clazz.methods.forEach { method ->
-      method.parameterTypes.let {
-        if (it.size != 1 || !HttpContent::class.java.isAssignableFrom(it[0]))
-          return@forEach
-      }
-      insertMapping(method)
-    }
+    @Suppress("LeakingThis")
+    addRouter(target ?: this)
   }
 
   override fun handle(content: T) {
@@ -36,6 +33,30 @@ abstract class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     } else {
       content.finish(404)
     }
+  }
+
+  fun addRouter(handler: Any) {
+    @Suppress("LeakingThis")
+    val clazz = handler.javaClass
+    clazz.methods.forEach { method ->
+      method.parameterTypes.let {
+        if (it.size != 1 || !HttpContent::class.java.isAssignableFrom(it[0]))
+          return@forEach
+      }
+      insertMapping(method)
+    }
+  }
+
+  fun addRouter(route: String, handler: (T) -> Unit) {
+    router[route] = handler
+  }
+
+  fun addRouter(method: String, route: String, handler: (T) -> Unit) {
+    getRouter(method)[route] = handler
+  }
+
+  fun deleteRouter(route: String, method: String) {
+    getRouter(method).delRoute(route)
   }
 
   private fun insertMapping(method: Method) {
