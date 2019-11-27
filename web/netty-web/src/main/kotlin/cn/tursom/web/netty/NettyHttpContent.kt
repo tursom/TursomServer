@@ -35,7 +35,7 @@ open class NettyHttpContent(
   override val body = msg.content()?.let { NettyByteBuffer(it) }
 
   //override val responseBody = ByteArrayOutputStream()
-  var responseStatus: HttpResponseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
+  var responseStatus: HttpResponseStatus = HttpResponseStatus.OK
   override var responseCode: Int
     get() = responseStatus.code()
     set(value) {
