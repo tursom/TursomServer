@@ -48,15 +48,15 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   }
 
   fun addRouter(route: String, handler: (T) -> Unit) {
-    router[route] = handler
+    router[safeRoute(route)] = handler
   }
 
   fun addRouter(method: String, route: String, handler: (T) -> Unit) {
-    getRouter(method)[route] = handler
+    getRouter(method)[safeRoute(route)] = handler
   }
 
   fun deleteRouter(route: String, method: String) {
-    getRouter(method).delRoute(route)
+    getRouter(method).delRoute(safeRoute(route))
   }
 
   private fun insertMapping(method: Method) {
@@ -108,7 +108,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
       }
       routes.forEach { route ->
         log?.info("method {} mapped to route {}", method, route)
-        router[route] = { content -> method(this, content) }
+        router[safeRoute(route)] = { content -> method(this, content) }
       }
     }
   }
@@ -132,5 +132,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     } catch (e: Exception) {
       null
     }
+
+    private fun safeRoute(route: String) = if (route.first() == '/') route else "/$route"
   }
 }
