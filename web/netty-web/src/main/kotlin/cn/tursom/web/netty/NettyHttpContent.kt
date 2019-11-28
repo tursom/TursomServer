@@ -18,6 +18,7 @@ open class NettyHttpContent(
   val ctx: ChannelHandlerContext,
   val msg: FullHttpRequest
 ) : AdvanceHttpContent, NettyResponseHeaderAdapter() {
+  override var finished: Boolean = false
   override val uri: String by lazy {
     var uri = msg.uri()
     while (uri.contains("//")) {
@@ -127,6 +128,7 @@ open class NettyHttpContent(
   }
 
   fun finish(response: FullHttpResponse) {
+    finished = true
     val heads = response.headers()
     addHeaders(
       heads,
@@ -159,21 +161,25 @@ open class NettyHttpContent(
   }
 
   override fun finishChunked() {
+    finished = true
     val httpChunkWriter = HttpChunkedInput(NettyChunkedByteBuffer(chunkedList))
     ctx.writeAndFlush(httpChunkWriter)
   }
 
   override fun finishChunked(chunked: Chunked) {
+    finished = true
     val httpChunkWriter = HttpChunkedInput(NettyChunkedInput(chunked))
     ctx.writeAndFlush(httpChunkWriter)
   }
 
   override fun finishFile(file: File, chunkSize: Int) {
+    finished = true
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, chunkSize)))
   }
 
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {
+    finished = true
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, offset, length, chunkSize)))
   }

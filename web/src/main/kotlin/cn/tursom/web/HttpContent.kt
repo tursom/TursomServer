@@ -8,6 +8,7 @@ import java.io.RandomAccessFile
 import java.net.SocketAddress
 
 interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
+  val finished: Boolean
   val uri: String
   var responseCode: Int
   var responseMessage: String?

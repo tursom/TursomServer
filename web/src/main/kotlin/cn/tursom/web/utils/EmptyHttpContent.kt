@@ -9,6 +9,7 @@ import java.net.InetSocketAddress
 import java.net.SocketAddress
 
 class EmptyHttpContent(
+  override val finished: Boolean = true,
   override val uri: String = "/",
   override var responseCode: Int = 200,
   override var responseMessage: String? = null,
