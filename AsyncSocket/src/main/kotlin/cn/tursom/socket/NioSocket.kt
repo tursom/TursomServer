@@ -9,6 +9,7 @@ import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
 import java.net.SocketException
+import java.nio.channels.FileChannel
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 import java.util.concurrent.TimeoutException
@@ -24,43 +25,46 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
   override val channel: SocketChannel = key.channel() as SocketChannel
   override val open: Boolean get() = channel.isOpen && key.isValid
 
-  override suspend fun read(buffer: ByteBuffer, timeout: Long): Int {
-    if (buffer.writeable == 0) return emptyBufferCode
+  override suspend fun <T> write(timeout: Long, action: () -> T): T {
+    return operate {
+      waitWrite(timeout)
+      action()
+    }
+  }
+
+  override suspend fun <T> read(timeout: Long, action: () -> T): T {
     return operate {
       waitRead(timeout)
+      action()
+    }
+  }
+
+  override suspend fun read(buffer: ByteBuffer, timeout: Long): Int {
+    if (buffer.writeable == 0) return emptyBufferCode
+    return write(timeout) {
       channel.read(buffer)
     }
   }
 
   override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long {
     if (buffer.isEmpty() && buffer.all { it.writeable != 0 }) return emptyBufferLongCode
-    return operate {
-      waitRead(timeout)
+    return read(timeout) {
       channel.read(buffer)
     }
   }
 
   override suspend fun write(buffer: ByteBuffer, timeout: Long): Int {
     if (buffer.readable == 0) return emptyBufferCode
-    return operate {
-      waitWrite(timeout)
+    return write(timeout) {
       channel.write(buffer)
     }
   }
 
   override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
     if (buffer.isEmpty() && buffer.all { it.readable != 0 }) return emptyBufferLongCode
-    return operate {
-      waitWrite(timeout)
+    return write(timeout) {
       channel.write(buffer)
     }
-  }
-
-  override suspend fun read(pool: MemoryPool, timeout: Long): ByteBuffer = operate {
-    waitRead(timeout)
-    val buffer = pool.get()
-    if (channel.read(buffer) < 0) throw SocketException()
-    buffer
   }
 
   override fun close() {
