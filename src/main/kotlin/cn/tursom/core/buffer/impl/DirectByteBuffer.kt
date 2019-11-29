@@ -4,8 +4,8 @@ import cn.tursom.core.buffer.ByteBuffer
 
 class DirectByteBuffer(
   private var buffer: java.nio.ByteBuffer,
-  override var writePosition: Int = 0,
-  override var readPosition: Int = 0
+  override var readPosition: Int = 0,
+  override var writePosition: Int = 0
 ) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocateDirect(size))
 

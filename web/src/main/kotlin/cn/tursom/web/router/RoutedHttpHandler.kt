@@ -8,6 +8,13 @@ import cn.tursom.web.router.mapping.*
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
+/**
+ * 自动添加路径映射的处理器
+ * 会将 public 且参数仅为一个 T 的方法自动注册到路由器里
+ * 例：public void Index(HttpContext context)
+ *     fun Index(context: HttpContext)
+ * 如果加了 @Mapping 注解，会依据注解提供的路由路径注册
+ */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   target: Any? = null,

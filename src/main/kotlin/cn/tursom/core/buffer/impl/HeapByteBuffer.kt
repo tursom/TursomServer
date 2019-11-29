@@ -5,8 +5,8 @@ import cn.tursom.core.HeapByteBufferUtil
 
 class HeapByteBuffer(
   private var buffer: java.nio.ByteBuffer,
-  override var writePosition: Int = 0,
-  override var readPosition: Int = 0
+  override var readPosition: Int = 0,
+  override var writePosition: Int = 0
 ) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocate(size))
   constructor(string: String) : this(string.toByteArray())
