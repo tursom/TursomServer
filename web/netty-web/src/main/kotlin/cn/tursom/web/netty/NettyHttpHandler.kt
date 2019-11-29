@@ -24,7 +24,7 @@ class NettyHttpHandler(
 
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     val content = NettyExceptionContent(ctx, cause)
-    handler.exception(content)
+    handler.exceptionCause(content)
     if (!content.finished) {
       content.responseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
       content.finish()

@@ -20,7 +20,6 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   target: Any? = null,
   val routerMaker: () -> Router<(T) -> Unit> = { SimpleRouter() }
 ) : HttpHandler<T, E> {
-
   private val router: Router<(T) -> Unit> = routerMaker()
   private val routerMap: HashMap<String, Router<(T) -> Unit>> = HashMap()
 
@@ -35,8 +34,12 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     if (handler != null) {
       handler(content)
     } else {
-      content.finish(404)
+      notFound(content)
     }
+  }
+
+  open fun notFound(content: T) {
+    content.finish(404)
   }
 
   fun addRouter(handler: Any) {
