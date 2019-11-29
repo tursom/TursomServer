@@ -5,6 +5,7 @@ interface HttpHandler<in T : HttpContent, in E : ExceptionContent> {
 
   fun exception(e: E) {
     e.cause.printStackTrace()
+    e.responseCode = 500
     e.finish()
   }
 

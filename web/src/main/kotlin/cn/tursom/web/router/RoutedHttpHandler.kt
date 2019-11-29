@@ -29,12 +29,9 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     addRouter(target ?: this)
   }
 
-  override fun handle(content: T) {
-    val router = getRouter(content.method)
-    var handler = router[content.uri].first
-    if (handler == null) {
-      handler = this.router[content.uri].first
-    }
+  override fun handle(content: T) = handle(content, getHandler(content.method, content.uri))
+
+  open fun handle(content: T, handler: ((T) -> Unit)?) {
     if (handler != null) {
       handler(content)
     } else {
@@ -61,6 +58,9 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   fun addRouter(method: String, route: String, handler: (T) -> Unit) {
     getRouter(method)[safeRoute(route)] = handler
   }
+
+  fun getHandler(method: String, route: String): ((T) -> Unit)? =
+    getRouter(method)[route].first ?: this.router[route].first
 
   fun deleteRouter(route: String, method: String) {
     getRouter(method).delRoute(safeRoute(route))
@@ -136,7 +136,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   companion object {
     private val log = try {
       LoggerFactory.getLogger(RoutedHttpHandler::class.java)
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
       null
     }
 

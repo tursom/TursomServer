@@ -4,6 +4,7 @@ import cn.tursom.core.buffer.ByteBuffer
 
 
 interface ExceptionContent : ResponseHeaderAdapter {
+  val finished: Boolean
   val cause: Throwable
   var responseCode: Int
   fun write(message: String)

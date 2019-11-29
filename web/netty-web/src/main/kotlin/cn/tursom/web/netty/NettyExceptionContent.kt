@@ -13,6 +13,7 @@ class NettyExceptionContent(
   val ctx: ChannelHandlerContext,
   override val cause: Throwable
 ) : ExceptionContent, NettyResponseHeaderAdapter() {
+  override var finished: Boolean = false
   val responseBodyBuf: CompositeByteBuf = ctx.alloc().compositeBuffer()!!
   var responseStatus: HttpResponseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
   override var responseCode: Int
@@ -47,6 +48,7 @@ class NettyExceptionContent(
   }
 
   fun finish(response: FullHttpResponse) {
+    finished = true
     val heads = response.headers()
     addHeaders(
       heads,
