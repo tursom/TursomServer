@@ -3,4 +3,5 @@ include 'web', 'aop', 'database', 'database:database-async', 'utils', 'utils:xml
 include 'socket', 'socket:socket-async'
 include 'AsyncSocket'
 include 'log'
+include 'json'
 

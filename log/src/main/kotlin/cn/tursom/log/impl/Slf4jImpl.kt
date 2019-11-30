@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
 
-class Slf4jImpl(name: String? = null) : Slf4j {
+open class Slf4jImpl(name: String? = null) : Slf4j {
   constructor(clazz: Class<*>?) : this(clazz?.name)
   constructor(clazz: KClass<*>?) : this(clazz?.jvmName?.let {
     if (clazz.isCompanion) it.dropLast(10) else it

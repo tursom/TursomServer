@@ -1,11 +1,15 @@
 package cn.tursom.web.router
 
+import cn.tursom.json.JsonWorkerImpl
 import cn.tursom.web.ExceptionContent
 import cn.tursom.web.HttpContent
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.router.mapping.*
+import cn.tursom.web.utils.Chunked
 import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.RandomAccessFile
 import java.lang.reflect.Method
 
 /**
@@ -20,8 +24,8 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   target: Any? = null,
   val routerMaker: () -> Router<(T) -> Unit> = { SimpleRouter() }
 ) : HttpHandler<T, E> {
-  private val router: Router<(T) -> Unit> = routerMaker()
-  private val routerMap: HashMap<String, Router<(T) -> Unit>> = HashMap()
+  protected val router: Router<(T) -> Unit> = routerMaker()
+  protected val routerMap: HashMap<String, Router<(T) -> Unit>> = HashMap()
 
   init {
     @Suppress("LeakingThis")
@@ -47,10 +51,13 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
       method.parameterTypes.let {
-        if (it.size != 1 || !HttpContent::class.java.isAssignableFrom(it[0]))
+        if (it.size != 1 || !HttpContent::class.java.isAssignableFrom(it[0])) {
           return@forEach
+        } else if (it.isNotEmpty()) {
+          return@forEach
+        }
       }
-      insertMapping(method)
+      insertMapping(handler, method)
     }
   }
 
@@ -69,7 +76,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     getRouter(method).delRoute(safeRoute(route))
   }
 
-  private fun insertMapping(method: Method) {
+  protected fun insertMapping(obj: Any, method: Method) {
     method.annotations.forEach { annotation ->
       val routes: Array<out String>
       val router: Router<(T) -> Unit>
@@ -117,13 +124,29 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
         else -> return@forEach
       }
       routes.forEach { route ->
-        log?.info("method {} mapped to route {}", method, route)
-        router[safeRoute(route)] = { content -> method(this, content) }
+        log?.info("method route {} mapped to {}", route, method)
+        router[safeRoute(route)] = handler@{ content ->
+          if (method.parameterTypes.isEmpty()) {
+            val result = method(obj) ?: return@handler
+            when (result) {
+              is String -> content.finishHtml(result.toByteArray())
+              is ByteArray -> content.finishText(result)
+              is File -> content.finishFile(result)
+              is RandomAccessFile -> content.finishFile(result)
+              is Chunked -> content.finishChunked(result)
+              else -> json?.let {
+                content.finishJson(json.toJson(result)!!.toByteArray())
+              } ?: content.finishText(result.toString().toByteArray())
+            }
+          } else {
+            method(obj, content)
+          }
+        }
       }
     }
   }
 
-  private fun getRouter(method: String): Router<(T) -> Unit> = when {
+  protected fun getRouter(method: String): Router<(T) -> Unit> = when {
     method.isEmpty() -> router
     else -> {
       val upperCaseMethod = method.toUpperCase()
@@ -139,6 +162,12 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   companion object {
     private val log = try {
       LoggerFactory.getLogger(RoutedHttpHandler::class.java)
+    } catch (e: Throwable) {
+      null
+    }
+
+    private val json = try {
+      JsonWorkerImpl()
     } catch (e: Throwable) {
       null
     }
