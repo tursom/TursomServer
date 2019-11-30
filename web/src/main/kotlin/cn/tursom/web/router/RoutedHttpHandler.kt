@@ -128,18 +128,21 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
       }
       routes.forEach { route ->
         log?.info("method route {} mapped to {}", route, method)
-        router[safeRoute(route)] = handler@{ content ->
-          if (method.parameterTypes.isEmpty()) {
-            val result = method(obj) ?: return@handler
-            when {
-              method.getAnnotation(Html::class.java) != null -> finishHtml(result, content)
-              method.getAnnotation(Text::class.java) != null -> finishText(result, content)
-              method.getAnnotation(Json::class.java) != null -> finishJson(result, content)
-              else -> autoReturn(result, content)
-            }
-          } else {
-            method(obj, content)
+        router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) when {
+          method.getAnnotation(Html::class.java) != null -> { content ->
+            method(obj)?.let { result -> finishHtml(result, content) }
           }
+          method.getAnnotation(Text::class.java) != null -> { content ->
+            method(obj)?.let { result -> finishText(result, content) }
+          }
+          method.getAnnotation(Json::class.java) != null -> { content ->
+            method(obj)?.let { result -> finishJson(result, content) }
+          }
+          else -> { content ->
+            method(obj)?.let { result -> autoReturn(result, content) }
+          }
+        } else { content ->
+          method(obj, content)
         }
       }
     }
@@ -173,42 +176,55 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
 
     private fun safeRoute(route: String) = if (route.first() == '/') route else "/$route"
 
-    private fun autoReturn(result: Any, content: HttpContent) = when (result) {
-      is String -> content.finishText(result.toByteArray())
-      is ByteArray -> content.finishText(result)
-      is File -> {
-        content.autoContextType(result.name)
-        content.finishFile(result)
+    private fun autoReturn(result: Any, content: HttpContent) {
+      log?.debug("{}: autoReturn: {}", content.clientIp, result)
+      when (result) {
+        is String -> content.finishText(result.toByteArray())
+        is ByteArray -> content.finishText(result)
+        is File -> {
+          content.autoContextType(result.name)
+          content.finishFile(result)
+        }
+        is RandomAccessFile -> {
+          content.finishFile(result)
+        }
+        is Chunked -> content.finishChunked(result)
+        else -> finishJson(result, content)
       }
-      is RandomAccessFile -> content.finishFile(result)
-      is Chunked -> content.finishChunked(result)
-      else -> finishJson(result, content)
     }
 
-    private fun finishHtml(result: Any, content: HttpContent) = when (result) {
-      is ByteBuffer -> content.finishHtml(result)
-      is ByteArray -> content.finishHtml(result)
-      is String -> content.finishHtml(result.toByteArray())
-      else -> content.finishHtml(result.toString().toByteArray())
+    private fun finishHtml(result: Any, content: HttpContent) {
+      log?.debug("{}: finishHtml: {}", content.clientIp, result)
+      when (result) {
+        is ByteBuffer -> content.finishHtml(result)
+        is ByteArray -> content.finishHtml(result)
+        is String -> content.finishHtml(result.toByteArray())
+        else -> content.finishHtml(result.toString().toByteArray())
+      }
     }
 
-    private fun finishText(result: Any, content: HttpContent) = when (result) {
-      is ByteBuffer -> content.finishText(result)
-      is ByteArray -> content.finishText(result)
-      is String -> content.finishText(result.toByteArray())
-      else -> content.finishText(result.toString().toByteArray())
+    private fun finishText(result: Any, content: HttpContent) {
+      log?.debug("{}: finishText: {}", content.clientIp, result)
+      when (result) {
+        is ByteBuffer -> content.finishText(result)
+        is ByteArray -> content.finishText(result)
+        is String -> content.finishText(result.toByteArray())
+        else -> content.finishText(result.toString().toByteArray())
+      }
     }
 
     private fun finishJson(result: Any, content: HttpContent) {
+      log?.debug("{}: finishJson: {}", content.clientIp, result)
       when (result) {
         is ByteBuffer -> content.finishJson(result)
         is ByteArray -> content.finishJson(result)
         is String -> content.finishJson("\"$result\"".toByteArray())
         is Byte, Short, Int, Long, Float, Double, Boolean -> content.finishJson(result.toString().toByteArray())
         else -> {
-          val json = json?.toJson(result)?.toByteArray()
+          val json = json?.toJson(result)
+          log?.debug("{}: finishJson: generate json: {}", content.clientIp, json)
           if (json != null) {
-            content.finishJson(json)
+            content.finishJson(json.toByteArray())
           } else {
             content.finishText(result.toString().toByteArray())
           }

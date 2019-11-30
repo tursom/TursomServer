@@ -20,4 +20,8 @@ class JsonWorkerImpl : JsonWorker {
 
   override fun <T> fromJson(json: String, clazz: Class<T>): T? =
     gson?.fromJson(json, clazz) ?: jackson?.readValue(json, clazz)
+
+  override fun toString(): String {
+    return "JsonWorkerImpl(gson=$gson, jackson=$jackson)"
+  }
 }
