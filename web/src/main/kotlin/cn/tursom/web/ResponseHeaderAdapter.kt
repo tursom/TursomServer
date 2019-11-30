@@ -1,6 +1,7 @@
 package cn.tursom.web
 
 import cn.tursom.web.utils.CacheControl
+import cn.tursom.web.utils.ContextTypeMap
 import cn.tursom.web.utils.Cookie
 import cn.tursom.web.utils.SameSite
 
@@ -53,7 +54,11 @@ interface ResponseHeaderAdapter {
   fun range(start: Int, end: Int, resourceSize: Int) = setResponseHeader("Content-Range", "$start-$end/$resourceSize")
   fun range(resourceSize: Int) = setResponseHeader("Content-Range", "*/$resourceSize")
 
+  fun setContextType(type: Any) = setResponseHeader("Content-Type", type)
+
   fun responseHtml() = setResponseHeader("content-type", "text/html; charset=UTF-8")
   fun responseText() = setResponseHeader("content-type", "text/plain; charset=UTF-8")
   fun responseJson() = setResponseHeader("content-type", "application/json; charset=UTF-8")
+
+  fun autoContextType(type: String) = setContextType(ContextTypeMap[type] ?: "application/octet-stream")
 }

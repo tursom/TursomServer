@@ -1,11 +1,15 @@
 package cn.tursom.web.router
 
+import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.json.JsonWorkerImpl
 import cn.tursom.web.ExceptionContent
 import cn.tursom.web.HttpContent
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.router.impl.SimpleRouter
-import cn.tursom.web.router.mapping.*
+import cn.tursom.web.mapping.*
+import cn.tursom.web.result.Html
+import cn.tursom.web.result.Json
+import cn.tursom.web.result.Text
 import cn.tursom.web.utils.Chunked
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -50,10 +54,9 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
+      log?.debug("try mapping {}", method)
       method.parameterTypes.let {
-        if (it.size != 1 || !HttpContent::class.java.isAssignableFrom(it[0])) {
-          return@forEach
-        } else if (it.isNotEmpty()) {
+        if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
           return@forEach
         }
       }
@@ -128,15 +131,11 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
         router[safeRoute(route)] = handler@{ content ->
           if (method.parameterTypes.isEmpty()) {
             val result = method(obj) ?: return@handler
-            when (result) {
-              is String -> content.finishHtml(result.toByteArray())
-              is ByteArray -> content.finishText(result)
-              is File -> content.finishFile(result)
-              is RandomAccessFile -> content.finishFile(result)
-              is Chunked -> content.finishChunked(result)
-              else -> json?.let {
-                content.finishJson(json.toJson(result)!!.toByteArray())
-              } ?: content.finishText(result.toString().toByteArray())
+            when {
+              method.getAnnotation(Html::class.java) != null -> finishHtml(result, content)
+              method.getAnnotation(Text::class.java) != null -> finishText(result, content)
+              method.getAnnotation(Json::class.java) != null -> finishJson(result, content)
+              else -> autoReturn(result, content)
             }
           } else {
             method(obj, content)
@@ -173,5 +172,48 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     }
 
     private fun safeRoute(route: String) = if (route.first() == '/') route else "/$route"
+
+    private fun autoReturn(result: Any, content: HttpContent) = when (result) {
+      is String -> content.finishText(result.toByteArray())
+      is ByteArray -> content.finishText(result)
+      is File -> {
+        content.autoContextType(result.name)
+        content.finishFile(result)
+      }
+      is RandomAccessFile -> content.finishFile(result)
+      is Chunked -> content.finishChunked(result)
+      else -> finishJson(result, content)
+    }
+
+    private fun finishHtml(result: Any, content: HttpContent) = when (result) {
+      is ByteBuffer -> content.finishHtml(result)
+      is ByteArray -> content.finishHtml(result)
+      is String -> content.finishHtml(result.toByteArray())
+      else -> content.finishHtml(result.toString().toByteArray())
+    }
+
+    private fun finishText(result: Any, content: HttpContent) = when (result) {
+      is ByteBuffer -> content.finishText(result)
+      is ByteArray -> content.finishText(result)
+      is String -> content.finishText(result.toByteArray())
+      else -> content.finishText(result.toString().toByteArray())
+    }
+
+    private fun finishJson(result: Any, content: HttpContent) {
+      when (result) {
+        is ByteBuffer -> content.finishJson(result)
+        is ByteArray -> content.finishJson(result)
+        is String -> content.finishJson("\"$result\"".toByteArray())
+        is Byte, Short, Int, Long, Float, Double, Boolean -> content.finishJson(result.toString().toByteArray())
+        else -> {
+          val json = json?.toJson(result)?.toByteArray()
+          if (json != null) {
+            content.finishJson(json)
+          } else {
+            content.finishText(result.toString().toByteArray())
+          }
+        }
+      }
+    }
   }
 }

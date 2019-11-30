@@ -119,8 +119,6 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
     chunkSize: Int = 8192
   )
 
-  fun setContextType(type: Any) = setResponseHeader("Content-Type", type)
-
   fun jump(url: String) = temporaryMoved(url)
   fun moved(url: String) = permanentlyMoved(url)
 
