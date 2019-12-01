@@ -1,7 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.web.AdvanceHttpContent
+import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.CompositeByteBuf
@@ -17,7 +17,7 @@ import kotlin.collections.set
 open class NettyHttpContent(
   val ctx: ChannelHandlerContext,
   val msg: FullHttpRequest
-) : AdvanceHttpContent, NettyResponseHeaderAdapter() {
+) : MutableHttpContent, NettyResponseHeaderAdapter() {
   override var finished: Boolean = false
   override val uri: String by lazy {
     var uri = msg.uri()

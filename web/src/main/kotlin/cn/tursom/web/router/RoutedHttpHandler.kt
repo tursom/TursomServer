@@ -5,6 +5,7 @@ import cn.tursom.json.JsonWorkerImpl
 import cn.tursom.web.ExceptionContent
 import cn.tursom.web.HttpContent
 import cn.tursom.web.HttpHandler
+import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.mapping.*
 import cn.tursom.web.result.Html
@@ -24,21 +25,25 @@ import java.lang.reflect.Method
  * 如果加了 @Mapping 注解，会依据注解提供的路由路径注册
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
+open class RoutedHttpHandler(
   target: Any? = null,
-  val routerMaker: () -> Router<(T) -> Unit> = { SimpleRouter() }
-) : HttpHandler<T, E> {
-  protected val router: Router<(T) -> Unit> = routerMaker()
-  protected val routerMap: HashMap<String, Router<(T) -> Unit>> = HashMap()
+  val routerMaker: () -> Router<(HttpContent) -> Unit> = { SimpleRouter() }
+) : HttpHandler<HttpContent, ExceptionContent> {
+  protected val router: Router<(HttpContent) -> Unit> = routerMaker()
+  protected val routerMap: HashMap<String, Router<(HttpContent) -> Unit>> = HashMap()
 
   init {
     @Suppress("LeakingThis")
     addRouter(target ?: this)
   }
 
-  override fun handle(content: T) = handle(content, getHandler(content.method, content.uri))
+  override fun handle(content: HttpContent) = if (content is MutableHttpContent) {
+    handle(content, getHandler(content, content.method, content.uri))
+  } else {
+    handle(content, getHandler(content.method, content.uri).first)
+  }
 
-  open fun handle(content: T, handler: ((T) -> Unit)?) {
+  open fun handle(content: HttpContent, handler: ((HttpContent) -> Unit)?) {
     if (handler != null) {
       handler(content)
     } else {
@@ -46,7 +51,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     }
   }
 
-  open fun notFound(content: T) {
+  open fun notFound(content: HttpContent) {
     content.finish(404)
   }
 
@@ -64,16 +69,28 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     }
   }
 
-  fun addRouter(route: String, handler: (T) -> Unit) {
+  fun addRouter(route: String, handler: (HttpContent) -> Unit) {
     router[safeRoute(route)] = handler
   }
 
-  fun addRouter(method: String, route: String, handler: (T) -> Unit) {
+  fun addRouter(method: String, route: String, handler: (HttpContent) -> Unit) {
     getRouter(method)[safeRoute(route)] = handler
   }
 
-  fun getHandler(method: String, route: String): ((T) -> Unit)? =
-    getRouter(method)[route].first ?: this.router[route].first
+  fun getHandler(content: MutableHttpContent, method: String, route: String): ((HttpContent) -> Unit)? {
+    val router = getHandler(method, route)
+    if (router.first != null) {
+      router.second.forEach { (k, v) ->
+        content.addParam(k, v)
+      }
+    }
+    return router.first ?: this.router[route].first
+  }
+
+  fun getHandler(method: String, route: String): Pair<((HttpContent) -> Unit)?, List<Pair<String, String>>> {
+    val router = getRouter(method)[route]
+    return if (router.first != null) router else this.router[route]
+  }
 
   fun deleteRouter(route: String, method: String) {
     getRouter(method).delRoute(safeRoute(route))
@@ -82,7 +99,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
   protected fun insertMapping(obj: Any, method: Method) {
     method.annotations.forEach { annotation ->
       val routes: Array<out String>
-      val router: Router<(T) -> Unit>
+      val router: Router<(HttpContent) -> Unit>
       when (annotation) {
         is Mapping -> {
           routes = annotation.route
@@ -148,7 +165,7 @@ open class RoutedHttpHandler<T : HttpContent, in E : ExceptionContent>(
     }
   }
 
-  protected fun getRouter(method: String): Router<(T) -> Unit> = when {
+  protected fun getRouter(method: String): Router<(HttpContent) -> Unit> = when {
     method.isEmpty() -> router
     else -> {
       val upperCaseMethod = method.toUpperCase()

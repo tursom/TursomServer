@@ -1,5 +1,5 @@
 package cn.tursom.web
 
-interface AdvanceHttpContent : HttpContent {
+interface MutableHttpContent : HttpContent {
     fun addParam(key: String, value: String)
 }

@@ -161,7 +161,7 @@ class StringRadixTree<T> {
     return null
   }
 
-  fun listGet(route: String): List<Pair<T?, Int>>? {
+  fun listGet(route: String): List<Pair<T?, Int>> {
     val context = Context(route)
     var node: Node<T>? = root
     val result = ArrayList<Pair<T?, Int>>()
@@ -272,15 +272,18 @@ class StringRadixTree<T> {
 //		println()
 //	}
 //
-//	list.forEach {
-//		tree[it] = null
-//		println(tree)
-//		println()
-//	}
+//  println(listOf<String>().last())
+//  println(tree.listGet("roman"))
 //
-//	list.forEachIndexed { index, s ->
-//		tree[s] = index + 1
-//		println(tree)
-//		println()
-//	}
+//	//list.forEach {
+//	//	tree[it] = null
+//	//	println(tree)
+//	//	println()
+//	//}
+//  //
+//	//list.forEachIndexed { index, s ->
+//	//	tree[s] = index + 1
+//	//	println(tree)
+//	//	println()
+//	//}
 //}
