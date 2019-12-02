@@ -1,5 +1,7 @@
 package cn.tursom.yaml
 
+import cn.tursom.yaml.Yaml.toFloat
+import cn.tursom.yaml.Yaml.toInt
 import org.yaml.snakeyaml.Yaml
 import sun.misc.Unsafe
 import java.lang.reflect.Array
@@ -104,11 +106,13 @@ object Yaml {
         Long::class.java -> yaml.toLong()
         Float::class.java -> yaml.toFloat()
         Double::class.java -> yaml.toDouble()
+        Boolean::class.java -> yaml.toBoolean()
 
         getClazz<Int>() -> yaml.toInt()
         getClazz<Long>() -> yaml.toLong()
         getClazz<Float>() -> yaml.toFloat()
         getClazz<Double>() -> yaml.toDouble()
+        getClazz<Boolean>() -> yaml.toBoolean()
         String::class.java -> yaml.toString()
 
         else -> {
@@ -184,6 +188,7 @@ object Yaml {
     is Long -> toInt()
     is Float -> toInt()
     is Double -> toInt()
+    is Boolean -> if (this) 1 else 0
     is String -> toIntOrNull()
     is Collection<*> -> null
     is Map<*, *> -> null
@@ -198,6 +203,7 @@ object Yaml {
     is Long -> this
     is Float -> toLong()
     is Double -> toLong()
+    is Boolean -> if (this) 1 else 0
     is String -> toLongOrNull()
     is Collection<*> -> null
     is Map<*, *> -> null
@@ -212,6 +218,7 @@ object Yaml {
     is Long -> toFloat()
     is Float -> this
     is Double -> toFloat()
+    is Boolean -> if (this) 1.0f else 0.0f
     is String -> toFloatOrNull()
     is Collection<*> -> null
     is Map<*, *> -> null
@@ -226,9 +233,25 @@ object Yaml {
     is Long -> toDouble()
     is Float -> toDouble()
     is Double -> this
+    is Boolean -> if (this) 1.0 else 0.0
     is String -> toDoubleOrNull()
     is Collection<*> -> null
     is Map<*, *> -> null
     else -> toString().toDoubleOrNull()
+  }
+
+  private fun Any.toBoolean(): Boolean? = when (this) {
+    is Boolean -> this
+    is Byte -> 0 != this
+    is Char -> 0 != this
+    is Short -> 0 != this
+    is Int -> 0 != this
+    is Long -> 0 != this
+    is Float -> 0 != this
+    is Double -> 0 != this
+    is String -> toBoolean()
+    is Collection<*> -> null
+    is Map<*, *> -> null
+    else -> toString().toBoolean()
   }
 }
