@@ -1,7 +1,5 @@
 package cn.tursom.yaml
 
-import cn.tursom.yaml.Yaml.toFloat
-import cn.tursom.yaml.Yaml.toInt
 import org.yaml.snakeyaml.Yaml
 import sun.misc.Unsafe
 import java.lang.reflect.Array
