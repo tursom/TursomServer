@@ -10,15 +10,20 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.HttpObjectAggregator
-import io.netty.handler.codec.http.HttpRequestDecoder
-import io.netty.handler.codec.http.HttpResponseEncoder
+import io.netty.handler.codec.http.HttpServerCodec
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.handler.timeout.ReadTimeoutHandler
+import io.netty.handler.timeout.WriteTimeoutHandler
 
 class NettyHttpServer(
   override val port: Int,
   handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
   bodySize: Int = 512 * 1024,
-  autoRun: Boolean = false
+  autoRun: Boolean = false,
+  webSocketPath: String? = null,
+  readTimeout: Int? = null,
+  writeTimeout: Int? = null
 ) : HttpServer {
   constructor(
     port: Int,
@@ -41,10 +46,24 @@ class NettyHttpServer(
     .childHandler(object : ChannelInitializer<SocketChannel>() {
       override fun initChannel(ch: SocketChannel) {
         ch.pipeline()
-          .addLast("decoder", HttpRequestDecoder())
-          .addLast("encoder", HttpResponseEncoder())
+          .apply {
+            if (readTimeout != null) {
+              addLast(ReadTimeoutHandler(readTimeout))
+            }
+          }
+          .apply {
+            if (writeTimeout != null) {
+              addLast(WriteTimeoutHandler(writeTimeout))
+            }
+          }
+          .addLast("codec", HttpServerCodec())
           .addLast("aggregator", HttpObjectAggregator(bodySize))
           .addLast("http-chunked", ChunkedWriteHandler())
+          .apply {
+            if (webSocketPath != null) {
+              addLast("ws", WebSocketServerProtocolHandler(webSocketPath))
+            }
+          }
           .addLast("handle", httpHandler)
       }
     })
