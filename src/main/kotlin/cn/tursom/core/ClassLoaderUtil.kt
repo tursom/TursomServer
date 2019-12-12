@@ -32,7 +32,7 @@ object ClassLoaderUtil {
     val url: URL? = loader.getResource(packagePath)
     return if (url != null) {
       when (url.protocol) {
-        "file" -> getClassNameByFile(url.path, childPackage)
+        "file" -> getClassNameByFile(url.path, packageName, childPackage)
         "jar" -> getClassNameByJar(url.path, childPackage)
         else -> listOf()
       }
@@ -47,21 +47,23 @@ object ClassLoaderUtil {
    * @param childPackage 是否遍历子包
    * @return 类的完整名称
    */
-  private fun getClassNameByFile(filePath: String, childPackage: Boolean): List<String> {
+  private fun getClassNameByFile(filePath: String, basePackage: String, childPackage: Boolean): List<String> {
     val myClassName: MutableList<String> = ArrayList()
     val file = File(filePath)
     val childFiles: Array<File> = file.listFiles()!!
     for (childFile in childFiles) {
       if (childFile.isDirectory) {
         if (childPackage) {
-          myClassName.addAll(getClassNameByFile(childFile.path, childPackage))
+          myClassName.addAll(getClassNameByFile(
+            childFile.path,
+            "$basePackage.${childFile.path.substringAfterLast(File.separator)}",
+            childPackage
+          ))
         }
       } else {
-        var childFilePath: String = childFile.getPath()
+        val childFilePath: String = childFile.path
         if (childFilePath.endsWith(".class")) {
-          childFilePath = childFilePath.substring(childFilePath.indexOf("\\classes") + 9, childFilePath.lastIndexOf("."))
-          childFilePath = childFilePath.replace("\\", ".")
-          myClassName.add(childFilePath)
+          myClassName.add("$basePackage.${childFilePath.substringAfterLast(File.separator).substringBeforeLast('.')}")
         }
       }
     }
