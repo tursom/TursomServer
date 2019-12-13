@@ -6,6 +6,10 @@ import java.net.URLClassLoader
 import java.util.ArrayList
 import java.util.jar.JarFile
 
+@Suppress("UNCHECKED_CAST")
+val ClassLoader.classes: List<Class<*>>
+  get() = ClassLoaderUtil.classes.get(this) as List<Class<*>>
+
 fun ClassLoader.getClassByPackage(
   packageName: String,
   childPackage: Boolean = true
@@ -17,6 +21,8 @@ inline fun <reified T> T.getClassByPackage(
 ): List<String> = ClassLoaderUtil.getClassByPackage(packageName, childPackage, T::class.java.classLoader)
 
 object ClassLoaderUtil {
+  internal val classes = ClassLoader::class.java.getDeclaredField("classes").also { it.isAccessible = true }
+
   /**
    * 获取某包下所有类
    * @param packageName 包名
@@ -129,7 +135,7 @@ object ClassLoaderUtil {
       if (urlPath.endsWith("classes/")) {
         continue
       }
-      val jarPath = "$urlPath!/$packagePath"
+      val jarPath = "$urlPath/$packagePath"
       myClassName.addAll(getClassNameByJar(jarPath, childPackage))
     }
     return myClassName
