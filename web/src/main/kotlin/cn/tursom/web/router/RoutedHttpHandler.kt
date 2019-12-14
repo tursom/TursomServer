@@ -7,17 +7,16 @@ import cn.tursom.web.ExceptionContent
 import cn.tursom.web.HttpContent
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.MutableHttpContent
-import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.mapping.*
 import cn.tursom.web.result.Html
 import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
+import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.lang.reflect.Method
-import kotlin.reflect.KCallable
 
 /**
  * 自动添加路径映射的处理器
@@ -66,7 +65,7 @@ open class RoutedHttpHandler(
           return@forEach
         }
       }
-      log?.debug("mapping {} {}", method, method.parameterTypes)
+      log?.trace("mapping {} {}", method, method.parameterTypes)
       insertMapping(handler, method)
     }
   }
@@ -101,9 +100,8 @@ open class RoutedHttpHandler(
   protected fun insertMapping(obj: Any, method: Method) {
     val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
-      log?.info("method route {} annotation {}", method, annotation)
       val (routes, router) = getRoutes(annotation) ?: return@forEach
-      log?.info("method route {} mapped to {}", method, routes)
+      log?.info("mapping {} => {}", routes, method)
       routes.forEach { route ->
         if (mapping.isEmpty()) {
           addRouter(obj, method, route, router)
@@ -159,12 +157,12 @@ open class RoutedHttpHandler(
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
-      log?.debug("try mapping {}", method)
       method.parameterTypes.let {
         if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
           return@forEach
         }
       }
+      log?.debug("delete mapping {}", method)
       deleteMapping(handler, method)
     }
   }
@@ -174,7 +172,7 @@ open class RoutedHttpHandler(
     method.annotations.forEach { annotation ->
       val (routes, router) = getRoutes(annotation) ?: return@forEach
       routes.forEach { route ->
-        log?.info("delete route {} mapped to {}", route, method)
+        log?.info("delete route {} => {}", route, method)
         if (mapping.isEmpty()) {
           deleteMapping(obj, route, router)
         } else mapping.forEach {

@@ -161,12 +161,14 @@ open class NettyHttpContent(
   }
 
   override fun finishChunked() {
+    writeChunkedHeader()
     finished = true
     val httpChunkWriter = HttpChunkedInput(NettyChunkedByteBuffer(chunkedList))
     ctx.writeAndFlush(httpChunkWriter)
   }
 
   override fun finishChunked(chunked: Chunked) {
+    writeChunkedHeader()
     finished = true
     val httpChunkWriter = HttpChunkedInput(NettyChunkedInput(chunked))
     ctx.writeAndFlush(httpChunkWriter)

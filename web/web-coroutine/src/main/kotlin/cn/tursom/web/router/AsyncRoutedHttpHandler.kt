@@ -75,7 +75,7 @@ open class AsyncRoutedHttpHandler(
             return@forEach
           }
         }
-        log?.debug("mapping {} {}", member, member.parameters)
+        log?.trace("mapping {} {}", member, member.parameters)
         insertMapping(handler, member)
       }
     }
@@ -84,10 +84,9 @@ open class AsyncRoutedHttpHandler(
   protected fun insertMapping(obj: Any, method: KCallable<*>) {
     val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
-      log?.info("method route {} annotation {}", method, annotation)
       val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
       @Suppress("DuplicatedCode")
-      log?.info("method route {} mapped to {}", method, routes)
+      log?.info("mapping {} => {}", routes, method)
       routes.forEach { route ->
         if (mapping.isEmpty()) {
           addRouter(obj, method, route, router)
