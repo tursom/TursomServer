@@ -8,10 +8,10 @@ import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.ContextType
+import cn.tursom.web.utils.NoReturnLog
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Method
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.jvm.jvmErasure
@@ -26,7 +26,7 @@ open class AsyncRoutedHttpHandler(
   protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
 
   override fun handle(content: HttpContent) {
-    log?.debug("{}: {} {}", content.clientIp, content.method, content.uri)
+    log?.debug("{} {} {}", content.clientIp, content.method, content.uri)
     if (content is MutableHttpContent) {
       val handler = getAsyncHandler(content, content.method, content.uri)
       if (handler != null) GlobalScope.launch {
@@ -103,19 +103,20 @@ open class AsyncRoutedHttpHandler(
 
   @Suppress("UNCHECKED_CAST")
   fun addRouter(obj: Any, method: KCallable<*>, route: String, router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>) {
+    val doLog = method.doLog
     router[safeRoute(route)] = if (method.parameters.size == 1) {
       obj to when {
         method.findAnnotation<Html>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content) }
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content, doLog) }
         }
         method.findAnnotation<Text>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content) }
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content, doLog) }
         }
         method.findAnnotation<Json>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content) }
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content, doLog) }
         }
         else -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(method, result, content) }
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(method, result, content, doLog) }
         }
       }
     } else obj to when (method.returnType.jvmErasure.java) {
@@ -124,16 +125,16 @@ open class AsyncRoutedHttpHandler(
       Unit::class.java -> { content -> (method as suspend Any.(HttpContent) -> Unit)(obj, content) }
       else -> when {
         method.findAnnotation<Html>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content) }
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content, doLog) }
         }
         method.findAnnotation<Text>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content) }
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content, doLog) }
         }
         method.findAnnotation<Json>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content) }
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content, doLog) }
         }
         else -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(method, result, content) }
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(method, result, content, doLog) }
         }
       }
     }
@@ -229,11 +230,14 @@ open class AsyncRoutedHttpHandler(
       null
     }
 
-    fun autoReturn(method: KCallable<*>, result: Any?, content: HttpContent) {
+    val KCallable<*>.doLog get() = findAnnotation<NoReturnLog>() == null
+
+    fun autoReturn(method: KCallable<*>, result: Any?, content: HttpContent, doLog: Boolean? = null) {
       method.findAnnotation<ContextType>()?.let {
-        content.autoContextType(it.type)
+        content.setContextType(it.type.value)
+        log?.debug("{}: autoReturn context type auto set to {}({})", content.clientIp, it.type.key, it.type.value)
       }
-      autoReturn(result, content)
+      autoReturn(result, content, doLog ?: method.doLog)
     }
   }
 }

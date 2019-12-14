@@ -14,6 +14,7 @@ import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
 import cn.tursom.web.utils.ContextType
+import cn.tursom.web.utils.NoReturnLog
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
@@ -55,7 +56,7 @@ open class RoutedHttpHandler(
   }
 
   override fun handle(content: HttpContent) {
-    log?.debug("{}: {} {}", content.clientIp, content.method, content.uri)
+    log?.debug("{} {} {}", content.clientIp, content.method, content.uri)
     if (content is MutableHttpContent) {
       handle(content, getHandler(content, content.method, content.uri))
     } else {
@@ -132,19 +133,20 @@ open class RoutedHttpHandler(
   }
 
   fun addRouter(obj: Any, method: Method, route: String, router: Router<Pair<Any?, (HttpContent) -> Any?>>) {
+    val doLog = method.doLog
     router[safeRoute(route)] = obj to (if (method.parameterTypes.isEmpty()) {
       when {
         method.getAnnotation(Html::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishHtml(result, content) }
+          method(obj)?.let { result -> finishHtml(result, content, doLog) }
         }
         method.getAnnotation(Text::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishText(result, content) }
+          method(obj)?.let { result -> finishText(result, content, doLog) }
         }
         method.getAnnotation(Json::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishJson(result, content) }
+          method(obj)?.let { result -> finishJson(result, content, doLog) }
         }
         else -> { content ->
-          method(obj)?.let { result -> autoReturn(method, result, content) }
+          method(obj)?.let { result -> autoReturn(method, result, content, doLog) }
         }
       }
     } else when (method.returnType) {
@@ -153,16 +155,16 @@ open class RoutedHttpHandler(
       Unit::class.java -> { content -> method(obj, content) }
       else -> when {
         method.getAnnotation(Html::class.java) != null -> { content ->
-          method(obj, content)?.let { result -> finishHtml(result, content) }
+          method(obj, content)?.let { result -> finishHtml(result, content, doLog) }
         }
         method.getAnnotation(Text::class.java) != null -> { content ->
-          method(obj, content)?.let { result -> finishText(result, content) }
+          method(obj, content)?.let { result -> finishText(result, content, doLog) }
         }
         method.getAnnotation(Json::class.java) != null -> { content ->
-          method(obj, content)?.let { result -> finishJson(result, content) }
+          method(obj, content)?.let { result -> finishJson(result, content, doLog) }
         }
         else -> { content: HttpContent ->
-          method(obj, content)?.let { result -> autoReturn(method, result, content) }
+          method(obj, content)?.let { result -> autoReturn(method, result, content, doLog) }
         }
       }
     }).let {
@@ -273,6 +275,8 @@ open class RoutedHttpHandler(
       null
     }
 
+    val Method.doLog get() = getAnnotation(NoReturnLog::class.java) == null
+
     fun <T> T.repeatUntil(state: (T) -> Boolean, block: (T) -> T): T {
       var result = this
       while (state(result)) {
@@ -288,15 +292,16 @@ open class RoutedHttpHandler(
       if (it.endsWith('/')) it.dropLast(1) else it
     }.repeatUntil({ it.contains("//") }) { it.replace(slashRegex, "/") }
 
-    fun autoReturn(method: Method, result: Any?, content: HttpContent) {
+    fun autoReturn(method: Method, result: Any?, content: HttpContent, doLog: Boolean? = null) {
       method.getAnnotation(ContextType::class.java)?.let {
-        content.autoContextType(it.type)
+        content.setContextType(it.type.value)
+        log?.debug("{}: autoReturn context type auto set to {}({})", content.clientIp, it.type.key, it.type.value)
       }
-      autoReturn(result, content)
+      autoReturn(result, content, doLog ?: method.doLog)
     }
 
-    fun autoReturn(result: Any?, content: HttpContent) {
-      log?.debug("{}: autoReturn: {}", content.clientIp, result)
+    fun autoReturn(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (doLog) log?.debug("{}: autoReturn: {}", content.clientIp, result)
       result ?: return
       when (result) {
         is String -> content.finishText(result.toByteArray())
@@ -315,8 +320,8 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishHtml(result: Any?, content: HttpContent) {
-      log?.debug("{}: finishHtml: {}", content.clientIp, result)
+    fun finishHtml(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (doLog) log?.debug("{}: finishHtml: {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishHtml(result)
@@ -332,8 +337,8 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishText(result: Any?, content: HttpContent) {
-      log?.debug("{}: finishText: {}", content.clientIp, result)
+    fun finishText(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (doLog) log?.debug("{}: finishText: {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishText(result)
@@ -349,8 +354,8 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishJson(result: Any?, content: HttpContent) {
-      log?.debug("{}: finishJson: {}", content.clientIp, result)
+    fun finishJson(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (doLog) log?.debug("{}: finishJson: {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishJson(result)
@@ -365,7 +370,7 @@ open class RoutedHttpHandler(
         }
         else -> {
           val json = json?.toJson(result)
-          log?.debug("{}: finishJson: generate json: {}", content.clientIp, json)
+          if (doLog) log?.debug("{}: finishJson: generate json: {}", content.clientIp, json)
           if (json != null) {
             content.finishJson(json.toByteArray())
           } else {
