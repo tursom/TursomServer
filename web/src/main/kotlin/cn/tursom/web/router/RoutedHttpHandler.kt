@@ -304,6 +304,7 @@ open class RoutedHttpHandler(
       if (doLog) log?.debug("{}: autoReturn: {}", content.clientIp, result)
       result ?: return
       when (result) {
+        is ByteBuffer -> content.finishText(result)
         is String -> content.finishText(result.toByteArray())
         is StringBuilder -> content.finishText(result.toString().toByteArray())
         is StringBuffer -> content.finishText(result.toString().toByteArray())
