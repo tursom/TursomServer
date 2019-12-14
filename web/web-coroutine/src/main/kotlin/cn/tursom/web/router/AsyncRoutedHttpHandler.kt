@@ -7,9 +7,11 @@ import cn.tursom.web.result.Html
 import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
+import cn.tursom.web.utils.ContextType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.lang.reflect.Method
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.jvm.jvmErasure
@@ -17,7 +19,7 @@ import kotlin.reflect.jvm.jvmErasure
 @Suppress("ProtectedInFinal", "unused", "MemberVisibilityCanBePrivate")
 open class AsyncRoutedHttpHandler(
   target: Any? = null,
-  routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Unit>> = { SimpleRouter() },
+  routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() },
   val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() }
 ) : RoutedHttpHandler(target, routerMaker) {
   protected val asyncRouter: Router<Pair<Any?, suspend (HttpContent) -> Unit>> = asyncRouterMaker()
@@ -113,7 +115,7 @@ open class AsyncRoutedHttpHandler(
           (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content) }
         }
         else -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(result, content) }
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(method, result, content) }
         }
       }
     } else obj to when (method.returnType.jvmErasure.java) {
@@ -131,7 +133,7 @@ open class AsyncRoutedHttpHandler(
           (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content) }
         }
         else -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(result, content) }
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(method, result, content) }
         }
       }
     }
@@ -225,6 +227,13 @@ open class AsyncRoutedHttpHandler(
       LoggerFactory.getLogger(AsyncRoutedHttpHandler::class.java)
     } catch (e: Throwable) {
       null
+    }
+
+    fun autoReturn(method: KCallable<*>, result: Any?, content: HttpContent) {
+      method.findAnnotation<ContextType>()?.let {
+        content.autoContextType(it.type)
+      }
+      autoReturn(result, content)
     }
   }
 }

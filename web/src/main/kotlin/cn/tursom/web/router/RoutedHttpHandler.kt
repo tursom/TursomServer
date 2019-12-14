@@ -13,10 +13,16 @@ import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
+import cn.tursom.web.utils.ContextType
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.lang.reflect.Method
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 自动添加路径映射的处理器
@@ -28,10 +34,20 @@ import java.lang.reflect.Method
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class RoutedHttpHandler(
   target: Any? = null,
-  val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Unit>> = { SimpleRouter() }
+  val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() }
 ) : HttpHandler<HttpContent, ExceptionContent> {
-  protected val router: Router<Pair<Any?, (HttpContent) -> Unit>> = routerMaker()
-  protected val routerMap: HashMap<String, Router<Pair<Any?, (HttpContent) -> Unit>>> = HashMap()
+  protected val router: Router<Pair<Any?, (HttpContent) -> Any?>> = routerMaker()
+  protected val routerMap: HashMap<String, Router<Pair<Any?, (HttpContent) -> Any?>>> = HashMap()
+  private val threadNumber = AtomicInteger(0)
+  val workerThread = ThreadPoolExecutor(
+    Runtime.getRuntime().availableProcessors() * 4,
+    Runtime.getRuntime().availableProcessors() * 4,
+    0L, TimeUnit.MILLISECONDS,
+    LinkedBlockingQueue<Runnable>(),
+    ThreadFactory {
+      Thread(it, "TreeDiagramWorker-${threadNumber.incrementAndGet()}")
+    }
+  )
 
   init {
     @Suppress("LeakingThis")
@@ -47,7 +63,7 @@ open class RoutedHttpHandler(
     }
   }
 
-  open fun handle(content: HttpContent, handler: ((HttpContent) -> Unit)?) {
+  open fun handle(content: HttpContent, handler: ((HttpContent) -> Any?)?) {
     if (handler != null) {
       handler(content)
     } else {
@@ -73,17 +89,17 @@ open class RoutedHttpHandler(
     }
   }
 
-  fun addRouter(route: String, handler: (HttpContent) -> Unit) = addRouter(route, null, handler)
-  fun addRouter(route: String, obj: Any?, handler: (HttpContent) -> Unit) {
+  fun addRouter(route: String, handler: (HttpContent) -> Any?) = addRouter(route, null, handler)
+  fun addRouter(route: String, obj: Any?, handler: (HttpContent) -> Any?) {
     router[safeRoute(route)] = obj to handler
   }
 
-  fun addRouter(method: String, route: String, handler: (HttpContent) -> Unit) = addRouter(method, route, null, handler)
-  fun addRouter(method: String, route: String, obj: Any?, handler: (HttpContent) -> Unit) {
+  fun addRouter(method: String, route: String, handler: (HttpContent) -> Any?) = addRouter(method, route, null, handler)
+  fun addRouter(method: String, route: String, obj: Any?, handler: (HttpContent) -> Any?) {
     getRouter(method)[safeRoute(route)] = obj to handler
   }
 
-  fun getHandler(content: MutableHttpContent, method: String, route: String): ((HttpContent) -> Unit)? {
+  fun getHandler(content: MutableHttpContent, method: String, route: String): ((HttpContent) -> Any?)? {
     val safeRoute = safeRoute(route)
     val router = getHandler(method, safeRoute)
     if (router.first != null) {
@@ -94,7 +110,7 @@ open class RoutedHttpHandler(
     return router.first?.second ?: this.router[safeRoute].first?.second
   }
 
-  fun getHandler(method: String, route: String): Pair<Pair<Any?, (HttpContent) -> Unit>?, List<Pair<String, String>>> {
+  fun getHandler(method: String, route: String): Pair<Pair<Any?, (HttpContent) -> Any?>?, List<Pair<String, String>>> {
     val safeRoute = safeRoute(route)
     val router = getRouter(method)[safeRoute]
     return if (router.first != null) router else this.router[safeRoute]
@@ -115,9 +131,9 @@ open class RoutedHttpHandler(
     }
   }
 
-  fun addRouter(obj: Any, method: Method, route: String, router: Router<Pair<Any?, (HttpContent) -> Unit>>) {
-    router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) {
-      obj to when {
+  fun addRouter(obj: Any, method: Method, route: String, router: Router<Pair<Any?, (HttpContent) -> Any?>>) {
+    router[safeRoute(route)] = obj to (if (method.parameterTypes.isEmpty()) {
+      when {
         method.getAnnotation(Html::class.java) != null -> { content ->
           method(obj)?.let { result -> finishHtml(result, content) }
         }
@@ -128,10 +144,10 @@ open class RoutedHttpHandler(
           method(obj)?.let { result -> finishJson(result, content) }
         }
         else -> { content ->
-          method(obj)?.let { result -> autoReturn(result, content) }
+          method(obj)?.let { result -> autoReturn(method, result, content) }
         }
       }
-    } else obj to when (method.returnType) {
+    } else when (method.returnType) {
       Void::class.java -> { content -> method(obj, content) }
       Void.TYPE -> { content -> method(obj, content) }
       Unit::class.java -> { content -> method(obj, content) }
@@ -145,10 +161,15 @@ open class RoutedHttpHandler(
         method.getAnnotation(Json::class.java) != null -> { content ->
           method(obj, content)?.let { result -> finishJson(result, content) }
         }
-        else -> { content ->
-          method(obj, content)?.let { result -> autoReturn(result, content) }
+        else -> { content: HttpContent ->
+          method(obj, content)?.let { result -> autoReturn(method, result, content) }
         }
       }
+    }).let {
+      if (method.getAnnotation(BlockHandler::class.java) != null) { content ->
+        workerThread.execute { it(content) }
+      } else
+        it
     }
   }
 
@@ -185,7 +206,7 @@ open class RoutedHttpHandler(
     }
   }
 
-  protected fun deleteMapping(obj: Any, route: String, router: Router<Pair<Any?, (HttpContent) -> Unit>>) {
+  protected fun deleteMapping(obj: Any, route: String, router: Router<Pair<Any?, (HttpContent) -> Any?>>) {
     val handler = router[safeRoute(route)].first
     if (handler?.first == obj) {
       router.delRoute(safeRoute(route))
@@ -226,7 +247,7 @@ open class RoutedHttpHandler(
     else -> null
   }
 
-  protected fun getRouter(method: String): Router<Pair<Any?, (HttpContent) -> Unit>> = when {
+  protected fun getRouter(method: String): Router<Pair<Any?, (HttpContent) -> Any?>> = when {
     method.isEmpty() -> router
     else -> {
       val upperCaseMethod = method.toUpperCase()
@@ -267,6 +288,13 @@ open class RoutedHttpHandler(
       if (it.endsWith('/')) it.dropLast(1) else it
     }.repeatUntil({ it.contains("//") }) { it.replace(slashRegex, "/") }
 
+    fun autoReturn(method: Method, result: Any?, content: HttpContent) {
+      method.getAnnotation(ContextType::class.java)?.let {
+        content.autoContextType(it.type)
+      }
+      autoReturn(result, content)
+    }
+
     fun autoReturn(result: Any?, content: HttpContent) {
       log?.debug("{}: autoReturn: {}", content.clientIp, result)
       result ?: return
@@ -294,6 +322,12 @@ open class RoutedHttpHandler(
         is ByteBuffer -> content.finishHtml(result)
         is ByteArray -> content.finishHtml(result)
         is String -> content.finishHtml(result.toByteArray())
+        is StringBuffer -> content.finishHtml(result.toString().toByteArray())
+        is StringBuilder -> content.finishHtml(result.toString().toByteArray())
+        is Chunked -> {
+          content.responseHtml()
+          content.finishChunked(result)
+        }
         else -> content.finishHtml(result.toString().toByteArray())
       }
     }
@@ -305,6 +339,12 @@ open class RoutedHttpHandler(
         is ByteBuffer -> content.finishText(result)
         is ByteArray -> content.finishText(result)
         is String -> content.finishText(result.toByteArray())
+        is StringBuffer -> content.finishHtml(result.toString().toByteArray())
+        is StringBuilder -> content.finishHtml(result.toString().toByteArray())
+        is Chunked -> {
+          content.responseText()
+          content.finishChunked(result)
+        }
         else -> content.finishText(result.toString().toByteArray())
       }
     }
@@ -316,7 +356,13 @@ open class RoutedHttpHandler(
         is ByteBuffer -> content.finishJson(result)
         is ByteArray -> content.finishJson(result)
         is String -> content.finishJson("\"$result\"".toByteArray())
-        is Byte, Short, Int, Long, Float, Double, Boolean -> content.finishJson(result.toString().toByteArray())
+        is StringBuffer -> content.finishHtml(result.toString().toByteArray())
+        is java.lang.StringBuilder -> content.finishHtml(result.toString().toByteArray())
+        is Number, Boolean -> content.finishJson(result.toString().toByteArray())
+        is Chunked -> {
+          content.responseJson()
+          content.finishChunked(result)
+        }
         else -> {
           val json = json?.toJson(result)
           log?.debug("{}: finishJson: generate json: {}", content.clientIp, json)
