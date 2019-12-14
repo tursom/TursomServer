@@ -24,6 +24,7 @@ open class AsyncRoutedHttpHandler(
   protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
 
   override fun handle(content: HttpContent) {
+    log?.debug("{}: {} {}", content.clientIp, content.method, content.uri)
     if (content is MutableHttpContent) {
       val handler = getAsyncHandler(content, content.method, content.uri)
       if (handler != null) GlobalScope.launch {
@@ -194,8 +195,9 @@ open class AsyncRoutedHttpHandler(
           }
         }
         val mapping = handler::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
-        member.annotations.forEach { annotation ->
-          val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
+        member.annotations.forEach route@{ annotation ->
+          val (routes, router) =
+            getAsyncRoutes(annotation) ?: return@route
           @Suppress("DuplicatedCode")
           routes.forEach { route ->
             if (mapping.isEmpty()) {
@@ -220,7 +222,7 @@ open class AsyncRoutedHttpHandler(
 
   companion object {
     private val log = try {
-      LoggerFactory.getLogger(RoutedHttpHandler::class.java)
+      LoggerFactory.getLogger(AsyncRoutedHttpHandler::class.java)
     } catch (e: Throwable) {
       null
     }

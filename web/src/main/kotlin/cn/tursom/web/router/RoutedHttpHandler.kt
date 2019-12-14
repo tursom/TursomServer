@@ -38,10 +38,13 @@ open class RoutedHttpHandler(
     addRouter(target ?: this)
   }
 
-  override fun handle(content: HttpContent) = if (content is MutableHttpContent) {
-    handle(content, getHandler(content, content.method, content.uri))
-  } else {
-    handle(content, getHandler(content.method, content.uri).first?.second)
+  override fun handle(content: HttpContent) {
+    log?.debug("{}: {} {}", content.clientIp, content.method, content.uri)
+    if (content is MutableHttpContent) {
+      handle(content, getHandler(content, content.method, content.uri))
+    } else {
+      handle(content, getHandler(content.method, content.uri).first?.second)
+    }
   }
 
   open fun handle(content: HttpContent, handler: ((HttpContent) -> Unit)?) {
