@@ -85,6 +85,7 @@ open class AsyncRoutedHttpHandler(
     method.annotations.forEach { annotation ->
       log?.info("method route {} annotation {}", method, annotation)
       val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
+      @Suppress("DuplicatedCode")
       log?.info("method route {} mapped to {}", method, routes)
       routes.forEach { route ->
         if (mapping.isEmpty()) {
@@ -114,10 +115,10 @@ open class AsyncRoutedHttpHandler(
           (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(result, content) }
         }
       }
-    } else obj to when (method.returnType) {
-      Void::class.java -> method as suspend (HttpContent) -> Unit
-      Void.TYPE -> method as suspend (HttpContent) -> Unit
-      Unit::class.java -> method as suspend (HttpContent) -> Unit
+    } else obj to when (method.returnType.jvmErasure.java) {
+      Void::class.java -> { content -> (method as suspend Any.(HttpContent) -> Unit)(obj, content) }
+      Void.TYPE -> { content -> (method as suspend Any.(HttpContent) -> Unit)(obj, content) }
+      Unit::class.java -> { content -> (method as suspend Any.(HttpContent) -> Unit)(obj, content) }
       else -> when {
         method.findAnnotation<Html>() != null -> { content ->
           (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content) }
