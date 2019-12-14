@@ -75,6 +75,7 @@ open class AsyncRoutedHttpHandler(
             return@forEach
           }
         }
+        log?.debug("mapping {} {}", member, member.parameters)
         insertMapping(handler, member)
       }
     }
@@ -181,6 +182,40 @@ open class AsyncRoutedHttpHandler(
         asyncRouterMap[upperCaseMethod] = router
       }
       router
+    }
+  }
+
+  override fun deleteRouter(handler: Any) {
+    super.deleteRouter(handler)
+    handler::class.members.forEach { member ->
+      if (member.isSuspend) {
+        member.parameters.let {
+          if (it.size != 1 && !(it.size == 2 && HttpContent::class.java.isAssignableFrom(it[1].type.jvmErasure.java))) {
+            return@forEach
+          }
+        }
+        val mapping = handler::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
+        member.annotations.forEach { annotation ->
+          val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
+          @Suppress("DuplicatedCode")
+          routes.forEach { route ->
+            if (mapping.isEmpty()) {
+              deleteRouter(handler, route, router)
+            } else mapping.forEach {
+              val base = safeRoute(it)
+              deleteRouter(handler, base + route, router)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  fun deleteRouter(handler: Any, route: String, router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>) {
+    val (pair, _) = router[route]
+    val (target, _) = pair ?: return
+    if (handler == target) {
+      router.delRoute(route)
     }
   }
 

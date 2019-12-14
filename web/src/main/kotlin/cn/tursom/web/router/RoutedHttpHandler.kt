@@ -61,12 +61,12 @@ open class RoutedHttpHandler(
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
-      log?.debug("try mapping {}({})", method, method.parameterTypes)
       method.parameterTypes.let {
         if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
           return@forEach
         }
       }
+      log?.debug("mapping {} {}", method, method.parameterTypes)
       insertMapping(handler, method)
     }
   }
@@ -108,8 +108,7 @@ open class RoutedHttpHandler(
         if (mapping.isEmpty()) {
           addRouter(obj, method, route, router)
         } else mapping.forEach {
-          val base = safeRoute(it)
-          addRouter(obj, method, base + route, router)
+          addRouter(obj, method, safeRoute(it) + route, router)
         }
       }
     }
@@ -156,7 +155,7 @@ open class RoutedHttpHandler(
     getRouter(method).delRoute(safeRoute(route))
   }
 
-  fun deleteRouter(handler: Any) {
+  open fun deleteRouter(handler: Any) {
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
@@ -171,15 +170,24 @@ open class RoutedHttpHandler(
   }
 
   protected fun deleteMapping(obj: Any, method: Method) {
+    val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
       val (routes, router) = getRoutes(annotation) ?: return@forEach
       routes.forEach { route ->
         log?.info("delete route {} mapped to {}", route, method)
-        val handler = router[safeRoute(route)].first
-        if (handler?.first == obj) {
-          router.delRoute(safeRoute(route))
+        if (mapping.isEmpty()) {
+          deleteMapping(obj, route, router)
+        } else mapping.forEach {
+          deleteMapping(obj, safeRoute(it) + route, router)
         }
       }
+    }
+  }
+
+  protected fun deleteMapping(obj: Any, route: String, router: Router<Pair<Any?, (HttpContent) -> Unit>>) {
+    val handler = router[safeRoute(route)].first
+    if (handler?.first == obj) {
+      router.delRoute(safeRoute(route))
     }
   }
 
@@ -258,8 +266,9 @@ open class RoutedHttpHandler(
       if (it.endsWith('/')) it.dropLast(1) else it
     }.repeatUntil({ it.contains("//") }) { it.replace(slashRegex, "/") }
 
-    fun autoReturn(result: Any, content: HttpContent) {
+    fun autoReturn(result: Any?, content: HttpContent) {
       log?.debug("{}: autoReturn: {}", content.clientIp, result)
+      result ?: return
       when (result) {
         is String -> content.finishText(result.toByteArray())
         is StringBuilder -> content.finishText(result.toString().toByteArray())
@@ -277,8 +286,9 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishHtml(result: Any, content: HttpContent) {
+    fun finishHtml(result: Any?, content: HttpContent) {
       log?.debug("{}: finishHtml: {}", content.clientIp, result)
+      result ?: return
       when (result) {
         is ByteBuffer -> content.finishHtml(result)
         is ByteArray -> content.finishHtml(result)
@@ -287,8 +297,9 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishText(result: Any, content: HttpContent) {
+    fun finishText(result: Any?, content: HttpContent) {
       log?.debug("{}: finishText: {}", content.clientIp, result)
+      result ?: return
       when (result) {
         is ByteBuffer -> content.finishText(result)
         is ByteArray -> content.finishText(result)
@@ -297,8 +308,9 @@ open class RoutedHttpHandler(
       }
     }
 
-    fun finishJson(result: Any, content: HttpContent) {
+    fun finishJson(result: Any?, content: HttpContent) {
       log?.debug("{}: finishJson: {}", content.clientIp, result)
+      result ?: return
       when (result) {
         is ByteBuffer -> content.finishJson(result)
         is ByteArray -> content.finishJson(result)
