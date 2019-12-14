@@ -80,50 +80,61 @@ open class AsyncRoutedHttpHandler(
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
   protected fun insertMapping(obj: Any, method: KCallable<*>) {
+    val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
       log?.info("method route {} annotation {}", method, annotation)
       val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
       log?.info("method route {} mapped to {}", method, routes)
       routes.forEach { route ->
-        router[safeRoute(route)] = if (method.parameters.size == 1) {
-          obj to when {
-            method.findAnnotation<Html>() != null -> { content ->
-              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content) }
-            }
-            method.findAnnotation<Text>() != null -> { content ->
-              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content) }
-            }
-            method.findAnnotation<Json>() != null -> { content ->
-              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content) }
-            }
-            else -> { content ->
-              (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(result, content) }
-            }
-          }
-        } else obj to when (method.returnType) {
-          Void::class.java -> method as suspend (HttpContent) -> Unit
-          Void.TYPE -> method as suspend (HttpContent) -> Unit
-          Unit::class.java -> method as suspend (HttpContent) -> Unit
-          else -> when {
-            method.findAnnotation<Html>() != null -> { content ->
-              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content) }
-            }
-            method.findAnnotation<Text>() != null -> { content ->
-              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content) }
-            }
-            method.findAnnotation<Json>() != null -> { content ->
-              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content) }
-            }
-            else -> { content ->
-              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(result, content) }
-            }
-          }
+        if (mapping.isEmpty()) {
+          addRouter(obj, method, route, router)
+        } else mapping.forEach {
+          val base = safeRoute(it)
+          addRouter(obj, method, base + route, router)
         }
       }
     }
   }
+
+  @Suppress("UNCHECKED_CAST")
+  fun addRouter(obj: Any, method: KCallable<*>, route: String, router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>) {
+    router[safeRoute(route)] = if (method.parameters.size == 1) {
+      obj to when {
+        method.findAnnotation<Html>() != null -> { content ->
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content) }
+        }
+        method.findAnnotation<Text>() != null -> { content ->
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content) }
+        }
+        method.findAnnotation<Json>() != null -> { content ->
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content) }
+        }
+        else -> { content ->
+          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(result, content) }
+        }
+      }
+    } else obj to when (method.returnType) {
+      Void::class.java -> method as suspend (HttpContent) -> Unit
+      Void.TYPE -> method as suspend (HttpContent) -> Unit
+      Unit::class.java -> method as suspend (HttpContent) -> Unit
+      else -> when {
+        method.findAnnotation<Html>() != null -> { content ->
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content) }
+        }
+        method.findAnnotation<Text>() != null -> { content ->
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content) }
+        }
+        method.findAnnotation<Json>() != null -> { content ->
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content) }
+        }
+        else -> { content ->
+          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(result, content) }
+        }
+      }
+    }
+  }
+
 
   protected fun getAsyncRoutes(annotation: Annotation) = when (annotation) {
     is Mapping -> {

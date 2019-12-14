@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.lang.reflect.Method
+import kotlin.reflect.KCallable
 
 /**
  * 自动添加路径映射的处理器
@@ -97,44 +98,54 @@ open class RoutedHttpHandler(
   }
 
   protected fun insertMapping(obj: Any, method: Method) {
+    val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
       log?.info("method route {} annotation {}", method, annotation)
       val (routes, router) = getRoutes(annotation) ?: return@forEach
       log?.info("method route {} mapped to {}", method, routes)
       routes.forEach { route ->
-        router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) {
-          obj to when {
-            method.getAnnotation(Html::class.java) != null -> { content ->
-              method(obj)?.let { result -> finishHtml(result, content) }
-            }
-            method.getAnnotation(Text::class.java) != null -> { content ->
-              method(obj)?.let { result -> finishText(result, content) }
-            }
-            method.getAnnotation(Json::class.java) != null -> { content ->
-              method(obj)?.let { result -> finishJson(result, content) }
-            }
-            else -> { content ->
-              method(obj)?.let { result -> autoReturn(result, content) }
-            }
-          }
-        } else obj to when (method.returnType) {
-          Void::class.java -> { content -> method(obj, content) }
-          Void.TYPE -> { content -> method(obj, content) }
-          Unit::class.java -> { content -> method(obj, content) }
-          else -> when {
-            method.getAnnotation(Html::class.java) != null -> { content ->
-              method(obj, content)?.let { result -> finishHtml(result, content) }
-            }
-            method.getAnnotation(Text::class.java) != null -> { content ->
-              method(obj, content)?.let { result -> finishText(result, content) }
-            }
-            method.getAnnotation(Json::class.java) != null -> { content ->
-              method(obj, content)?.let { result -> finishJson(result, content) }
-            }
-            else -> { content ->
-              method(obj, content)?.let { result -> autoReturn(result, content) }
-            }
-          }
+        if (mapping.isEmpty()) {
+          addRouter(obj, method, route, router)
+        } else mapping.forEach {
+          val base = safeRoute(it)
+          addRouter(obj, method, base + route, router)
+        }
+      }
+    }
+  }
+
+  fun addRouter(obj: Any, method: Method, route: String, router: Router<Pair<Any?, (HttpContent) -> Unit>>) {
+    router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) {
+      obj to when {
+        method.getAnnotation(Html::class.java) != null -> { content ->
+          method(obj)?.let { result -> finishHtml(result, content) }
+        }
+        method.getAnnotation(Text::class.java) != null -> { content ->
+          method(obj)?.let { result -> finishText(result, content) }
+        }
+        method.getAnnotation(Json::class.java) != null -> { content ->
+          method(obj)?.let { result -> finishJson(result, content) }
+        }
+        else -> { content ->
+          method(obj)?.let { result -> autoReturn(result, content) }
+        }
+      }
+    } else obj to when (method.returnType) {
+      Void::class.java -> { content -> method(obj, content) }
+      Void.TYPE -> { content -> method(obj, content) }
+      Unit::class.java -> { content -> method(obj, content) }
+      else -> when {
+        method.getAnnotation(Html::class.java) != null -> { content ->
+          method(obj, content)?.let { result -> finishHtml(result, content) }
+        }
+        method.getAnnotation(Text::class.java) != null -> { content ->
+          method(obj, content)?.let { result -> finishText(result, content) }
+        }
+        method.getAnnotation(Json::class.java) != null -> { content ->
+          method(obj, content)?.let { result -> finishJson(result, content) }
+        }
+        else -> { content ->
+          method(obj, content)?.let { result -> autoReturn(result, content) }
         }
       }
     }
@@ -231,15 +242,25 @@ open class RoutedHttpHandler(
       null
     }
 
+    fun <T> T.repeatUntil(state: (T) -> Boolean, block: (T) -> T): T {
+      var result = this
+      while (state(result)) {
+        result = block(result)
+      }
+      return result
+    }
+
     fun safeRoute(route: String) = (
       if (route.startsWith('/')) route else "/$route").let {
       if (it.endsWith('/')) it.dropLast(1) else it
-    }
+    }.repeatUntil({ it.contains("//") }) { it.replace("//", "/") }
 
     fun autoReturn(result: Any, content: HttpContent) {
       log?.debug("{}: autoReturn: {}", content.clientIp, result)
       when (result) {
         is String -> content.finishText(result.toByteArray())
+        is StringBuilder -> content.finishText(result.toString().toByteArray())
+        is StringBuffer -> content.finishText(result.toString().toByteArray())
         is ByteArray -> content.finishText(result)
         is File -> {
           content.autoContextType(result.name)
