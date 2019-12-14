@@ -1,6 +1,7 @@
 package cn.tursom.web.router
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.regex.regex
 import cn.tursom.json.JsonWorkerImpl
 import cn.tursom.web.ExceptionContent
 import cn.tursom.web.HttpContent
@@ -250,10 +251,12 @@ open class RoutedHttpHandler(
       return result
     }
 
+    val slashRegex = regex { (-"/").onceMore }
+
     fun safeRoute(route: String) = (
       if (route.startsWith('/')) route else "/$route").let {
       if (it.endsWith('/')) it.dropLast(1) else it
-    }.repeatUntil({ it.contains("//") }) { it.replace("//", "/") }
+    }.repeatUntil({ it.contains("//") }) { it.replace(slashRegex, "/") }
 
     fun autoReturn(result: Any, content: HttpContent) {
       log?.debug("{}: autoReturn: {}", content.clientIp, result)
