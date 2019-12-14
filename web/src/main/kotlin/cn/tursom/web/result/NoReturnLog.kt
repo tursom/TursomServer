@@ -1,3 +1,3 @@
-package cn.tursom.web.utils
+package cn.tursom.web.result
 
 annotation class NoReturnLog

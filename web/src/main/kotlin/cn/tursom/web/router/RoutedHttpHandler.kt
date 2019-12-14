@@ -13,8 +13,8 @@ import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
-import cn.tursom.web.utils.ContextType
-import cn.tursom.web.utils.NoReturnLog
+import cn.tursom.web.result.ContextType
+import cn.tursom.web.result.NoReturnLog
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile

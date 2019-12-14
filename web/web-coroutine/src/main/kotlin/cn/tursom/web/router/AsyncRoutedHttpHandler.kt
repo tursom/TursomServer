@@ -7,8 +7,8 @@ import cn.tursom.web.result.Html
 import cn.tursom.web.result.Json
 import cn.tursom.web.result.Text
 import cn.tursom.web.router.impl.SimpleRouter
-import cn.tursom.web.utils.ContextType
-import cn.tursom.web.utils.NoReturnLog
+import cn.tursom.web.result.ContextType
+import cn.tursom.web.result.NoReturnLog
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
