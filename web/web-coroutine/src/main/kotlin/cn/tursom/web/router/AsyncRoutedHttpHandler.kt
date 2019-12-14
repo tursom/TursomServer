@@ -1,0 +1,182 @@
+package cn.tursom.web.router
+
+import cn.tursom.web.HttpContent
+import cn.tursom.web.MutableHttpContent
+import cn.tursom.web.mapping.*
+import cn.tursom.web.result.Html
+import cn.tursom.web.result.Json
+import cn.tursom.web.result.Text
+import cn.tursom.web.router.impl.SimpleRouter
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
+import kotlin.reflect.KCallable
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.jvm.jvmErasure
+
+@Suppress("ProtectedInFinal", "unused", "MemberVisibilityCanBePrivate")
+open class AsyncRoutedHttpHandler(
+  target: Any? = null,
+  routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Unit>> = { SimpleRouter() },
+  val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() }
+) : RoutedHttpHandler(target, routerMaker) {
+  protected val asyncRouter: Router<Pair<Any?, suspend (HttpContent) -> Unit>> = asyncRouterMaker()
+  protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
+
+  override fun handle(content: HttpContent) {
+    if (content is MutableHttpContent) {
+      val handler = getAsyncHandler(content, content.method, content.uri)
+      if (handler != null) GlobalScope.launch {
+        handle(content, handler)
+      } else {
+        handle(content, getHandler(content, content.method, content.uri))
+      }
+    } else {
+      val handler = getAsyncHandler(content.method, content.uri).first?.second
+      if (handler != null) GlobalScope.launch {
+        handle(content, handler)
+      } else {
+        handle(content, getHandler(content.method, content.uri).first?.second)
+      }
+    }
+  }
+
+  open suspend fun handle(content: HttpContent, handler: (suspend (HttpContent) -> Unit)?) {
+    if (handler != null) {
+      handler(content)
+    } else {
+      notFound(content)
+    }
+  }
+
+  fun getAsyncHandler(method: String, route: String): Pair<Pair<Any?, suspend (HttpContent) -> Unit>?, List<Pair<String, String>>> {
+    val safeRoute = safeRoute(route)
+    val router = getAsyncRouter(method)[safeRoute]
+    return if (router.first != null) router else this.asyncRouter[safeRoute]
+  }
+
+  fun getAsyncHandler(content: MutableHttpContent, method: String, route: String): (suspend (HttpContent) -> Unit)? {
+    val safeRoute = safeRoute(route)
+    val router = getAsyncHandler(method, safeRoute)
+    if (router.first != null) {
+      router.second.forEach { (k, v) ->
+        content.addParam(k, v)
+      }
+    }
+    return router.first?.second ?: this.asyncRouter[safeRoute].first?.second
+  }
+
+  override fun addRouter(handler: Any) {
+    super.addRouter(handler)
+    handler::class.members.forEach { member ->
+      if (member.isSuspend) {
+        member.parameters.let {
+          if (it.size != 1 && !(it.size == 2 && HttpContent::class.java.isAssignableFrom(it[1].type.jvmErasure.java))) {
+            return@forEach
+          }
+        }
+        insertMapping(handler, member)
+      }
+    }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  protected fun insertMapping(obj: Any, method: KCallable<*>) {
+    method.annotations.forEach { annotation ->
+      log?.info("method route {} annotation {}", method, annotation)
+      val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
+      log?.info("method route {} mapped to {}", method, routes)
+      routes.forEach { route ->
+        router[safeRoute(route)] = if (method.parameters.size == 1) {
+          obj to when {
+            method.findAnnotation<Html>() != null -> { content ->
+              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content) }
+            }
+            method.findAnnotation<Text>() != null -> { content ->
+              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content) }
+            }
+            method.findAnnotation<Json>() != null -> { content ->
+              (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content) }
+            }
+            else -> { content ->
+              (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(result, content) }
+            }
+          }
+        } else obj to when (method.returnType) {
+          Void::class.java -> method as suspend (HttpContent) -> Unit
+          Void.TYPE -> method as suspend (HttpContent) -> Unit
+          Unit::class.java -> method as suspend (HttpContent) -> Unit
+          else -> when {
+            method.findAnnotation<Html>() != null -> { content ->
+              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content) }
+            }
+            method.findAnnotation<Text>() != null -> { content ->
+              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content) }
+            }
+            method.findAnnotation<Json>() != null -> { content ->
+              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content) }
+            }
+            else -> { content ->
+              (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(result, content) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  protected fun getAsyncRoutes(annotation: Annotation) = when (annotation) {
+    is Mapping -> {
+      annotation.route to getAsyncRouter(annotation.method)
+    }
+    is GetMapping -> {
+      annotation.route to getAsyncRouter("GET")
+    }
+    is PostMapping -> {
+      annotation.route to getAsyncRouter("POST")
+    }
+    is PutMapping -> {
+      annotation.route to getAsyncRouter("PUT")
+    }
+    is DeleteMapping -> {
+      annotation.route to getAsyncRouter("DELETE")
+    }
+    is PatchMapping -> {
+      annotation.route to getAsyncRouter("PATCH")
+    }
+    is TraceMapping -> {
+      annotation.route to getAsyncRouter("TRACE")
+    }
+    is HeadMapping -> {
+      annotation.route to getAsyncRouter("HEAD")
+    }
+    is OptionsMapping -> {
+      annotation.route to getAsyncRouter("OPTIONS")
+    }
+    is ConnectMapping -> {
+      annotation.route to getAsyncRouter("CONNECT")
+    }
+    else -> null
+  }
+
+  protected fun getAsyncRouter(method: String): Router<Pair<Any?, suspend (HttpContent) -> Unit>> = when {
+    method.isEmpty() -> asyncRouter
+    else -> {
+      val upperCaseMethod = method.toUpperCase()
+      var router = asyncRouterMap[upperCaseMethod]
+      if (router == null) {
+        router = asyncRouterMaker()
+        asyncRouterMap[upperCaseMethod] = router
+      }
+      router
+    }
+  }
+
+  companion object {
+    private val log = try {
+      LoggerFactory.getLogger(RoutedHttpHandler::class.java)
+    } catch (e: Throwable) {
+      null
+    }
+  }
+}

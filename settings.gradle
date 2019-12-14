@@ -5,4 +5,5 @@ include 'AsyncSocket'
 include 'log'
 include 'json'
 include 'utils:yaml'
+include 'web:web-coroutine'
 

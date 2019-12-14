@@ -27,10 +27,10 @@ import java.lang.reflect.Method
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class RoutedHttpHandler(
   target: Any? = null,
-  val routerMaker: () -> Router<(HttpContent) -> Unit> = { SimpleRouter() }
+  val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Unit>> = { SimpleRouter() }
 ) : HttpHandler<HttpContent, ExceptionContent> {
-  protected val router: Router<(HttpContent) -> Unit> = routerMaker()
-  protected val routerMap: HashMap<String, Router<(HttpContent) -> Unit>> = HashMap()
+  protected val router: Router<Pair<Any?, (HttpContent) -> Unit>> = routerMaker()
+  protected val routerMap: HashMap<String, Router<Pair<Any?, (HttpContent) -> Unit>>> = HashMap()
 
   init {
     @Suppress("LeakingThis")
@@ -40,7 +40,7 @@ open class RoutedHttpHandler(
   override fun handle(content: HttpContent) = if (content is MutableHttpContent) {
     handle(content, getHandler(content, content.method, content.uri))
   } else {
-    handle(content, getHandler(content.method, content.uri).first)
+    handle(content, getHandler(content.method, content.uri).first?.second)
   }
 
   open fun handle(content: HttpContent, handler: ((HttpContent) -> Unit)?) {
@@ -55,11 +55,11 @@ open class RoutedHttpHandler(
     content.finish(404)
   }
 
-  fun addRouter(handler: Any) {
+  open fun addRouter(handler: Any) {
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
-      log?.debug("try mapping {}", method)
+      log?.debug("try mapping {}({})", method, method.parameterTypes)
       method.parameterTypes.let {
         if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
           return@forEach
@@ -69,103 +69,143 @@ open class RoutedHttpHandler(
     }
   }
 
-  fun addRouter(route: String, handler: (HttpContent) -> Unit) {
-    router[safeRoute(route)] = handler
+  fun addRouter(route: String, handler: (HttpContent) -> Unit) = addRouter(route, null, handler)
+  fun addRouter(route: String, obj: Any?, handler: (HttpContent) -> Unit) {
+    router[safeRoute(route)] = obj to handler
   }
 
-  fun addRouter(method: String, route: String, handler: (HttpContent) -> Unit) {
-    getRouter(method)[safeRoute(route)] = handler
+  fun addRouter(method: String, route: String, handler: (HttpContent) -> Unit) = addRouter(method, route, null, handler)
+  fun addRouter(method: String, route: String, obj: Any?, handler: (HttpContent) -> Unit) {
+    getRouter(method)[safeRoute(route)] = obj to handler
   }
 
   fun getHandler(content: MutableHttpContent, method: String, route: String): ((HttpContent) -> Unit)? {
-    val router = getHandler(method, route)
+    val safeRoute = safeRoute(route)
+    val router = getHandler(method, safeRoute)
     if (router.first != null) {
       router.second.forEach { (k, v) ->
         content.addParam(k, v)
       }
     }
-    return router.first ?: this.router[route].first
+    return router.first?.second ?: this.router[safeRoute].first?.second
   }
 
-  fun getHandler(method: String, route: String): Pair<((HttpContent) -> Unit)?, List<Pair<String, String>>> {
-    val router = getRouter(method)[route]
-    return if (router.first != null) router else this.router[route]
+  fun getHandler(method: String, route: String): Pair<Pair<Any?, (HttpContent) -> Unit>?, List<Pair<String, String>>> {
+    val safeRoute = safeRoute(route)
+    val router = getRouter(method)[safeRoute]
+    return if (router.first != null) router else this.router[safeRoute]
+  }
+
+  protected fun insertMapping(obj: Any, method: Method) {
+    method.annotations.forEach { annotation ->
+      log?.info("method route {} annotation {}", method, annotation)
+      val (routes, router) = getRoutes(annotation) ?: return@forEach
+      log?.info("method route {} mapped to {}", method, routes)
+      routes.forEach { route ->
+        router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) {
+          obj to when {
+            method.getAnnotation(Html::class.java) != null -> { content ->
+              method(obj)?.let { result -> finishHtml(result, content) }
+            }
+            method.getAnnotation(Text::class.java) != null -> { content ->
+              method(obj)?.let { result -> finishText(result, content) }
+            }
+            method.getAnnotation(Json::class.java) != null -> { content ->
+              method(obj)?.let { result -> finishJson(result, content) }
+            }
+            else -> { content ->
+              method(obj)?.let { result -> autoReturn(result, content) }
+            }
+          }
+        } else obj to when (method.returnType) {
+          Void::class.java -> { content -> method(obj, content) }
+          Void.TYPE -> { content -> method(obj, content) }
+          Unit::class.java -> { content -> method(obj, content) }
+          else -> when {
+            method.getAnnotation(Html::class.java) != null -> { content ->
+              method(obj, content)?.let { result -> finishHtml(result, content) }
+            }
+            method.getAnnotation(Text::class.java) != null -> { content ->
+              method(obj, content)?.let { result -> finishText(result, content) }
+            }
+            method.getAnnotation(Json::class.java) != null -> { content ->
+              method(obj, content)?.let { result -> finishJson(result, content) }
+            }
+            else -> { content ->
+              method(obj, content)?.let { result -> autoReturn(result, content) }
+            }
+          }
+        }
+      }
+    }
   }
 
   fun deleteRouter(route: String, method: String) {
     getRouter(method).delRoute(safeRoute(route))
   }
 
-  protected fun insertMapping(obj: Any, method: Method) {
-    method.annotations.forEach { annotation ->
-      val routes: Array<out String>
-      val router: Router<(HttpContent) -> Unit>
-      when (annotation) {
-        is Mapping -> {
-          routes = annotation.route
-          router = getRouter(annotation.method)
+  fun deleteRouter(handler: Any) {
+    @Suppress("LeakingThis")
+    val clazz = handler.javaClass
+    clazz.methods.forEach { method ->
+      log?.debug("try mapping {}", method)
+      method.parameterTypes.let {
+        if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
+          return@forEach
         }
-        is GetMapping -> {
-          routes = annotation.route
-          router = getRouter("GET")
-        }
-        is PostMapping -> {
-          routes = annotation.route
-          router = getRouter("POST")
-        }
-        is PutMapping -> {
-          routes = annotation.route
-          router = getRouter("PUT")
-        }
-        is DeleteMapping -> {
-          routes = annotation.route
-          router = getRouter("DELETE")
-        }
-        is PatchMapping -> {
-          routes = annotation.route
-          router = getRouter("PATCH")
-        }
-        is TraceMapping -> {
-          routes = annotation.route
-          router = getRouter("TRACE")
-        }
-        is HeadMapping -> {
-          routes = annotation.route
-          router = getRouter("HEAD")
-        }
-        is OptionsMapping -> {
-          routes = annotation.route
-          router = getRouter("OPTIONS")
-        }
-        is ConnectMapping -> {
-          routes = annotation.route
-          router = getRouter("CONNECT")
-        }
-        else -> return@forEach
       }
+      deleteMapping(handler, method)
+    }
+  }
+
+  protected fun deleteMapping(obj: Any, method: Method) {
+    method.annotations.forEach { annotation ->
+      val (routes, router) = getRoutes(annotation) ?: return@forEach
       routes.forEach { route ->
-        log?.info("method route {} mapped to {}", route, method)
-        router[safeRoute(route)] = if (method.parameterTypes.isEmpty()) when {
-          method.getAnnotation(Html::class.java) != null -> { content ->
-            method(obj)?.let { result -> finishHtml(result, content) }
-          }
-          method.getAnnotation(Text::class.java) != null -> { content ->
-            method(obj)?.let { result -> finishText(result, content) }
-          }
-          method.getAnnotation(Json::class.java) != null -> { content ->
-            method(obj)?.let { result -> finishJson(result, content) }
-          }
-          else -> { content ->
-            method(obj)?.let { result -> autoReturn(result, content) }
-          }
-        } else { content ->
-          method(obj, content)
+        log?.info("delete route {} mapped to {}", route, method)
+        val handler = router[safeRoute(route)].first
+        if (handler?.first == obj) {
+          router.delRoute(safeRoute(route))
         }
       }
     }
   }
 
-  protected fun getRouter(method: String): Router<(HttpContent) -> Unit> = when {
+  protected fun getRoutes(annotation: Annotation) = when (annotation) {
+    is Mapping -> {
+      annotation.route to getRouter(annotation.method)
+    }
+    is GetMapping -> {
+      annotation.route to getRouter("GET")
+    }
+    is PostMapping -> {
+      annotation.route to getRouter("POST")
+    }
+    is PutMapping -> {
+      annotation.route to getRouter("PUT")
+    }
+    is DeleteMapping -> {
+      annotation.route to getRouter("DELETE")
+    }
+    is PatchMapping -> {
+      annotation.route to getRouter("PATCH")
+    }
+    is TraceMapping -> {
+      annotation.route to getRouter("TRACE")
+    }
+    is HeadMapping -> {
+      annotation.route to getRouter("HEAD")
+    }
+    is OptionsMapping -> {
+      annotation.route to getRouter("OPTIONS")
+    }
+    is ConnectMapping -> {
+      annotation.route to getRouter("CONNECT")
+    }
+    else -> null
+  }
+
+  protected fun getRouter(method: String): Router<Pair<Any?, (HttpContent) -> Unit>> = when {
     method.isEmpty() -> router
     else -> {
       val upperCaseMethod = method.toUpperCase()
@@ -191,9 +231,12 @@ open class RoutedHttpHandler(
       null
     }
 
-    private fun safeRoute(route: String) = if (route.first() == '/') route else "/$route"
+    fun safeRoute(route: String) = (
+      if (route.startsWith('/')) route else "/$route").let {
+      if (it.endsWith('/')) it.dropLast(1) else it
+    }
 
-    private fun autoReturn(result: Any, content: HttpContent) {
+    fun autoReturn(result: Any, content: HttpContent) {
       log?.debug("{}: autoReturn: {}", content.clientIp, result)
       when (result) {
         is String -> content.finishText(result.toByteArray())
@@ -210,7 +253,7 @@ open class RoutedHttpHandler(
       }
     }
 
-    private fun finishHtml(result: Any, content: HttpContent) {
+    fun finishHtml(result: Any, content: HttpContent) {
       log?.debug("{}: finishHtml: {}", content.clientIp, result)
       when (result) {
         is ByteBuffer -> content.finishHtml(result)
@@ -220,7 +263,7 @@ open class RoutedHttpHandler(
       }
     }
 
-    private fun finishText(result: Any, content: HttpContent) {
+    fun finishText(result: Any, content: HttpContent) {
       log?.debug("{}: finishText: {}", content.clientIp, result)
       when (result) {
         is ByteBuffer -> content.finishText(result)
@@ -230,7 +273,7 @@ open class RoutedHttpHandler(
       }
     }
 
-    private fun finishJson(result: Any, content: HttpContent) {
+    fun finishJson(result: Any, content: HttpContent) {
       log?.debug("{}: finishJson: {}", content.clientIp, result)
       when (result) {
         is ByteBuffer -> content.finishJson(result)
