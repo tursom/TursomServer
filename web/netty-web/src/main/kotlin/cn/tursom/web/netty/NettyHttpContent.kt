@@ -9,6 +9,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedFile
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import kotlin.collections.set
@@ -31,7 +32,7 @@ open class NettyHttpContent(
   val httpMethod: HttpMethod get() = msg.method()
   val protocolVersion: HttpVersion get() = msg.protocolVersion()
   val headers: HttpHeaders get() = msg.headers()
-  protected val paramMap by lazy { RequestParser.parse(msg) }
+  protected val paramMap by lazy { ParamParser.parse(msg) }
   override val cookieMap by lazy { getHeader("Cookie")?.let { decodeCookie(it) } ?: mapOf() }
   override val body = msg.content()?.let { NettyByteBuffer(it) }
 
@@ -48,26 +49,32 @@ open class NettyHttpContent(
   val responseBodyBuf: CompositeByteBuf = ctx.alloc().compositeBuffer()!!
 
   override fun getHeader(header: String): String? {
+    log?.trace("getHeader {}", header)
     return headers[header]
   }
 
   override fun getHeaders(header: String): List<String> {
+    log?.trace("getHeaders {}", header)
     return headers.getAll(header)
   }
 
   override fun getHeaders(): Iterable<Map.Entry<String, String>> {
+    log?.trace("getHeaders")
     return headers
   }
 
   override fun getParams(): Map<String, List<String>> {
+    log?.trace("getParams")
     return paramMap
   }
 
   override fun getParams(param: String): List<String>? {
+    log?.trace("getParams {}", param)
     return paramMap[param]
   }
 
   override fun addParam(key: String, value: String) {
+    log?.trace("addParam {}: {}", key, value)
     if (!paramMap.containsKey(key)) {
       paramMap[key] = ArrayList()
     }
@@ -75,23 +82,27 @@ open class NettyHttpContent(
   }
 
   override fun write(message: String) {
+    log?.trace("write {}", message)
     responseBodyBuf.addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
     //responseBody.write(message.toByteArray())
   }
 
   override fun write(byte: Byte) {
+    log?.trace("write {}", byte)
     val buffer = ctx.alloc().buffer(1).writeByte(byte.toInt())
     responseBodyBuf.addComponent(buffer)
     //responseBody.write(byte.toInt())
   }
 
   override fun write(bytes: ByteArray, offset: Int, size: Int) {
+    log?.trace("write {}({}:{})", bytes, offset, size)
     responseBodyBuf.addComponent(Unpooled.wrappedBuffer(bytes, offset, size))
     //responseBody.write(bytes, offset, size)
   }
 
   override fun write(buffer: ByteBuffer) {
     //buffer.writeTo(responseBody)
+    log?.trace("write {}", buffer)
     responseBodyBuf.addComponent(if (buffer is NettyByteBuffer) {
       buffer.byteBuf
     } else {
@@ -102,18 +113,22 @@ open class NettyHttpContent(
   }
 
   override fun reset() {
+    log?.trace("reset")
     responseBodyBuf.clear()
   }
 
   override fun finish() {
+    log?.trace("finish")
     finish(responseBodyBuf)
   }
 
   override fun finish(buffer: ByteArray, offset: Int, size: Int) {
+    log?.trace("finish ByteArray[{}]({}:{})", buffer.size, offset, size)
     finish(Unpooled.wrappedBuffer(buffer, offset, size))
   }
 
   override fun finish(buffer: ByteBuffer) {
+    log?.trace("finish {}", buffer)
     if (buffer is NettyByteBuffer) {
       finish(buffer.byteBuf)
     } else {
@@ -123,11 +138,13 @@ open class NettyHttpContent(
 
   fun finish(buf: ByteBuf) = finish(buf, responseStatus)
   fun finish(buf: ByteBuf, responseCode: HttpResponseStatus) {
+    log?.trace("finish {}: {}", responseCode, buf)
     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseCode, buf)
     finish(response)
   }
 
   fun finish(response: FullHttpResponse) {
+    log?.trace("finish {}", response)
     finished = true
     val heads = response.headers()
     addHeaders(
@@ -142,6 +159,7 @@ open class NettyHttpContent(
   }
 
   override fun writeChunkedHeader() {
+    log?.trace("writeChunkedHeader")
     val response = DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
     response.status = if (responseMessage != null) HttpResponseStatus(responseCode, responseMessage)
     else responseStatus
@@ -157,10 +175,12 @@ open class NettyHttpContent(
   }
 
   override fun addChunked(buffer: ByteBuffer) {
+    log?.trace("addChunked {}", buffer)
     chunkedList.add(buffer)
   }
 
   override fun finishChunked() {
+    log?.trace("finishChunked {}", chunkedList)
     finished = true
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedByteBuffer(chunkedList))
@@ -168,6 +188,7 @@ open class NettyHttpContent(
   }
 
   override fun finishChunked(chunked: Chunked) {
+    log?.trace("finishChunked {}", chunked)
     finished = true
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedInput(chunked))
@@ -175,15 +196,25 @@ open class NettyHttpContent(
   }
 
   override fun finishFile(file: File, chunkSize: Int) {
+    log?.trace("finishFile {} chunkSize {}", file, chunkSize)
     finished = true
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, chunkSize)))
   }
 
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {
+    log?.trace("finishFile {}({}:{}) chunkSize {}", file, offset, length, chunkSize)
     finished = true
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, offset, length, chunkSize)))
+  }
+
+  companion object {
+    private val log = try {
+      LoggerFactory.getLogger(NettyHttpContent::class.java)
+    } catch (e: Throwable) {
+      null
+    }
   }
 }
 

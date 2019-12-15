@@ -5,12 +5,14 @@ import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.QueryStringDecoder
 import io.netty.handler.codec.http.multipart.Attribute
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
-import java.util.HashMap
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.set
 
 /**
  * HTTP请求参数解析器, 支持GET, POST
  */
-object RequestParser {
+object ParamParser {
   fun parse(fullReq: FullHttpRequest): HashMap<String, List<String>> {
     val method = fullReq.method()
 

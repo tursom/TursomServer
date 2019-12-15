@@ -3,12 +3,8 @@ package cn.tursom.web.router
 import cn.tursom.web.HttpContent
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*
-import cn.tursom.web.result.Html
-import cn.tursom.web.result.Json
-import cn.tursom.web.result.Text
+import cn.tursom.web.result.*
 import cn.tursom.web.router.impl.SimpleRouter
-import cn.tursom.web.result.ContextType
-import cn.tursom.web.result.NoReturnLog
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -26,7 +22,6 @@ open class AsyncRoutedHttpHandler(
   protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
 
   override fun handle(content: HttpContent) {
-    log?.debug("{} {} {}", content.clientIp, content.method, content.uri)
     if (content is MutableHttpContent) {
       val handler = getAsyncHandler(content, content.method, content.uri)
       if (handler != null) GlobalScope.launch {
@@ -143,7 +138,7 @@ open class AsyncRoutedHttpHandler(
 
   protected fun getAsyncRoutes(annotation: Annotation) = when (annotation) {
     is Mapping -> {
-      annotation.route to getAsyncRouter(annotation.method)
+      annotation.route to getAsyncRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
     }
     is GetMapping -> {
       annotation.route to getAsyncRouter("GET")

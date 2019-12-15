@@ -15,7 +15,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
+import org.slf4j.LoggerFactory
 
+@Suppress("unused")
 class NettyHttpServer(
   override val port: Int,
   handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
@@ -47,14 +49,10 @@ class NettyHttpServer(
       override fun initChannel(ch: SocketChannel) {
         ch.pipeline()
           .apply {
-            if (readTimeout != null) {
-              addLast(ReadTimeoutHandler(readTimeout))
-            }
+            if (readTimeout != null) addLast(ReadTimeoutHandler(readTimeout))
           }
           .apply {
-            if (writeTimeout != null) {
-              addLast(WriteTimeoutHandler(writeTimeout))
-            }
+            if (writeTimeout != null) addLast(WriteTimeoutHandler(writeTimeout))
           }
           .addLast("codec", HttpServerCodec())
           .addLast("aggregator", HttpObjectAggregator(bodySize))
@@ -77,11 +75,22 @@ class NettyHttpServer(
   }
 
   override fun run() {
+    log?.warn("NettyHttpServer started on port {}", port)
+    log?.info("try http://localhost:{}/", port)
     future.sync()
   }
 
   override fun close() {
+    log?.warn("NettyHttpServer({}) closed", port)
     future.cancel(false)
     future.channel().close()
+  }
+
+  companion object {
+    private val log = try {
+      LoggerFactory.getLogger(NettyHttpServer::class.java)
+    } catch (e: Throwable) {
+      null
+    }
   }
 }

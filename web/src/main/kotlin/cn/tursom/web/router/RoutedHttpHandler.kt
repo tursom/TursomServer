@@ -8,13 +8,9 @@ import cn.tursom.web.HttpContent
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*
-import cn.tursom.web.result.Html
-import cn.tursom.web.result.Json
-import cn.tursom.web.result.Text
+import cn.tursom.web.result.*
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
-import cn.tursom.web.result.ContextType
-import cn.tursom.web.result.NoReturnLog
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
@@ -56,7 +52,6 @@ open class RoutedHttpHandler(
   }
 
   override fun handle(content: HttpContent) {
-    log?.debug("{} {} {}", content.clientIp, content.method, content.uri)
     if (content is MutableHttpContent) {
       handle(content, getHandler(content, content.method, content.uri))
     } else {
@@ -77,6 +72,7 @@ open class RoutedHttpHandler(
   }
 
   open fun addRouter(handler: Any) {
+    log?.info("add router {}", handler)
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
@@ -180,6 +176,7 @@ open class RoutedHttpHandler(
   }
 
   open fun deleteRouter(handler: Any) {
+    log?.info("delete router {}", handler)
     @Suppress("LeakingThis")
     val clazz = handler.javaClass
     clazz.methods.forEach { method ->
@@ -217,7 +214,7 @@ open class RoutedHttpHandler(
 
   protected fun getRoutes(annotation: Annotation) = when (annotation) {
     is Mapping -> {
-      annotation.route to getRouter(annotation.method)
+      annotation.route to getRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
     }
     is GetMapping -> {
       annotation.route to getRouter("GET")
@@ -322,7 +319,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishHtml(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{}: finishHtml: {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishHtml {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishHtml(result)
@@ -339,7 +336,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishText(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{}: finishText: {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishText {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishText(result)
@@ -356,7 +353,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishJson(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{}: finishJson: {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishJson {}", content.clientIp, result)
       result ?: return
       when (result) {
         is ByteBuffer -> content.finishJson(result)
@@ -371,7 +368,7 @@ open class RoutedHttpHandler(
         }
         else -> {
           val json = json?.toJson(result)
-          if (doLog) log?.debug("{}: finishJson: generate json: {}", content.clientIp, json)
+          if (doLog) log?.debug("{} finishJson: generate json {}", content.clientIp, json)
           if (json != null) {
             content.finishJson(json.toByteArray())
           } else {

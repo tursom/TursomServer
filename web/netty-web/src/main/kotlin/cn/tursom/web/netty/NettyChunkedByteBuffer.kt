@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.stream.ChunkedInput
+import org.slf4j.LoggerFactory
 
 class NettyChunkedByteBuffer(private val bufList: List<ByteBuffer>) : ChunkedInput<ByteBuf> {
   constructor(vararg bufList: ByteBuffer) : this(bufList.asList())
@@ -29,6 +30,7 @@ class NettyChunkedByteBuffer(private val bufList: List<ByteBuffer>) : ChunkedInp
   override fun readChunk(allocator: ByteBufAllocator?): ByteBuf = readChunk()
 
   private fun readChunk(): ByteBuf {
+    log?.trace("readChunk")
     this.next?.close()
     val next = iterator.next()
     this.next = next
@@ -37,6 +39,16 @@ class NettyChunkedByteBuffer(private val bufList: List<ByteBuffer>) : ChunkedInp
     else Unpooled.wrappedBuffer(next.readBuffer())
   }
 
-  override fun close() {}
+  override fun close() {
+    log?.trace("close")
+  }
+
+  companion object {
+    private val log = try {
+      LoggerFactory.getLogger(NettyChunkedByteBuffer::class.java)
+    } catch (e: Throwable) {
+      null
+    }
+  }
 }
 

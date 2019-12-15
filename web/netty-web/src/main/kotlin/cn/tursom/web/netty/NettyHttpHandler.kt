@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpResponseStatus
+import org.slf4j.LoggerFactory
 
 @ChannelHandler.Sharable
 class NettyHttpHandler(
@@ -14,6 +15,7 @@ class NettyHttpHandler(
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest) {
     val handlerContext = NettyHttpContent(ctx, msg)
+    log?.debug("{} {} {}", handlerContext.clientIp, handlerContext.method, handlerContext.uri)
     handler.handle(handlerContext)
   }
 
@@ -23,6 +25,7 @@ class NettyHttpHandler(
   }
 
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+    log?.error("exception cause on NettyHttpHandler", cause)
     val content = NettyExceptionContent(ctx, cause)
     handler.exceptionCause(content)
     if (!content.finished) {
@@ -30,5 +33,13 @@ class NettyHttpHandler(
       content.finish()
     }
     ctx.close()
+  }
+
+  companion object {
+    private val log = try {
+      LoggerFactory.getLogger(NettyHttpHandler::class.java)
+    } catch (e: Throwable) {
+      null
+    }
   }
 }
