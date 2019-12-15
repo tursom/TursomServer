@@ -64,7 +64,7 @@ val defaultColorfulPattern = LogbackPattern.make {
     +color { magenta }("[${+thread.right(15, 15)}]") + " " +
     +color { highlight }(+level.left(5)) + " " +
     +color { cyan }("[${+logger["20"].right(20, 20)}]") + " - " +
-    +color { highlight }(+message) + " " +
+    +color { highlight }(+message) +
     +nextLine
 }
 
