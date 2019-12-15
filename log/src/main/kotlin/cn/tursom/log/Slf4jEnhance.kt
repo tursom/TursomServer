@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.tursom.log
 
 import ch.qos.logback.classic.LoggerContext
@@ -60,12 +62,31 @@ fun configureLogbackDirectly(logDir: String, filePrefix: String) {
 }
 
 val defaultColorfulPattern = LogbackPattern.make {
-  +color { green }(+date)["yyyy-MM-dd HH:mm:ss.SSS"] + " " +
-    +color { magenta }("[${+thread.right(15, 15)}]") + " " +
-    +color { highlight }(+level.left(5)) + " " +
-    +color { cyan }("[${+logger["20"].right(20, 20)}]") + " - " +
+  //+color { yellow }(+line.left(3, 3) + " " + +clazz.left(10, 10)) + " " +
+  +color { green }(+date["yyyy-MM-dd HH:mm:ss.SSS"]) + " " +
+    +color { magenta }("[${+thread}]") + " " +
+    +color { highlight }(+level) + " " +
+    +color { cyan }("[${+line + " " + +logger["20"]}]") + " - " +
     +color { highlight }(+message) +
-    +nextLine
+    "\n"
+}
+
+val defaultFormatPattern = LogbackPattern.make {
+  +color { green }(+date["yyyy-MM-dd HH:mm:ss.SSS"]) + " " +
+    +color { magenta }("[${+thread.right(10, 10)}]") + " " +
+    +color { highlight }(+level.left(5, 5)) + " " +
+    +color { cyan }("[${+line.right(3) + " " + +logger["20"].right(20, 20)}]") + " - " +
+    +color { highlight }(+message) +
+    "\n"
+}
+
+val simpPattern = LogbackPattern.make {
+  +color { green }(+date["HH:mm:ss"]) + " " +
+    //+color { magenta }("[${+thread.right(null, 5)}]") + " " +
+    +color { highlight }(+level) + " " +
+    +color { cyan }("[${+logger["1"]}]") + " - " +
+    +color { highlight }(+message) +
+    "\n"
 }
 
 fun colorfulConsoleLogger(appender: OutputStreamAppender<*>, pattern: String = defaultColorfulPattern) {

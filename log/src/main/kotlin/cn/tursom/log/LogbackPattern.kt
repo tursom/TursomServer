@@ -35,7 +35,7 @@ object LogbackPattern {
     val highlight = ColorEnum.HIGHLIGHT
   }
 
-  inline fun color(action: Color.() -> ColorEnum) = Color.action()
+  inline fun color(action: Color.() -> ColorEnum) = Color.action().toString()
 
   const val nextLine = "n"
   const val logger = "c"
