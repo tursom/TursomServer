@@ -244,7 +244,10 @@ fun ByteArray.digest(type: String) = try {
 
 fun randomInt(min: Int, max: Int) = Random().nextInt(max) % (max - min + 1) + min
 
-
 fun getTAG(cls: Class<*>): String {
   return cls.name.split(".").last().dropLast(10)
+}
+
+operator fun <T> (() -> T).unaryPlus() = object {
+  override fun toString() = this@unaryPlus().toString()
 }
