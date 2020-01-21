@@ -2,6 +2,7 @@ package cn.tursom.core.buffer
 
 import cn.tursom.core.forEachIndex
 import java.io.Closeable
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.math.min
@@ -202,9 +203,23 @@ interface ByteBuffer : Closeable {
   fun put(inputStream: InputStream) {
     if (hasArray) {
       val read = inputStream.read(array, writeOffset, writeable)
+      if (read < 0) throw  IOException("stream closed")
       writePosition += read
     } else {
       val buffer = ByteArray(10 * 1024)
+      val read = inputStream.read(buffer)
+      put(buffer, 0, read)
+    }
+  }
+
+  fun put(inputStream: InputStream, size: Int) {
+    assert(size <= writeable)
+    if (hasArray) {
+      val read = inputStream.read(array, writeOffset, size)
+      if (read < 0) throw  IOException("stream closed")
+      writePosition += read
+    } else {
+      val buffer = ByteArray(size)
       val read = inputStream.read(buffer)
       put(buffer, 0, read)
     }
@@ -257,3 +272,4 @@ interface ByteBuffer : Closeable {
     return size
   }
 }
+
