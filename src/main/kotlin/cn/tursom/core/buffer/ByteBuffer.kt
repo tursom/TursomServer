@@ -98,7 +98,7 @@ interface ByteBuffer : Closeable {
 
   fun toString(size: Int): String {
     val bytes = getBytes(size)
-    readPosition -= bytes.size
+    readPosition += bytes.size
     return String(bytes)
   }
 
