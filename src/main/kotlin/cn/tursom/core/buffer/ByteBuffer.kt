@@ -3,7 +3,6 @@ package cn.tursom.core.buffer
 import cn.tursom.core.forEachIndex
 import java.io.Closeable
 import java.io.OutputStream
-import java.nio.Buffer
 import kotlin.math.min
 
 /**
@@ -198,6 +197,25 @@ interface ByteBuffer : Closeable {
   fun put(array: DoubleArray, index: Int = 0, size: Int = array.size - index) {
     array.forEachIndex(index, index + size - 1, this::put)
   }
+
+  fun putByte(byte: Byte): Unit = put(byte)
+  fun putChar(char: Char): Unit = put(char)
+  fun putShort(short: Short): Unit = put(short)
+  fun putInt(int: Int): Unit = put(int)
+  fun putLong(long: Long): Unit = put(long)
+  fun putFloat(float: Float): Unit = put(float)
+  fun putDouble(double: Double): Unit = put(double)
+  fun putString(str: String): Unit = put(str)
+  fun putBuffer(buffer: ByteBuffer): Int = put(buffer)
+  fun putBytes(byteArray: ByteArray, startIndex: Int = 0, endIndex: Int = byteArray.size - startIndex) =
+    put(byteArray, startIndex, endIndex)
+
+  fun putChars(array: CharArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putShorts(array: ShortArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putInts(array: IntArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putLongs(array: LongArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putFloats(array: FloatArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putDoubles(array: DoubleArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
 
   fun fill(byte: Byte) {
     readPosition = 0
