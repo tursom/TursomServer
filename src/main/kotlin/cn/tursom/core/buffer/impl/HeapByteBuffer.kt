@@ -41,11 +41,16 @@ class HeapByteBuffer(
   }
 
   override fun reset() {
-    buffer.limit(writePosition)
-    buffer.position(readPosition)
-    buffer.compact()
-    readPosition = buffer.position()
-    writePosition = buffer.limit()
+    if (writePosition == readPosition) {
+      readPosition = 0
+      writePosition = 0
+    } else {
+      buffer.limit(writePosition)
+      buffer.position(readPosition)
+      buffer.compact()
+      readPosition = buffer.position()
+      writePosition = buffer.limit()
+    }
   }
 
   override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
