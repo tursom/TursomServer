@@ -37,7 +37,7 @@ interface ByteBuffer : Closeable {
   }
 
   val readable: Int get() = writePosition - readPosition
-  val writeable: Int get() = capacity - readPosition
+  val writeable: Int get() = capacity - writePosition
 
   val hasArray: Boolean
   val array: ByteArray
