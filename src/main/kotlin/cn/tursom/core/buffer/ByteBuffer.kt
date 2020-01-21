@@ -2,6 +2,7 @@ package cn.tursom.core.buffer
 
 import cn.tursom.core.forEachIndex
 import java.io.Closeable
+import java.io.InputStream
 import java.io.OutputStream
 import kotlin.math.min
 
@@ -196,6 +197,17 @@ interface ByteBuffer : Closeable {
 
   fun put(array: DoubleArray, index: Int = 0, size: Int = array.size - index) {
     array.forEachIndex(index, index + size - 1, this::put)
+  }
+
+  fun put(inputStream: InputStream) {
+    if (hasArray) {
+      val read = inputStream.read(array, writeOffset, writeable)
+      writePosition += read
+    } else {
+      val buffer = ByteArray(10 * 1024)
+      val read = inputStream.read(buffer)
+      put(buffer, 0, read)
+    }
   }
 
   fun putByte(byte: Byte): Unit = put(byte)
