@@ -26,51 +26,49 @@ class FlvChecker {
     // 复制头部
     raf.read(buffer, 0, 9)
     rafNew.write(buffer, 0, 9)
-    var currentLength = 9L
-    //var latsValidLength = currentLength
     try {
-      var remain = 40
-      var timestamp = 0
-      while (true) { // && remain>=0
-        remain--
+      //var remain = 40
+      //var timestamp = 0
+      loop@ while (true) {
+        //remain--
         // 读取前一个tag size
         readBytesToInt(raf, 4)
         // Logger.print("前一个长度为：" + predataSize);
         // 读取tag
         // tag 类型
-        val tagType = raf.read()
-        if (tagType == 8 || tagType == 9) {
-          rafNew.write(buffer, 0, 4)
-          rafNew.write(tagType)
-          // tag data size 3个字节。表示tag data的长度。从streamd id 后算起。
-          val dataSize = readBytesToInt(raf, 3)
-          rafNew.write(buffer, 0, 3)
-          // Logger.print(" ,当前tag data 长度为：" + dataSize);
-          // 时间戳 3
-          timestamp = readBytesToInt(raf, 3)
-          val timestampEx = raf.read() shl 24
-          timestamp += timestampEx
-          dealTimestamp(rafNew, timestamp, tagType - 8)
-          raf.read(buffer, 0, 3 + dataSize)
-          rafNew.write(buffer, 0, 3 + dataSize)
-        } else if (tagType == 18) {
-          // 18 scripts
-          // 如果是scripts脚本，默认为第一个tag，此时将前一个tag Size 置零
-          //rafNew.seek(rafNew.filePointer - 4)
-          val zeroTimestamp = byteArrayOf(0, 0, 0, 0)
-          rafNew.write(zeroTimestamp)
-          rafNew.write(tagType)
-          val dataSize = readBytesToInt(raf, 3)
-          rafNew.write(buffer, 0, 3)
-          raf.read(buffer, 0, 4)
-          val zeros = byteArrayOf(0, 0, 0)
-          rafNew.write(zeros) // 时间戳 0
-          rafNew.write(0) // 时间戳扩展 0
-          raf.read(buffer, 0, 3 + dataSize)
-          rafNew.write(buffer, 0, 3 + dataSize)
+        when (val tagType = raf.read()) {
+          8, 9 -> {
+            rafNew.write(buffer, 0, 4)
+            rafNew.write(tagType)
+            // tag data size 3个字节。表示tag data的长度。从streamd id 后算起。
+            val dataSize = readBytesToInt(raf, 3)
+            rafNew.write(buffer, 0, 3)
+            // 时间戳 3
+            val timestamp = readBytesToInt(raf, 3) + (raf.read() shl 24)
+            //timestamp += timestampEx
+            dealTimestamp(rafNew, timestamp, tagType - 8)
+            raf.read(buffer, 0, 3 + dataSize)
+            rafNew.write(buffer, 0, 3 + dataSize)
+          }
+          18 -> {
+            // 18 scripts
+            // 如果是scripts脚本，默认为第一个tag，此时将前一个tag Size 置零
+            val zeroTimestamp = byteArrayOf(0, 0, 0, 0)
+            rafNew.write(zeroTimestamp)
+            rafNew.write(tagType)
+            val dataSize = readBytesToInt(raf, 3)
+            rafNew.write(buffer, 0, 3)
+            raf.read(buffer, 0, 4)
+            val zeros = byteArrayOf(0, 0, 0)
+            rafNew.write(zeros) // 时间戳 0
+            rafNew.write(0) // 时间戳扩展 0
+            raf.read(buffer, 0, 3 + dataSize)
+            rafNew.write(buffer, 0, 3 + dataSize)
 
-        } else {
-          break
+          }
+          else -> {
+            break@loop
+          }
         }
       }
     } catch (e: Exception) {
@@ -105,7 +103,8 @@ class FlvChecker {
         var tmp = timestamp - lastTimestampRead[tagType] + lastTimestampWrite[tagType]
         tmp = if (tmp > 0) tmp else 1
         lastTimestampWrite[tagType] = tmp
-      } else { // 间隔十分巨大，那么重新开始即可
+      } else {
+        // 间隔十分巨大，那么重新开始即可
         lastTimestampWrite[tagType] += 10
       }
     }
@@ -146,12 +145,4 @@ class FlvChecker {
     }
     return result
   }
-}
-
-fun main() {
-  val checker = FlvChecker()
-  checker.check(
-    File("test.flv").inputStream().buffered(),
-    File("1.flv").outputStream().buffered()
-  )
 }

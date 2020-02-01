@@ -212,16 +212,21 @@ interface ByteBuffer : Closeable {
     }
   }
 
-  fun put(inputStream: InputStream, size: Int) {
+  fun put(inputStream: InputStream, size: Int): Int {
     assert(size <= writeable)
-    if (hasArray) {
+    return if (hasArray) {
       val read = inputStream.read(array, writeOffset, size)
-      if (read < 0) throw  IOException("stream closed")
-      writePosition += read
+      if (read > 0) {
+        writePosition += read
+      }
+      read
     } else {
       val buffer = ByteArray(size)
       val read = inputStream.read(buffer)
-      put(buffer, 0, read)
+      if (read > 0) {
+        put(buffer, 0, read)
+      }
+      read
     }
   }
 
