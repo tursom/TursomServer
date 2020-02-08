@@ -165,13 +165,13 @@ interface ByteBuffer : Closeable {
   fun put(double: Double): Unit = write { it.putDouble(double) }
   fun put(str: String): Unit = put(str.toByteArray())
   fun put(buffer: ByteBuffer): Int = buffer.writeTo(this)
-  fun put(byteArray: ByteArray, startIndex: Int = 0, endIndex: Int = byteArray.size - startIndex) {
+  fun put(byteArray: ByteArray, offset: Int = 0, len: Int = byteArray.size - offset) {
     if (hasArray) {
-      byteArray.copyInto(array, writeOffset, startIndex, endIndex)
-      writePosition += endIndex - startIndex
+      byteArray.copyInto(array, writeOffset, offset, offset + len)
+      writePosition += len
     } else {
       write {
-        it.put(byteArray, startIndex, endIndex - startIndex)
+        it.put(byteArray, offset, len)
       }
     }
   }

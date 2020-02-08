@@ -1,6 +1,8 @@
 package cn.tursom.core
 
-import java.io.*
+import cn.tursom.core.stream.InputStream
+import cn.tursom.core.stream.OutputStream
+import java.io.IOException
 
 /**
  * 原理 https://www.cnblogs.com/lidabo/p/9018548.html
@@ -22,7 +24,8 @@ class FlvChecker {
   /**
    * 从头部开始Check, 重新锚定时间戳, 将最后一帧(不管是否完整)去掉
    */
-  fun check(raf: InputStream, rafNew: OutputStream) { // 用于排除无效尾巴帧
+  fun check(raf: InputStream, rafNew: OutputStream) {
+    // 用于排除无效尾巴帧
     // 复制头部
     raf.read(buffer, 0, 9)
     rafNew.write(buffer, 0, 9)
@@ -36,15 +39,15 @@ class FlvChecker {
         // Logger.print("前一个长度为：" + predataSize);
         // 读取tag
         // tag 类型
-        when (val tagType = raf.read()) {
+        when (val tagType = raf.read().toInt()) {
           8, 9 -> {
             rafNew.write(buffer, 0, 4)
-            rafNew.write(tagType)
+            rafNew.write(tagType.toByte())
             // tag data size 3个字节。表示tag data的长度。从streamd id 后算起。
             val dataSize = readBytesToInt(raf, 3)
             rafNew.write(buffer, 0, 3)
             // 时间戳 3
-            val timestamp = readBytesToInt(raf, 3) + (raf.read() shl 24)
+            val timestamp = readBytesToInt(raf, 3) + (raf.read().toInt() shl 24)
             //timestamp += timestampEx
             dealTimestamp(rafNew, timestamp, tagType - 8)
             raf.read(buffer, 0, 3 + dataSize)
@@ -55,7 +58,7 @@ class FlvChecker {
             // 如果是scripts脚本，默认为第一个tag，此时将前一个tag Size 置零
             val zeroTimestamp = byteArrayOf(0, 0, 0, 0)
             rafNew.write(zeroTimestamp)
-            rafNew.write(tagType)
+            rafNew.write(tagType.toByte())
             val dataSize = readBytesToInt(raf, 3)
             rafNew.write(buffer, 0, 3)
             raf.read(buffer, 0, 4)
@@ -114,7 +117,7 @@ class FlvChecker {
     raf.write(int2Bytes(lowCurrentTime), 1, 3)
     // 高于0xffffff部分
     val highCurrentTime = lastTimestampWrite[tagType] shr 24
-    raf.write(highCurrentTime)
+    raf.write(highCurrentTime.toByte())
     return true
   }
 

@@ -122,8 +122,8 @@ class NettyByteBuffer(
     byteBuf.writeCharSequence(str, Charsets.UTF_8)
   }
 
-  override fun put(byteArray: ByteArray, startIndex: Int, endIndex: Int) {
-    byteBuf.writeBytes(byteArray, startIndex, endIndex - startIndex)
+  override fun put(byteArray: ByteArray, offset: Int, len: Int) {
+    byteBuf.writeBytes(byteArray, offset, len - offset)
   }
 
   override fun toString(): String {

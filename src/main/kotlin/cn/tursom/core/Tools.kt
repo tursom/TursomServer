@@ -10,6 +10,7 @@ import java.net.URLEncoder
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
+import java.util.concurrent.Executor
 import java.util.jar.JarFile
 import kotlin.collections.ArrayList
 
@@ -251,3 +252,9 @@ fun getTAG(cls: Class<*>): String {
 operator fun <T> (() -> T).unaryPlus() = object {
   override fun toString() = this@unaryPlus().toString()
 }
+
+operator fun Executor.invoke(action: () -> Unit) {
+  execute(action)
+}
+
+operator fun Executor.invoke(action: Runnable) = this(action::run)

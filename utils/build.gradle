@@ -1,8 +1,8 @@
 dependencies {
     implementation project(":")
-    implementation "com.google.code.gson:gson:2.8.2"
+    api "com.google.code.gson:gson:2.8.2"
     // kotlin 协程
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
     // 计算对象大小
-    implementation 'org.apache.lucene:lucene-core:4.0.0'
+    api 'org.apache.lucene:lucene-core:4.0.0'
 }
