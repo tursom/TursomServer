@@ -5,6 +5,7 @@ enum class ElementTarget {
 }
 
 @Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class DefaultTarget(val target: ElementTarget)
 
 /**
@@ -14,6 +15,7 @@ annotation class DefaultTarget(val target: ElementTarget)
  * String
  */
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Attribute
 
 /**
@@ -23,9 +25,11 @@ annotation class Attribute
  * String
  */
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class ElementText
 
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class SubElement
 
 /**
@@ -36,15 +40,19 @@ annotation class SubElement
  * element 为根节点
  */
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Constructor(val constructor: String)
 
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class FieldName(val name: String)
 
 @Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class ElementName(val name: String)
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class CompressionXml
 
 /**
@@ -81,13 +89,16 @@ annotation class CompressionXml
  * ): Any
  */
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class ToXml(val callback: String)
 
 /**
  * 数组所有的元素都同名，在同一个父节点下
  */
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Vararg
 
 @Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Ignore

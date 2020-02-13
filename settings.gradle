@@ -6,4 +6,6 @@ include 'log'
 include 'json'
 include 'utils:yaml'
 include 'web:web-coroutine'
+include 'microservices'
+include 'database:database-mysql'
 

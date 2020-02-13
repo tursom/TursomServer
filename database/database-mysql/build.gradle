@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(":")
+    implementation project(":database")
+    // cn.tusom.database.mysql 依赖的库
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.19'
+    // 数据库与序列化部分可选
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+}

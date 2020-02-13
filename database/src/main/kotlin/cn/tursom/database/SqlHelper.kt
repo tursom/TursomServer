@@ -1,162 +1,200 @@
 package cn.tursom.database
 
-import cn.tursom.database.SqlUtils.tableName
-import cn.tursom.database.clauses.Clause
-import cn.tursom.database.clauses.ClauseMaker
-import java.io.Closeable
-import java.lang.reflect.Field
+import cn.tursom.database.wrapper.Wrapper
+import java.io.Serializable
 
-/**
- * MySQLHelper，SQLite辅助使用类
- * 实现创建表格、查询、插入和更新功能
- */
+@Suppress("unused")
+interface SqlHelper<T, W : Wrapper<T>> {
+  /**
+   * 插入一条记录（选择字段，策略插入）
+   *
+   * @param entity 实体对象
+   */
+  fun save(entity: T): Boolean
 
-interface SqlHelper : Closeable {
-	val closed: Boolean
+  /**
+   * 插入（批量）
+   *
+   * @param entityList 实体对象集合
+   */
+  fun saveBatch(entityList: Collection<T>): Boolean {
+    return saveBatch(entityList, 1000)
+  }
 
-	/**
-	 * 创建表格
-	 * @param table: 表格名
-	 * @param keys: 属性列表
-	 */
-	fun createTable(table: String, keys: Iterable<String>)
+  /**
+   * 插入（批量）
+   *
+   * @param entityList 实体对象集合
+   * @param batchSize  插入批次数量
+   */
+  fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean
 
-	/**
-	 * 根据提供的class对象自动化创建表格
-	 * 但是有诸多缺陷，所以不是很建议使用
-	 */
-	fun createTable(fields: Class<*>)
+  /**
+   * 批量修改插入
+   *
+   * @param entityList 实体对象集合
+   */
+  fun saveOrUpdateBatch(entityList: Collection<T>): Boolean {
+    return saveOrUpdateBatch(entityList, 1000)
+  }
 
-	/**
-	 * 删除表格
-	 */
-	fun deleteTable(table: String)
+  /**
+   * 批量修改插入
+   *
+   * @param entityList 实体对象集合
+   * @param batchSize  每次的数量
+   */
+  fun saveOrUpdateBatch(entityList: Collection<T>, batchSize: Int): Boolean
 
-	/**
-	 * 删除表格
-	 */
-	fun dropTable(table: String)
+  /**
+   * 根据 ID 删除
+   *
+   * @param id 主键ID
+   */
+  fun removeById(id: Serializable?): Boolean
 
-	/**
-	 * 查询
-	 * @param adapter 用于保存查询结果的数据类，由SQLAdapter继承而来
-	 * @param fields 查询字段
-	 * @param where 指定从一个表或多个表中获取数据的条件,Pair左边为字段名，右边为限定的值
-	 * @param maxCount 最大查询数量
-	 */
-	fun <T : Any> select(
-		adapter: SqlAdapter<T>,
-		fields: Iterable<String>? = null,
-		where: Clause,
-		order: Field? = null,
-		reverse: Boolean = false,
-		maxCount: Int? = null
-	): SqlAdapter<T>
+  /**
+   * 根据 columnMap 条件，删除记录
+   *
+   * @param columnMap 表字段 map 对象
+   */
+  fun removeByMap(columnMap: Map<String, Any?>): Boolean
 
-	/**
-	 * 用于支持灵活查询
-	 */
-	fun <T : Any> select(
-		adapter: SqlAdapter<T>,
-		fields: String = "*",
-		where: String? = null,
-		order: String? = null,
-		reverse: Boolean = false,
-		maxCount: Int? = null
-	): SqlAdapter<T>
+  /**
+   * 根据 entity 条件，删除记录
+   */
+  fun remove(queryWrapper: W): Boolean
 
-	/**
-	 * 插入
-	 * @param value 值
-	 */
-	fun insert(value: Any): Int
+  /**
+   * 删除（根据ID 批量删除）
+   *
+   * @param idList 主键ID列表
+   */
+  fun removeByIds(idList: Collection<Serializable>): Boolean
 
-	fun insert(valueList: Iterable<*>): Int
+  /**
+   * 根据 ID 选择修改
+   *
+   * @param entity 实体对象
+   */
+  fun updateById(entity: T): Boolean
 
-	fun insert(table: String, fields: String, values: String): Int
+  /**
+   * 根据 whereEntity 条件，更新记录
+   *
+   * @param entity        实体对象
+   * @param updateWrapper 实体对象封装操作类
+   */
+  fun update(entity: T?, updateWrapper: W): Boolean
 
-	fun update(table: String, set: String, where: String = ""): Int
+  /**
+   * 根据 UpdateWrapper 条件，更新记录 需要设置sqlset
+   *
+   * @param updateWrapper 实体对象封装操作类
+   */
+  fun update(updateWrapper: W): Boolean {
+    return update(null, updateWrapper)
+  }
 
-	fun update(value: Any, where: Clause): Int
+  /**
+   * 根据ID 批量更新
+   *
+   * @param entityList 实体对象集合
+   */
+  fun updateBatchById(entityList: Collection<T>): Boolean {
+    return updateBatchById(entityList, 1000)
+  }
 
-	fun delete(table: String, where: String? = null): Int
+  /**
+   * 根据ID 批量更新
+   *
+   * @param entityList 实体对象集合
+   * @param batchSize  更新批次数量
+   */
+  fun updateBatchById(entityList: Collection<T>, batchSize: Int): Boolean
 
-	fun delete(table: String, where: Clause?): Int
+  /**
+   * TableId 注解存在更新记录，否插入一条记录
+   *
+   * @param entity 实体对象
+   */
+  fun saveOrUpdate(entity: T?): Boolean
 
-	fun commit()
-}
+  /**
+   * 根据 ID 查询
+   *
+   * @param id 主键ID
+   */
+  fun getById(id: Serializable?): T?
 
-/**
- * 用于支持灵活查询
- */
-inline fun <reified T : Any> SqlHelper.select(
-	fields: String = "*",
-	where: String? = null,
-	order: String? = null,
-	reverse: Boolean = false,
-	maxCount: Int? = null
-): SqlAdapter<T> = select(SqlAdapter(T::class.java), fields, where, order, reverse, maxCount)
+  /**
+   * 查询（根据ID 批量查询）
+   *
+   * @param idList 主键ID列表
+   */
+  fun listByIds(idList: Collection<Serializable>): Collection<T>
 
-inline fun <reified T : Any> SqlHelper.select(
-	fields: Iterable<String> = listOf("*"),
-	where: Clause,
-	order: Field? = null,
-	reverse: Boolean = false,
-	maxCount: Int? = null
-): SqlAdapter<T> = select(SqlAdapter(T::class.java), fields, where, order, reverse, maxCount)
+  /**
+   * 查询（根据 columnMap 条件）
+   *
+   * @param columnMap 表字段 map 对象
+   */
+  fun listByMap(columnMap: Map<String, Any?>): Collection<T>
 
-fun <T : Any> SqlHelper.select(
-	adapter: SqlAdapter<T>,
-	maker: SqlSelector<T>.() -> Unit
-): SqlAdapter<T> {
-	val selector = SqlSelector(this, adapter)
-	selector.maker()
-	return selector.select()
-}
+  /**
+   * 根据 Wrapper，查询一条记录
+   *
+   * @param queryWrapper 实体对象封装操作类
+   * @param throwEx      有多个 result 是否抛出异常
+   */
+  fun getOne(queryWrapper: W, throwEx: Boolean = true): T?
 
-inline infix fun <reified T : Any> SqlHelper.select(
-	noinline maker: SqlSelector<T>.() -> Unit
-): SqlAdapter<T> = select(SqlAdapter(T::class.java), maker)
+  /**
+   * 根据 Wrapper，查询一条记录
+   *
+   * @param queryWrapper 实体对象封装操作类
+   */
+  fun getMap(queryWrapper: W): Map<String, Any?>
 
-fun <T : Any> SqlHelper.select(
-	clazz: Class<T>,
-	fields: Iterable<String> = listOf("*"),
-	where: Clause,
-	order: Field? = null,
-	reverse: Boolean = false,
-	maxCount: Int? = null
-): SqlAdapter<T> = select(SqlAdapter(clazz), fields, where, order, reverse, maxCount)
+  ///**
+  // * 根据 Wrapper，查询一条记录
+  // *
+  // * @param queryWrapper 实体对象封装操作类
+  // * @param mapper       转换函数
+  // */
+  //fun <V> getObj(queryWrapper: W, mapper: Function<in Any?, V?>?): V?
 
-/**
- * 用于支持灵活查询
- */
-fun <T : Any> SqlHelper.select(
-	clazz: Class<T>,
-	fields: String = "*",
-	where: String? = null,
-	order: String? = null,
-	reverse: Boolean = false,
-	maxCount: Int? = null
-): SqlAdapter<T> = select(SqlAdapter(clazz), fields, where, order, reverse, maxCount)
+  /**
+   * 根据 Wrapper 条件，查询总记录数
+   *
+   * @param queryWrapper 实体对象封装操作类
+   */
+  fun count(queryWrapper: W): Int
 
-fun SqlHelper.delete(
-	clazz: Class<*>,
-	where: String? = null
-) = delete(clazz.tableName, where)
+  /**
+   * 查询列表
+   *
+   * @param queryWrapper 实体对象封装操作类
+   */
+  fun list(queryWrapper: W): List<T>
 
-fun SqlHelper.delete(
-	table: String,
-	where: ClauseMaker.() -> Clause
-) = delete(table, ClauseMaker.where())
+  /**
+   * 获取对应 entity 的 BaseMapper
+   *
+   * @return BaseMapper
+   */
+  fun getBaseMapper(): Mapper<T>
 
-infix fun SqlHelper.delete(helper: SqlDeleter.() -> Unit): Int {
-	val deleter = SqlDeleter(this)
-	deleter.helper()
-	return deleter.delete()
-}
-
-infix fun SqlHelper.update(updater: SqlUpdater.() -> Unit): Int {
-	val sqlUpdater = SqlUpdater(this)
-	sqlUpdater.updater()
-	return sqlUpdater.update()
+  /**
+   *
+   *
+   * 根据updateWrapper尝试更新，否继续执行saveOrUpdate(T)方法
+   * 此次修改主要是减少了此项业务代码的代码量（存在性验证之后的saveOrUpdate操作）
+   *
+   *
+   * @param entity 实体对象
+   */
+  fun saveOrUpdate(entity: T?, updateWrapper: W): Boolean {
+    return update(entity, updateWrapper) || saveOrUpdate(entity)
+  }
 }

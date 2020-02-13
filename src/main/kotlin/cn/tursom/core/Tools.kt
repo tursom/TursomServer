@@ -3,6 +3,7 @@
 package cn.tursom.core
 
 import sun.misc.Unsafe
+import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.net.URLDecoder
@@ -115,108 +116,64 @@ fun String.simplifyPath(): String {
   return if (result.isNotEmpty()) result else "."
 }
 
-fun ByteArray.md5(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("MD5")
-    //加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
+//获取md5加密对象
+val md5 by lazy { MessageDigest.getInstance("MD5")!! }
+
+fun ByteArray.md5(): ByteArray {
+  //加密，返回字节数组
+  return md5.digest(this)
+}
+
+fun String.md5(): String = toByteArray().md5().toHexString()
+
+
+//获取md5加密对象
+val sha256 by lazy { MessageDigest.getInstance("SHA-256")!! }
+
+fun ByteArray.sha256(): ByteArray {
+  //加密，返回字节数组
+  return sha256.digest(this)
+}
+
+fun String.sha256(): String = toByteArray().sha256().toHexString()
+
+//获取sha加密对象
+val sha by lazy { MessageDigest.getInstance("SHA")!! }
+
+fun ByteArray.sha(): ByteArray = sha.digest(this)
+
+fun String.sha(): String = toByteArray().sha().toHexString()
+
+//获取sha1加密对象
+val sha1 by lazy { MessageDigest.getInstance("SHA-1")!! }
+
+fun ByteArray.sha1(): ByteArray = sha1.digest(this)
+
+fun String.sha1(): String = toByteArray().sha1().toHexString()
+
+//获取sha384加密对象
+val shA384 by lazy { MessageDigest.getInstance("SHA-384")!! }
+
+fun ByteArray.sha384(): ByteArray = shA384.digest(this)
+
+fun String.sha384(): String = toByteArray().sha384().toHexString()
+
+//获取 sha-512 加密对象
+val sha512 by lazy { MessageDigest.getInstance("SHA-512")!! }
+
+fun ByteArray.sha512(): ByteArray = sha512.digest(this)
+
+fun String.sha512(): String = toByteArray().sha512().toHexString()
+
+private val HEX_ARRAY = "0123456789abcdef".toCharArray()
+fun ByteArray.toHexString(): String {
+  val hexChars = CharArray(size * 2)
+  for (i in indices) {
+    val b = this[i].toInt()
+    hexChars[i shl 1] = HEX_ARRAY[b ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = HEX_ARRAY[b and 0x0F]
   }
-}
-
-fun String.md5(): String? {
-  return toByteArray().md5()?.toHexString()
-}
-
-fun ByteArray.sha256(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("SHA-256")
-    //加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
-  }
-}
-
-fun String.sha256(): String? {
-  return toByteArray().sha256()?.toHexString()
-}
-
-fun ByteArray.sha(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("SHA")
-    //对字符串加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
-  }
-}
-
-fun String.sha(): String? = toByteArray().sha()?.toHexString()
-
-fun ByteArray.sha1(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("SHA-1")
-    //对字符串加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
-  }
-}
-
-fun String.sha1(): String? = toByteArray().sha1()?.toHexString()
-
-fun ByteArray.sha384(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("SHA-384")
-    //对字符串加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
-  }
-}
-
-fun String.sha384(): String? = toByteArray().sha384()?.toHexString()
-
-fun ByteArray.sha512(): ByteArray? {
-  return try {
-    //获取md5加密对象
-    val instance = MessageDigest.getInstance("SHA-512")
-    //对字符串加密，返回字节数组
-    instance.digest(this)
-  } catch (e: NoSuchAlgorithmException) {
-    e.printStackTrace()
-    null
-  }
-}
-
-fun String.sha512(): String? = toByteArray().sha512()?.toHexString()
-
-fun ByteArray.toHexString(): String? {
-  val sb = StringBuilder()
-  forEach {
-    //获取低八位有效值+
-    val i: Int = it.toInt() and 0xff
-    //将整数转化为16进制
-    var hexString = Integer.toHexString(i)
-    if (hexString.length < 2) {
-      //如果是一位的话，补0
-      hexString = "0$hexString"
-    }
-    sb.append(hexString)
-  }
-  return sb.toString()
+  return String(hexChars)
 }
 
 fun ByteArray.toUTF8String() = String(this, Charsets.UTF_8)
@@ -258,3 +215,7 @@ operator fun Executor.invoke(action: () -> Unit) {
 }
 
 operator fun Executor.invoke(action: Runnable) = this(action::run)
+
+inline fun <reified T : Annotation> Field.getAnnotation(): T? = getAnnotation(T::class.java)
+
+inline fun <reified T : Annotation> Class<*>.getAnnotation(): T? = getAnnotation(T::class.java)
