@@ -251,3 +251,7 @@ fun <T> T.println(): T {
 
 @Suppress("UNCHECKED_CAST")
 fun <T> Any.cast(): T = this as T
+
+inline fun loop(`continue`: () -> Boolean = { true }, action: () -> Unit) {
+  while (`continue`()) action()
+}
