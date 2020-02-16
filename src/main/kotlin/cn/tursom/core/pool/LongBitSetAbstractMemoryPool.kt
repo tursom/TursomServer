@@ -1,6 +1,6 @@
 package cn.tursom.core.pool
 
-import cn.tursom.core.LongBitSet
+import cn.tursom.core.datastruct.LongBitSet
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.buffer.impl.PooledByteBuffer

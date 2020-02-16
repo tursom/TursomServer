@@ -3,6 +3,8 @@ dependencies {
     api "com.google.code.gson:gson:2.8.2"
     // kotlin 协程
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    // kotlin 反射
+    api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     // 计算对象大小
     api 'org.apache.lucene:lucene-core:4.0.0'
 }

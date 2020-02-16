@@ -3,7 +3,7 @@ package cn.tursom.core.pool
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.buffer.impl.PooledByteBuffer
-import cn.tursom.core.AtomicBitSet
+import cn.tursom.core.datastruct.AtomicBitSet
 
 abstract class AbstractMemoryPool(
     val blockSize: Int,

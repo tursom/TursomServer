@@ -37,7 +37,6 @@ fun printNonDaemonThread() {
 fun log(log: String) = println("${System.currentTimeMillis()}: $log")
 fun logE(log: String) = System.err.println("${System.currentTimeMillis()}: $log")
 
-
 val String.urlDecode: String get() = URLDecoder.decode(this, "utf-8")
 val String.urlEncode: String get() = URLEncoder.encode(this, "utf-8")
 
@@ -200,7 +199,16 @@ fun ByteArray.digest(type: String) = try {
   null
 }
 
-fun randomInt(min: Int, max: Int) = Random().nextInt(max) % (max - min + 1) + min
+val random = Random()
+fun randomInt() = random.nextInt()
+fun randomInt(min: Int, max: Int): Int = if (min > max) randomInt(max, min) else (random.nextInt() and Int.MAX_VALUE) % (max - min + 1) + min
+fun randomLong() = random.nextLong()
+fun randomLong(min: Long, max: Long) = (random.nextLong() and Long.MAX_VALUE) % (max - min + 1) + min
+fun randomBoolean() = random.nextBoolean()
+fun randomFloat() = random.nextFloat()
+fun randomDouble() = random.nextDouble()
+fun randomGaussian() = random.nextGaussian()
+fun randomBytes(bytes: ByteArray) = random.nextBytes(bytes)
 
 fun getTAG(cls: Class<*>): String {
   return cls.name.split(".").last().dropLast(10)
@@ -219,3 +227,27 @@ operator fun Executor.invoke(action: Runnable) = this(action::run)
 inline fun <reified T : Annotation> Field.getAnnotation(): T? = getAnnotation(T::class.java)
 
 inline fun <reified T : Annotation> Class<*>.getAnnotation(): T? = getAnnotation(T::class.java)
+
+fun process(size: Int, vararg actions: () -> Unit) {
+  actions.forEachIndexed { index, function ->
+    if (actions.size - index <= size) function()
+  }
+}
+
+fun <T> process(value: T, vararg actions: Pair<T, () -> Unit>) {
+  var checked = false
+  actions.forEach { (v, function) ->
+    if (checked || value == v) {
+      checked = true
+      function()
+    }
+  }
+}
+
+fun <T> T.println(): T {
+  println(this)
+  return this
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T> Any.cast(): T = this as T

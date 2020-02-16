@@ -1,29 +1,34 @@
 package cn.tursom.core.datastruct
 
-interface SimpMap<K, V> : Map<K, V> {
-	/**
-	 * @return prev value
-	 */
-	operator fun set(key: K, value: V)
-	infix fun delete(key: K): V?
+interface SimpMap<K, V> : MutableMap<K, V> {
+    /**
+     * @return prev value
+     */
+    operator fun set(key: K, value: V)
 
-	fun setAndGet(key: K, value: V): V? {
-		val prev = get(key)
-		set(key, value)
-		return prev
-	}
+    infix fun delete(key: K): V?
 
-	/**
-	 * 清空整个表
-	 */
-	fun clear()
+    fun setAndGet(key: K, value: V): V? {
+        val prev = get(key)
+        set(key, value)
+        return prev
+    }
 
-	fun first(): V?
+    override fun put(key: K, value: V): V? = setAndGet(key, value)
 
-	infix fun putAll(from: Map<out K, V>) {
-		from.forEach { (k, u) ->
-			set(k, u)
-		}
-	}
+    override fun remove(key: K): V? = delete(key)
+
+    /**
+     * 清空整个表
+     */
+    override fun clear()
+
+    fun first(): V?
+
+    override infix fun putAll(from: Map<out K, V>) {
+        from.forEach { (k, u) ->
+            set(k, u)
+        }
+    }
 }
 

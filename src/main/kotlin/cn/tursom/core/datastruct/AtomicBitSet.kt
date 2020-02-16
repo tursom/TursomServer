@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.datastruct
 
 import java.io.Serializable
 import java.lang.reflect.Field
