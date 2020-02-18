@@ -7,6 +7,8 @@ import kotlin.reflect.KProperty
 object Update {
   operator fun invoke(action: Update.() -> Bson) = this.action()
 
+  infix fun Bson.and(update: Bson): Bson = Updates.combine(this, update)
+  fun combine(vararg updates: Bson): Bson = Updates.combine(*updates)
 
   infix fun KProperty<*>.set(value: Any): Bson = Updates.set(MongoUtil.fieldName(this), value)
   fun KProperty<*>.unset(): Bson = Updates.unset(MongoUtil.fieldName(this))

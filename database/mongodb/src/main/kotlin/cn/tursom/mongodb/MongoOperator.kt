@@ -20,6 +20,7 @@ class MongoOperator<T : Any>(
   constructor(clazz: Class<T>, database: MongoDatabase) : this(database.getCollection(MongoUtil.collectionName(clazz), clazz), clazz)
 
   private val fields = clazz.declaredFields.filter {
+    it.isAccessible = true
     !it.isTransient() && it.getAnnotation(Ignore::class.java) == null
   }
 
@@ -49,17 +50,17 @@ class MongoOperator<T : Any>(
 
   @Suppress("SpellCheckingInspection")
   fun upsert(update: Bson, where: Bson, options: UpdateOptions = UpdateOptions()): UpdateResult {
-    return update(convertToBson(update), where, options.upsert(true))
+    return update(update, where, options.upsert(true))
   }
 
-  fun add(field: KProperty1<T, Number>, value: Number, where: Bson, options: UpdateOptions = UpdateOptions()): UpdateResult {
+  fun add(field: KProperty1<T, Number?>, value: Number, where: Bson, options: UpdateOptions = UpdateOptions()): UpdateResult {
     return upsert(
       Update { field inc value },
       where, options
     )
   }
 
-  fun inc(field: KProperty1<T, Number>, where: Bson): UpdateResult {
+  fun inc(field: KProperty1<T, Number?>, where: Bson): UpdateResult {
     return add(field, 1, where)
   }
 

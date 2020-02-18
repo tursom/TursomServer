@@ -28,10 +28,11 @@ object MongoUtil {
   fun convertToBson(entity: Any): Bson {
     val bson = Document()
     entity.javaClass.declaredFields.filter {
+      it.isAccessible = true
       !it.isTransient() && it.getAnnotation(Ignore::class.java) == null
     }.forEach {
       val value = it.get(entity) ?: return@forEach
-      bson[MongoUtil.fieldName(it)] = value
+      bson[fieldName(it)] = value
     }
     return bson
   }
