@@ -1,0 +1,8 @@
+
+dependencies {
+    implementation project(":")
+    // https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver
+    compile group: 'org.mongodb', name: 'mongo-java-driver', version: '3.12.1'
+    // 数据库与序列化部分可选
+    api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
+}
