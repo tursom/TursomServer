@@ -1,5 +1,6 @@
 package cn.tursom.mongodb
 
+import cn.tursom.core.isStatic
 import cn.tursom.core.isTransient
 import cn.tursom.mongodb.annotation.Ignore
 import com.mongodb.client.MongoCollection
@@ -14,25 +15,22 @@ import kotlin.reflect.KProperty1
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter", "unused")
 class MongoOperator<T : Any>(
-  val collection: MongoCollection<T>,
+  val collection: MongoCollection<Document>,
   val clazz: Class<T>
 ) {
-  constructor(clazz: Class<T>, database: MongoDatabase) : this(database.getCollection(MongoUtil.collectionName(clazz), clazz), clazz)
+  constructor(clazz: Class<T>, database: MongoDatabase) : this(database.getCollection(MongoUtil.collectionName(clazz)), clazz)
 
   private val fields = clazz.declaredFields.filter {
     it.isAccessible = true
-    !it.isTransient() && it.getAnnotation(Ignore::class.java) == null
+    !it.isStatic() && !it.isTransient() && it.getAnnotation(Ignore::class.java) == null
   }
 
   fun save(entity: T, options: InsertOneOptions = InsertOneOptions()) {
-    collection.insertOne(entity, options)
+    collection.insertOne(convertToBson(entity), options)
   }
 
   fun save(entities: Collection<T>, options: InsertManyOptions = InsertManyOptions()) {
-    collection.insertMany(when (entities) {
-      is List<T> -> entities
-      else -> entities.toList()
-    }, options)
+    collection.insertMany(entities.map { convertToBson(it) }, options)
   }
 
   fun update(update: Bson, where: Bson, options: UpdateOptions = UpdateOptions()): UpdateResult {
@@ -64,11 +62,11 @@ class MongoOperator<T : Any>(
     return add(field, 1, where)
   }
 
-  private fun convertToBson(entity: Any): Bson {
+  private fun convertToBson(entity: Any): Document {
+    System.err.println(entity)
     val bson = Document()
     fields.forEach {
-      val value = it.get(entity) ?: return@forEach
-      bson[MongoUtil.fieldName(it)] = value
+      MongoUtil.injectValue(bson, it.get(entity) ?: return@forEach, it)
     }
     return bson
   }
