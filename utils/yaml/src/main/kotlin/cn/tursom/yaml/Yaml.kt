@@ -1,7 +1,6 @@
 package cn.tursom.yaml
 
 import cn.tursom.core.Parser
-import cn.tursom.core.Unsafe
 import cn.tursom.core.getClazz
 import org.yaml.snakeyaml.Yaml
 import java.lang.reflect.Modifier
@@ -10,11 +9,6 @@ import java.lang.reflect.Modifier
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object Yaml {
   private val yaml = Yaml()
-  private val unsafe = run {
-    val field = Unsafe::class.java.getDeclaredField("theUnsafe")
-    field.isAccessible = true
-    field.get(null) as Unsafe
-  }
 
   fun toYaml(obj: Any): String {
     val stringBuilder = StringBuilder()
