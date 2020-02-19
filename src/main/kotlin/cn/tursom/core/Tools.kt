@@ -255,3 +255,5 @@ fun <T> Any?.cast(): T = this as T
 inline fun loop(`continue`: () -> Boolean = { true }, action: () -> Unit) {
   while (`continue`()) action()
 }
+
+inline fun <reified T> getClazz() = T::class.java
