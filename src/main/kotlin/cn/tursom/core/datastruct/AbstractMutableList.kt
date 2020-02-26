@@ -9,7 +9,7 @@ interface AbstractMutableList<T> : MutableList<T> {
   }
 
   override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> {
-    return SubList(this, fromIndex, toIndex)
+    return MutableSubList(this, fromIndex, toIndex)
   }
 
   override fun clear() {

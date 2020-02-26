@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-class SubList<T>(
+class MutableSubList<T>(
   val parent: MutableList<T>,
   val fromIndex: Int,
   val toIndex: Int

@@ -2,6 +2,7 @@ package cn.tursom.mongodb
 
 import cn.tursom.core.*
 import cn.tursom.mongodb.annotation.Ignore
+import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
@@ -70,6 +71,7 @@ class MongoOperator<T : Any>(
 
   fun list(where: Bson? = null): List<T> {
     val find = find(where)
+    val iterator = find.iterator()
     return find.mapNotNull { Parser.parse(it, clazz) }
   }
 
@@ -80,6 +82,24 @@ class MongoOperator<T : Any>(
       collection.find()
     }
   }
+
+  fun get(filter: Bson? = null): Iterable<T> {
+    val result = if (filter != null) {
+      collection.find(filter)
+    } else {
+      collection.find()
+    }
+
+    return object : Iterable<T> {
+      override fun iterator(): Iterator<T> = object : Iterator<T> {
+        val iterator = result.iterator()
+        override fun hasNext(): Boolean = iterator.hasNext()
+        override fun next(): T = Parser.parse(iterator.next(), clazz)!!
+      }
+    }
+  }
+
+  fun aggregate(vararg pipeline: Bson): AggregateIterable<Document> = aggregate(pipeline.asList())
 
   private fun convertToBson(entity: Any): Document {
     val bson = Document()
@@ -97,8 +117,7 @@ class MongoOperator<T : Any>(
     }.cast<T>()
     fields.forEach {
       val value = bson[MongoUtil.fieldName(it)] ?: return@forEach
-
-      MongoUtil.injectValue(bson, it.get(entity) ?: return@forEach, it)
+      MongoUtil.injectValue(bson, value, it)
     }
     return entity
   }
