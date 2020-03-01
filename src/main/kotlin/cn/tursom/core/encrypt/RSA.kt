@@ -19,6 +19,14 @@ class RSA(val publicKey: RSAPublicKey, val privateKey: RSAPrivateKey? = null) : 
   val decryptMaxLen = keySize / 8
   val encryptMaxLen = decryptMaxLen - 11
 
+  val public by lazy {
+    if (privateKey == null) {
+      this
+    } else {
+      RSA(publicKey)
+    }
+  }
+
   private val encryptCipher = Cipher.getInstance("RSA")!!
   private val decryptCipher = Cipher.getInstance("RSA")!!
 
