@@ -45,7 +45,7 @@ class WebSocketClientChannelHandler(
       return
     }
     if (msg is FullHttpResponse) {
-      throw Exception("Unexpected FullHttpResponse (getStatus=${msg.status}, content=${msg.content().toString(CharsetUtil.UTF_8)})")
+      throw Exception("Unexpected FullHttpResponse (getStatus=${msg.status()}, content=${msg.content().toString(CharsetUtil.UTF_8)})")
     }
     when (msg) {
       is TextWebSocketFrame -> handler.readMessage(client, msg)
