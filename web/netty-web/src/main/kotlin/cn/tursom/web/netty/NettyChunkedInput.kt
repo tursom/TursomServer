@@ -1,5 +1,6 @@
 package cn.tursom.web.netty
 
+import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator

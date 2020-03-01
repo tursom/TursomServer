@@ -9,4 +9,5 @@ include 'web:web-coroutine'
 include 'microservices'
 include 'database:database-mysql'
 include 'database:mongodb'
+include 'utils:ws-client'
 

@@ -1,4 +1,4 @@
-package cn.tursom.web.netty
+package cn.tursom.utils.bytebuffer
 
 import cn.tursom.core.buffer.ByteBuffer
 import io.netty.buffer.ByteBuf

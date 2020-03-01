@@ -1,7 +1,6 @@
 dependencies {
     implementation project(":")
-    implementation project(":web")
-    implementation project(":utils")
     api project(":log")
+    api project(":utils")
     implementation group: "io.netty", name: "netty-all", version: "4.1.43.Final"
 }

@@ -7,4 +7,5 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     // 计算对象大小
     api 'org.apache.lucene:lucene-core:4.0.0'
+    api group: "io.netty", name: "netty-all", version: "4.1.43.Final"
 }

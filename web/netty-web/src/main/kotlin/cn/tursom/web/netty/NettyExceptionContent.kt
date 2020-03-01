@@ -1,6 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import cn.tursom.web.ExceptionContent
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.CompositeByteBuf
