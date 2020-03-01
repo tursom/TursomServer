@@ -50,7 +50,6 @@ interface AsyncSocket : Closeable {
   /**
    * 在有数据读取的时候自动由内存池分配内存
    */
-  @Throws(SocketException::class)
   suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer = read(timeout) {
     val buffer = pool.get()
     if (channel.read(buffer) < 0) throw SocketException()

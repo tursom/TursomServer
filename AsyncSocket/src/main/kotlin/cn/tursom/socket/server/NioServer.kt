@@ -1,9 +1,9 @@
 package cn.tursom.socket.server
 
-import cn.tursom.socket.AsyncSocket
-import cn.tursom.socket.NioSocket
-import cn.tursom.socket.NioProtocol
 import cn.tursom.niothread.NioThread
+import cn.tursom.socket.AsyncSocket
+import cn.tursom.socket.NioProtocol
+import cn.tursom.socket.NioSocket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -17,7 +17,7 @@ open class NioServer(
   override val port: Int,
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
-  val handler: suspend AsyncSocket.() -> Unit
+  private val handler: suspend AsyncSocket.() -> Unit
 ) : SocketServer by NioLoopServer(port, object : NioProtocol by NioSocket.nioSocketProtocol {
   override fun handleConnect(key: SelectionKey, nioThread: NioThread) {
     coroutineScope.launch {
