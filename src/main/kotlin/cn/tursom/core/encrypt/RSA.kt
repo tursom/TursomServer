@@ -10,17 +10,26 @@ import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class RSA(val publicKey: RSAPublicKey, val privateKey: RSAPrivateKey? = null) : Encrypt {
   val publicKeyEncoded get() = publicKey.encoded!!
   val privateKeyEncoded get() = privateKey?.encoded
+
+  val keySize = publicKey.modulus.bitLength()
+  val decryptMaxLen = keySize / 8
+  val encryptMaxLen = decryptMaxLen - 11
 
   private val encryptCipher = Cipher.getInstance("RSA")!!
   private val decryptCipher = Cipher.getInstance("RSA")!!
 
   init {
-    encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey)
-    if (privateKey != null) decryptCipher.init(Cipher.DECRYPT_MODE, privateKey)
+    if (privateKey != null) {
+      encryptCipher.init(Cipher.ENCRYPT_MODE, privateKey)
+      decryptCipher.init(Cipher.DECRYPT_MODE, privateKey)
+    } else {
+      encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey)
+      decryptCipher.init(Cipher.DECRYPT_MODE, publicKey)
+    }
   }
 
   constructor(keyPair: KeyPair) : this(keyPair.public as RSAPublicKey, keyPair.private as RSAPrivateKey)
@@ -33,57 +42,67 @@ class RSA(val publicKey: RSAPublicKey, val privateKey: RSAPrivateKey? = null) : 
   constructor(publicKey: ByteArray) : this(KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(publicKey)) as RSAPublicKey)
 
   override fun encrypt(data: ByteArray, offset: Int, size: Int): ByteArray {
-    return if (size < 117)
+    return if (size < encryptMaxLen) {
       encryptCipher.doFinal(data, offset, size)
-    else {
-      val buffer = ByteArray(size / 117 * 128 + 128)
-      var readPosition = offset
-      var decodeIndex = 0
-
-      while (readPosition + 117 < size) {
-        decodeIndex += encryptCipher.doFinal(data, readPosition, 117, buffer, decodeIndex)
-        readPosition += 117
-      }
-      decodeIndex += encryptCipher.doFinal(data, readPosition, size - readPosition, buffer, decodeIndex)
-
-      buffer.copyOf(decodeIndex)
+    } else {
+      val buffer = ByteArray(((size - 1) / encryptMaxLen + 1) * decryptMaxLen)
+      buffer.copyOf(doFinal(data, offset, size, buffer, encryptCipher, encryptMaxLen))
     }
   }
 
   override fun decrypt(data: ByteArray, offset: Int, size: Int): ByteArray {
-    return if (data.size < 128) {
+    return if (data.size < decryptMaxLen) {
       decryptCipher.doFinal(data, offset, size)
     } else {
-      val buffer = ByteArray(size / 128 * 117 + 11)
-      var readPostion = offset
-      var decodeIndex = 0
-
-      while (readPostion + 128 < size) {
-        decodeIndex += decryptCipher.doFinal(data, readPostion, 128, buffer, decodeIndex)
-        readPostion += 128
-      }
-      decodeIndex += decryptCipher.doFinal(data, readPostion, size - readPostion, buffer, decodeIndex)
-      buffer.copyOf(decodeIndex)
+      val buffer = ByteArray(size / decryptMaxLen * encryptMaxLen + 11)
+      buffer.copyOf(doFinal(data, offset, size, buffer, decryptCipher, decryptMaxLen))
     }
   }
 
   override fun encrypt(data: ByteArray, buffer: ByteArray, bufferOffset: Int, offset: Int, size: Int): Int {
-    return encryptCipher.doFinal(data, offset, 128, buffer, bufferOffset)
+    return if (data.size < decryptMaxLen) {
+      encryptCipher.doFinal(data, offset, size, buffer, bufferOffset)
+    } else {
+      doFinal(data, offset, size, buffer, encryptCipher, decryptMaxLen, bufferOffset)
+    }
   }
 
   override fun decrypt(data: ByteArray, buffer: ByteArray, bufferOffset: Int, offset: Int, size: Int): Int {
-    return decryptCipher.doFinal(data, offset, 128, buffer, bufferOffset)
+    return if (data.size < decryptMaxLen) {
+      decryptCipher.doFinal(data, offset, size, buffer, bufferOffset)
+    } else {
+      doFinal(data, offset, size, buffer, decryptCipher, decryptMaxLen, bufferOffset)
+    }
   }
 
-  fun sign(data: ByteArray): ByteArray {
-    val signature: Signature = Signature.getInstance("MD5withRSA")
+  private fun doFinal(
+    data: ByteArray,
+    offset: Int,
+    size: Int,
+    buffer: ByteArray,
+    cipher: Cipher,
+    blockSize: Int,
+    bufferOffset: Int = 0
+  ): Int {
+    var readPosition = offset
+    var writeIndex = bufferOffset
+    while (readPosition + blockSize < size) {
+      writeIndex += cipher.doFinal(data, readPosition, blockSize, buffer, writeIndex)
+      readPosition += blockSize
+    }
+    writeIndex += cipher.doFinal(data, readPosition, size - readPosition, buffer, writeIndex)
+    return writeIndex - bufferOffset
+  }
+
+  fun sign(data: ByteArray, digest: String = "SHA256"): ByteArray {
+    val signature: Signature = Signature.getInstance("${digest}withRSA")
     signature.initSign(privateKey)
     signature.update(data)
     return signature.sign()
   }
 
-  fun verify(data: ByteArray, sign: ByteArray): Boolean {
-    val signature = Signature.getInstance("MD5withRSA")
+  fun verify(data: ByteArray, sign: ByteArray, digest: String = "SHA256"): Boolean {
+    val signature = Signature.getInstance("${digest}withRSA")
     signature.initVerify(publicKey)
     signature.update(data)
     return signature.verify(sign)
