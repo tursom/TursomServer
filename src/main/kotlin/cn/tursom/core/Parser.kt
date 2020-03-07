@@ -4,8 +4,12 @@ import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 object Parser {
+  private val simpleDateFormat = ThreadLocalSimpleDateFormat()
   private val Field.actualTypeArguments get() = (genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
   fun <T> parse(yaml: Any, clazz: Class<T>): T? {
@@ -26,6 +30,7 @@ object Parser {
         Float::class.java -> yaml.toFloat()
         Double::class.java -> yaml.toDouble()
         Boolean::class.java -> yaml.toBoolean()
+        Date::class.java -> yaml.toDate()
 
         getClazz<Int>() -> yaml.toInt()
         getClazz<Long>() -> yaml.toLong()
@@ -173,5 +178,24 @@ object Parser {
     is Iterator<*> -> null
     is Map<*, *> -> null
     else -> toString().toBoolean()
+  }
+
+  private fun Any.toDate(): Date? = when (this) {
+    is Number -> Date(toLong())
+    is Boolean -> null
+    is String -> when (val time = toLongOrNull()) {
+      null -> simpleDateFormat.get().parse(this)
+      else -> Date(time)
+    }
+    is Iterable<*> -> null
+    is Iterator<*> -> null
+    is Map<*, *> -> null
+    else -> {
+      val str = toString()
+      when (val time = str.toLongOrNull()) {
+        null -> simpleDateFormat.get().parse(str)
+        else -> Date(time)
+      }
+    }
   }
 }

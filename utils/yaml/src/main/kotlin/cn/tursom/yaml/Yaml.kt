@@ -1,13 +1,16 @@
 package cn.tursom.yaml
 
 import cn.tursom.core.Parser
+import cn.tursom.core.ThreadLocalSimpleDateFormat
 import cn.tursom.core.getClazz
 import org.yaml.snakeyaml.Yaml
 import java.lang.reflect.Modifier
+import java.util.*
 
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object Yaml {
+  private val simpleDateFormat = ThreadLocalSimpleDateFormat()
   private val yaml = Yaml()
 
   fun toYaml(obj: Any): String {
@@ -25,7 +28,19 @@ object Yaml {
       is Long -> stringBuilder.append(obj)
       is Float -> stringBuilder.append(obj)
       is Double -> stringBuilder.append(obj)
-      is String -> stringBuilder.append(obj)
+      is Date -> stringBuilder.append(simpleDateFormat.get().format(obj))
+      is String -> when {
+        obj.contains('\n') -> {
+          stringBuilder.append("|${if (obj.endsWith('\n')) '+' else '-'}")
+          obj.split('\n').forEach {
+            stringBuilder.append("$indentation$it")
+          }
+        }
+        obj.startsWith('|') -> stringBuilder.append("\"$obj\"")
+        else -> {
+          stringBuilder.append(obj)
+        }
+      }
       is Map<*, *> -> {
         var first = true
         obj.forEach { (any, u) ->
@@ -67,28 +82,10 @@ object Yaml {
           if ((it.modifiers and (Modifier.STATIC or Modifier.TRANSIENT)) != 0) return@forEach
           it.isAccessible = true
           val value = it.get(obj)
-          when (it.type) {
-            Byte::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Char::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Short::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Int::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Long::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Float::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            Double::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-
-            getClazz<Byte>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Char>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Short>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Int>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Long>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Float>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            getClazz<Double>() -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-            String::class.java -> stringBuilder.append("${getIndentation()}${it.name}: $value\n")
-
-            else -> {
-              stringBuilder.append("${getIndentation()}${it.name}: ")
-              toYaml(value, stringBuilder, "${getIndentation()}  ")
-            }
+          stringBuilder.append("${getIndentation()}${it.name}: ")
+          toYaml(value, stringBuilder, "${getIndentation()}  ")
+          if (!stringBuilder.endsWith('\n')) {
+            stringBuilder.append("\n")
           }
         }
       }
