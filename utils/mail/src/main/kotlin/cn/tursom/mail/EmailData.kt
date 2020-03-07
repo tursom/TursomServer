@@ -8,7 +8,6 @@ import javax.activation.DataHandler
 import javax.activation.FileDataSource
 import javax.mail.Address
 import javax.mail.Session
-import javax.mail.event.TransportEvent
 import javax.mail.event.TransportListener
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeBodyPart

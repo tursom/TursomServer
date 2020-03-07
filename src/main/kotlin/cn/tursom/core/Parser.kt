@@ -10,75 +10,106 @@ object Parser {
 
   fun <T> parse(yaml: Any, clazz: Class<T>): T? {
     @Suppress("UNCHECKED_CAST")
-    return if (yaml is List<*> && clazz.isArray) {
-      parseArray(yaml, clazz) as T
-    } else when (clazz) {
-      Any::class.java -> yaml
-      Int::class.java -> yaml.toInt()
-      Long::class.java -> yaml.toLong()
-      Float::class.java -> yaml.toFloat()
-      Double::class.java -> yaml.toDouble()
-      Boolean::class.java -> yaml.toBoolean()
-
-      getClazz<Int>() -> yaml.toInt()
-      getClazz<Long>() -> yaml.toLong()
-      getClazz<Float>() -> yaml.toFloat()
-      getClazz<Double>() -> yaml.toDouble()
-      getClazz<Boolean>() -> yaml.toBoolean()
-      String::class.java -> yaml.toString()
-
-      else -> {
-        if (yaml !is Map<*, *>) return null
-        val instance = try {
-          clazz.newInstance()
-        } catch (e: Exception) {
-          unsafe.allocateInstance(clazz)
-        }
-        val fields = clazz.declaredFields
-        fields.forEach {
-          if ((it.modifiers and (Modifier.STATIC or Modifier.TRANSIENT)) != 0) return@forEach
-          try {
-            val parse = parseField(yaml[it.name] ?: return@forEach, it) ?: return@forEach
-            it.isAccessible = true
-            it.set(instance, parse)
-          } catch (e: Exception) {
-          }
-        }
-        instance
+    return when {
+      clazz.isInstance(yaml) -> yaml.cast()
+      clazz.isInheritanceFrom(Enum::class.java) -> try {
+        val valueOf = clazz.getDeclaredMethod("valueOf", String::class.java)
+        valueOf.invoke(null, yaml.toString().toUpperCase()) as T
+      } catch (e: Exception) {
+        null
       }
-    } as T
+      yaml is List<*> && clazz.isArray -> parseArray(yaml, clazz) as T
+      else -> when (clazz) {
+        Any::class.java -> yaml
+        Int::class.java -> yaml.toInt()
+        Long::class.java -> yaml.toLong()
+        Float::class.java -> yaml.toFloat()
+        Double::class.java -> yaml.toDouble()
+        Boolean::class.java -> yaml.toBoolean()
+
+        getClazz<Int>() -> yaml.toInt()
+        getClazz<Long>() -> yaml.toLong()
+        getClazz<Float>() -> yaml.toFloat()
+        getClazz<Double>() -> yaml.toDouble()
+        getClazz<Boolean>() -> yaml.toBoolean()
+        String::class.java -> yaml.toString()
+
+        else -> {
+          if (yaml !is Map<*, *>) return null
+          val instance = try {
+            clazz.newInstance()
+          } catch (e: Exception) {
+            unsafe.allocateInstance(clazz)
+          }
+          val fields = clazz.declaredFields
+          fields.forEach {
+            if ((it.modifiers and (Modifier.STATIC or Modifier.TRANSIENT)) != 0) return@forEach
+            try {
+              val parse = parseField(yaml[it.name] ?: return@forEach, it) ?: return@forEach
+              it.isAccessible = true
+              it.set(instance, parse)
+            } catch (e: Exception) {
+            }
+          }
+          instance
+        }
+      } as T
+    }
   }
 
   private fun parseField(yaml: Any, field: Field): Any? {
     val clazz = field.type
     @Suppress("UNCHECKED_CAST")
-    return if (yaml is List<*>) {
-      when {
-        clazz.isAssignableFrom(List::class.java) -> {
-          val type = field.actualTypeArguments
-          if (type == Any::class.java) {
-            yaml
-          } else {
-            val list = try {
-              clazz.newInstance() as MutableList<Any>
-            } catch (e: Exception) {
-              try {
-                unsafe.allocateInstance(clazz) as MutableList<Any>
+    return when (yaml) {
+      is List<*> -> {
+        when {
+          clazz.isAssignableFrom(List::class.java) -> {
+            val type = field.actualTypeArguments
+            if (type == Any::class.java) {
+              yaml
+            } else {
+              val list = try {
+                clazz.newInstance() as MutableList<Any>
               } catch (e: Exception) {
-                ArrayList<Any>()
+                try {
+                  unsafe.allocateInstance(clazz) as MutableList<Any>
+                } catch (e: Exception) {
+                  ArrayList<Any>()
+                }
               }
+              yaml.forEach {
+                list.add(parse(it ?: return@forEach, type) ?: return@forEach)
+              }
+              list
             }
-            yaml.forEach {
-              list.add(parse(it ?: return@forEach, type) ?: return@forEach)
-            }
-            list
           }
+          clazz.isAssignableFrom(Set::class.java) -> {
+            val type = field.actualTypeArguments
+            if (type == Any::class.java) {
+              yaml
+            } else {
+              val set: MutableSet<Any> = try {
+                clazz.newInstance() as MutableSet<Any>
+              } catch (e: Exception) {
+                try {
+                  unsafe.allocateInstance(clazz) as MutableSet<Any>
+                } catch (e: Exception) {
+                  HashSet()
+                }
+              }
+              yaml.forEach {
+                set.add(parse(it ?: return@forEach, type) ?: return@forEach)
+              }
+              set
+            }
+          }
+          clazz.isArray -> parseArray(yaml, clazz)
+          else -> null
         }
-        clazz.isArray -> parseArray(yaml, clazz)
-        else -> null
       }
-    } else {
-      parse(yaml, clazz)
+      else -> {
+        parse(yaml, clazz)
+      }
     }
   }
 
