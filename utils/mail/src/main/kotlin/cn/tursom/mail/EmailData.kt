@@ -8,6 +8,8 @@ import javax.activation.DataHandler
 import javax.activation.FileDataSource
 import javax.mail.Address
 import javax.mail.Session
+import javax.mail.event.TransportEvent
+import javax.mail.event.TransportListener
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
@@ -36,7 +38,8 @@ data class EmailData(
   /**
    * 发送邮件
    */
-  fun send() {
+  fun send(transportListener: TransportListener? = null) {
+    if (host == null || port == null || name == null || password == null || from == null || to == null || subject == null) return
     val props = Properties()
 //		props["mail.debug"] = "true"  // 开启debug调试
     props["mail.smtp.auth"] = "true"  // 发送服务器需要身份验证
@@ -92,8 +95,10 @@ data class EmailData(
     //发送邮件
     val transport = session.transport
     transport.connect(host, name, password)
-
+    transportListener?.apply { transport.addTransportListener(this) }
     transport.sendMessage(msg, arrayOf<Address>(InternetAddress(to)))
     transport.close()
   }
+
+  fun clone(): EmailData = EmailData(host, port, name, password, from, to, subject, html, text, image, attachment)
 }

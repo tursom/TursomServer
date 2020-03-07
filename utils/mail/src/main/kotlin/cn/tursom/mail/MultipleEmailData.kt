@@ -82,4 +82,6 @@ data class MultipleEmailData(
     }
     transport.close()
   }
+
+  fun clone(): MultipleEmailData = MultipleEmailData(host, port, name, password, from, to)
 }

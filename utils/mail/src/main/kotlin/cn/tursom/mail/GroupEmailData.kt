@@ -6,9 +6,12 @@ import java.net.URL
 import java.util.*
 import javax.activation.DataHandler
 import javax.activation.FileDataSource
-import javax.mail.Address
 import javax.mail.Session
-import javax.mail.internet.*
+import javax.mail.event.TransportListener
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeBodyPart
+import javax.mail.internet.MimeMessage
+import javax.mail.internet.MimeMultipart
 
 /**
  * 用于表示群发邮件的数据类
@@ -19,7 +22,8 @@ data class GroupEmailData(
   var to: List<String>?, var subject: String?, var html: String? = null, var text: String? = null,
   var image: Map<String, String>? = null, var attachment: List<String>? = null
 ) {
-  fun send() {
+  fun send(transportListener: TransportListener? = null) {
+    if (host == null || port == null || name == null || password == null || from == null || to?.isEmpty() != false || subject == null) return
     val props = Properties()
     // props["mail.debug"] = "true"  // 开启debug调试
     props["mail.smtp.auth"] = "true"  // 发送服务器需要身份验证
@@ -74,9 +78,10 @@ data class GroupEmailData(
     //发送邮件
     val transport = session.transport
     transport.connect(host, name, password)
-    to?.forEach {
-      transport.sendMessage(msg, arrayOf<Address>(InternetAddress(it)))
-    }
+    transportListener?.apply { transport.addTransportListener(this) }
+    transport.sendMessage(msg, to!!.map { InternetAddress(it) }.toTypedArray())
     transport.close()
   }
+
+  fun clone(): GroupEmailData = GroupEmailData(host, port, name, password, from, to, subject, html, text, image, attachment)
 }
