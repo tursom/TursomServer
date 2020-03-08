@@ -1,11 +1,9 @@
 package cn.tursom.mail
 
-import cn.tursom.core.base64
 import com.sun.mail.util.MailSSLSocketFactory
-import java.net.URL
 import java.util.*
 import javax.activation.DataHandler
-import javax.activation.FileDataSource
+import javax.activation.DataSource
 import javax.mail.Address
 import javax.mail.Session
 import javax.mail.event.TransportListener
@@ -32,7 +30,7 @@ import javax.mail.internet.MimeMultipart
 data class EmailData(
   var host: String?, var port: Int?, var name: String?, var password: String?, var from: String?,
   var to: String?, var subject: String?, var html: String? = null, var text: String? = null,
-  var image: Map<String, String>? = null, var attachment: List<String>? = null
+  var image: Collection<Image>? = null, var attachment: Collection<DataSource>? = null
 ) {
   /**
    * 发送邮件
@@ -52,45 +50,7 @@ data class EmailData(
 
     val session = Session.getInstance(props)
     //邮件内容部分
-    val msg = MimeMessage(session)
-    val multipart = MimeMultipart()
-    // 添加文本
-    if (html ?: "null" != "null") {
-      val htmlBodyPart = MimeBodyPart()
-      htmlBodyPart.setContent(html, "text/html;charset=UTF-8")
-      multipart.addBodyPart(htmlBodyPart)
-    } else {
-      val textPart = MimeBodyPart()
-      textPart.setText(text)
-      multipart.addBodyPart(textPart)
-    }
-    //添加图片
-    image?.forEach {
-      //创建用于保存图片的MimeBodyPart对象，并将它保存到MimeMultipart中
-      val gifBodyPart = MimeBodyPart()
-      if (it.value.startsWith("http://") or it.value.startsWith("https://")) {
-        gifBodyPart.dataHandler = DataHandler(URL(it.value))
-      } else {
-        val fds = FileDataSource(it.value)//图片所在的目录的绝对路径
-        gifBodyPart.dataHandler = DataHandler(fds)
-      }
-      gifBodyPart.contentID = it.key   //cid的值
-      multipart.addBodyPart(gifBodyPart)
-    }
-    //添加附件
-    attachment?.forEach { fileName ->
-      val adjunct = MimeBodyPart()
-      val fileDataSource = FileDataSource(fileName)
-      adjunct.dataHandler = DataHandler(fileDataSource)
-//			adjunct.fileName = changeEncode(fileDataSource.name)
-      adjunct.fileName = fileDataSource.name.base64()
-      multipart.addBodyPart(adjunct)
-    }
-    msg.setContent(multipart)
-    //邮件主题
-    msg.subject = subject
-    //邮件发送者
-    msg.setFrom(InternetAddress(from))
+    val msg = getMsg(session, from!!, subject, html, text, image, attachment)
     //发送邮件
     val transport = session.transport
     transport.connect(host, name, password)
@@ -100,4 +60,54 @@ data class EmailData(
   }
 
   fun clone(): EmailData = EmailData(host, port, name, password, from, to, subject, html, text, image, attachment)
+
+  companion object {
+    fun getMsg(
+      session: Session,
+      from: String,
+      subject: String?,
+      html: String?,
+      text: String?,
+      image: Collection<Image>?,
+      attachment: Collection<DataSource>?
+    ): MimeMessage {
+      //邮件内容部分
+      val msg = MimeMessage(session)
+      val multipart = MimeMultipart()
+      // 添加文本
+      when {
+        html != null -> {
+          val htmlBodyPart = MimeBodyPart()
+          htmlBodyPart.setContent(html, "text/html;charset=UTF-8")
+          multipart.addBodyPart(htmlBodyPart)
+        }
+        text != null -> {
+          val textPart = MimeBodyPart()
+          textPart.setText(text)
+          multipart.addBodyPart(textPart)
+        }
+      }
+      //添加图片
+      image?.forEach { (contentID, dataHandler) ->
+        //创建用于保存图片的MimeBodyPart对象，并将它保存到MimeMultipart中
+        val gifBodyPart = MimeBodyPart()
+        gifBodyPart.dataHandler = dataHandler
+        gifBodyPart.contentID = contentID
+        multipart.addBodyPart(gifBodyPart)
+      }
+      //添加附件
+      attachment?.forEach {
+        val adjunct = MimeBodyPart()
+        adjunct.dataHandler = DataHandler(it)
+        adjunct.fileName = it.name
+        multipart.addBodyPart(adjunct)
+      }
+      msg.setContent(multipart)
+      //邮件主题
+      msg.subject = subject
+      //邮件发送者
+      msg.setFrom(InternetAddress(from))
+      return msg
+    }
+  }
 }
