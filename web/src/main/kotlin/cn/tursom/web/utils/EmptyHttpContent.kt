@@ -38,7 +38,7 @@ class EmptyHttpContent(
   override fun finishText(code: Int) {}
   override fun finishJson(code: Int) {}
   override fun writeChunkedHeader() {}
-  override fun addChunked(buffer: ByteBuffer) {}
+  override fun addChunked(buffer: () -> ByteBuffer) {}
   override fun finishChunked() {}
   override fun finishChunked(chunked: Chunked) {}
   override fun finishFile(file: File, chunkSize: Int) {}
