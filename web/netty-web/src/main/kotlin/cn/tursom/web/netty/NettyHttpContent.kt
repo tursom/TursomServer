@@ -147,6 +147,9 @@ open class NettyHttpContent(
   fun finish(response: FullHttpResponse) {
     log?.trace("finish {}", response)
     finished = true
+    if (response.content() != responseBodyBuf) {
+      responseBodyBuf.release()
+    }
     val heads = response.headers()
     addHeaders(
       heads,
@@ -183,6 +186,7 @@ open class NettyHttpContent(
   override fun finishChunked() {
     log?.trace("finishChunked {}", chunkedList)
     finished = true
+    responseBodyBuf.release()
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedByteBuffer(chunkedList))
     ctx.writeAndFlush(httpChunkWriter)
@@ -191,6 +195,7 @@ open class NettyHttpContent(
   override fun finishChunked(chunked: Chunked) {
     log?.trace("finishChunked {}", chunked)
     finished = true
+    responseBodyBuf.release()
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedInput(chunked))
     ctx.writeAndFlush(httpChunkWriter)
@@ -199,6 +204,7 @@ open class NettyHttpContent(
   override fun finishFile(file: File, chunkSize: Int) {
     log?.trace("finishFile {} chunkSize {}", file, chunkSize)
     finished = true
+    responseBodyBuf.release()
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, chunkSize)))
   }
@@ -206,6 +212,7 @@ open class NettyHttpContent(
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {
     log?.trace("finishFile {}({}:{}) chunkSize {}", file, offset, length, chunkSize)
     finished = true
+    responseBodyBuf.release()
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, offset, length, chunkSize)))
   }

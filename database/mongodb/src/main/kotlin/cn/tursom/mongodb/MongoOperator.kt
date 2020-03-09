@@ -21,6 +21,8 @@ class MongoOperator<T : Any>(
 ) : MongoCollection<Document> by collection {
   constructor(clazz: Class<T>, database: MongoDatabase) : this(database.getCollection(MongoUtil.collectionName(clazz)), clazz)
 
+  fun parse(document: Document) = Parser.parse(document, clazz)
+
   private val fields = clazz.declaredFields.filter {
     it.isAccessible = true
     !it.isStatic() && !it.isTransient() && it.getAnnotation(Ignore::class.java) == null
@@ -71,8 +73,16 @@ class MongoOperator<T : Any>(
 
   fun list(where: Bson? = null): List<T> {
     val find = find(where)
-    val iterator = find.iterator()
     return find.mapNotNull { Parser.parse(it, clazz) }
+  }
+
+  fun iter(where: Bson? = null): Iterator<T?> {
+    val find = find(where)
+    return object : Iterator<T?> {
+      val iterator = find.iterator()
+      override fun hasNext(): Boolean = iterator.hasNext()
+      override fun next(): T? = parse(iterator.next())
+    }
   }
 
   override fun find(filter: Bson?): FindIterable<Document> {
