@@ -15,11 +15,15 @@ class MongoTemplate(
   val host: String = "127.0.0.1",
   val port: Int = 27017
 ) {
-  val client = MongoClient(host, port)
-
-  val db: MongoDatabase = client.getDatabase(db)
+  var client = MongoClient(host, port)
+  var db: MongoDatabase = client.getDatabase(db)
 
   private val operatorMap = ConcurrentHashMap<Class<*>, MongoOperator<*>>()
+
+  fun connect() {
+    client = MongoClient(host, port)
+    db = client.getDatabase(db.name)
+  }
 
   fun <T : Any> save(entity: T, options: InsertOneOptions = InsertOneOptions()) {
     getCollection(entity.javaClass).save(entity, options)

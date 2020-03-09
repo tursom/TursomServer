@@ -1,6 +1,7 @@
 package cn.tursom.utils
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
@@ -8,7 +9,15 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Suppress("unused", "SpellCheckingInspection")
-val gson = Gson()
+val gson =GsonBuilder()
+  .registerTypeAdapterFactory(GsonDataTypeAdaptor.FACTORY)
+  .create()
+
+@Suppress("unused", "SpellCheckingInspection")
+val prettyGson = GsonBuilder()
+  .registerTypeAdapterFactory(GsonDataTypeAdaptor.FACTORY)
+  .setPrettyPrinting()
+  .create()
 
 inline fun <reified T : Any> Gson.fromJson(json: String) = this.fromJson(json, T::class.java)!!
 

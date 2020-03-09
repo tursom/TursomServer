@@ -12,7 +12,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker
 import io.netty.util.CharsetUtil
 
 
-
 class WebSocketClientChannelHandler(
   private val handshaker: WebSocketClientHandshaker,
   val client: WebSocketClient,
@@ -29,16 +28,21 @@ class WebSocketClientChannelHandler(
   }
 
   override fun channelActive(ctx: ChannelHandlerContext) {
+    client.ch = ctx.channel()
     handshaker.handshake(ctx.channel())
   }
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
     handler.onClose(client)
+    if (client.ch == ctx.channel()) {
+      client.ch = null
+    }
   }
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: Any) {
     val ch = ctx.channel()
-    if (!handshaker.isHandshakeComplete) { // web socket client connected
+    if (!handshaker.isHandshakeComplete) {
+      // web socket client connected
       handshaker.finishHandshake(ch, msg as FullHttpResponse)
       handshakeFuture!!.setSuccess()
       handler.onOpen(client)

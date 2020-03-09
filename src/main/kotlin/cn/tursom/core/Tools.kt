@@ -28,14 +28,14 @@ fun printNonDaemonThread() {
   currentGroup.enumerate(lstThreads)
   lstThreads.excludeNull().forEach { t ->
     if (!t.isDaemon) {
-      println("${System.currentTimeMillis()}: ${t.name}")
+      log(t.name)
     }
   }
   println()
 }
 
-fun log(log: String) = println("${System.currentTimeMillis()}: $log")
-fun logE(log: String) = System.err.println("${System.currentTimeMillis()}: $log")
+fun log(log: String) = println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
+fun logE(log: String) = System.err.println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
 
 val String.urlDecode: String get() = URLDecoder.decode(this, "utf-8")
 val String.urlEncode: String get() = URLEncoder.encode(this, "utf-8")

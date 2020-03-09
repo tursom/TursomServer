@@ -6,6 +6,7 @@ import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.DeleteOptions
 import com.mongodb.client.model.InsertManyOptions
 import com.mongodb.client.model.InsertOneOptions
 import com.mongodb.client.model.UpdateOptions
@@ -111,7 +112,16 @@ class MongoOperator<T : Any>(
 
   fun aggregate(vararg pipeline: Bson): AggregateIterable<Document> = aggregate(pipeline.asList())
 
-  private fun convertToBson(entity: Any): Document {
+  fun delete(entity: T, options: DeleteOptions = DeleteOptions()) {
+    deleteOne(convertToBson(entity), options)
+  }
+
+  fun saveIfNotExists(entity: T) {
+    val document = convertToBson(entity)
+    upsert(document, document)
+  }
+
+  fun convertToBson(entity: Any): Document {
     val bson = Document()
     fields.forEach {
       MongoUtil.injectValue(bson, it.get(entity) ?: return@forEach, it)
@@ -119,7 +129,7 @@ class MongoOperator<T : Any>(
     return bson
   }
 
-  private fun convertToEntity(bson: Document): T {
+  fun convertToEntity(bson: Document): T {
     val entity = try {
       clazz.newInstance()
     } catch (e: Exception) {

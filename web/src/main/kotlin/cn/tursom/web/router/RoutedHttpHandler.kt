@@ -223,36 +223,16 @@ open class RoutedHttpHandler(
   }
 
   protected fun getRoutes(annotation: Annotation) = when (annotation) {
-    is Mapping -> {
-      annotation.route to getRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
-    }
-    is GetMapping -> {
-      annotation.route to getRouter("GET")
-    }
-    is PostMapping -> {
-      annotation.route to getRouter("POST")
-    }
-    is PutMapping -> {
-      annotation.route to getRouter("PUT")
-    }
-    is DeleteMapping -> {
-      annotation.route to getRouter("DELETE")
-    }
-    is PatchMapping -> {
-      annotation.route to getRouter("PATCH")
-    }
-    is TraceMapping -> {
-      annotation.route to getRouter("TRACE")
-    }
-    is HeadMapping -> {
-      annotation.route to getRouter("HEAD")
-    }
-    is OptionsMapping -> {
-      annotation.route to getRouter("OPTIONS")
-    }
-    is ConnectMapping -> {
-      annotation.route to getRouter("CONNECT")
-    }
+    is Mapping -> annotation.route to getRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
+    is GetMapping -> annotation.route to getRouter("GET")
+    is PostMapping -> annotation.route to getRouter("POST")
+    is PutMapping -> annotation.route to getRouter("PUT")
+    is DeleteMapping -> annotation.route to getRouter("DELETE")
+    is PatchMapping -> annotation.route to getRouter("PATCH")
+    is TraceMapping -> annotation.route to getRouter("TRACE")
+    is HeadMapping -> annotation.route to getRouter("HEAD")
+    is OptionsMapping -> annotation.route to getRouter("OPTIONS")
+    is ConnectMapping -> annotation.route to getRouter("CONNECT")
     else -> null
   }
 

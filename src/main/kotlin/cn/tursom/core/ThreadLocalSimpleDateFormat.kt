@@ -12,7 +12,7 @@ class ThreadLocalSimpleDateFormat(val format: String = "YYYY-MM-dd'T'HH:mm:ssZZ"
 
   companion object {
     val iso8601 = ThreadLocalSimpleDateFormat()
-    val standard = ThreadLocalSimpleDateFormat("YYYY-MM-dd HH:mm:ssZZ")
+    val standard = ThreadLocalSimpleDateFormat("YYYY-MM-dd HH:mm:ss")
     val simp = ThreadLocalSimpleDateFormat("YY-MM-dd HH:mm:ss")
     val cn = ThreadLocalSimpleDateFormat("YYYY'年'MM'月'dd'日' HH'时'mm'分'ss'秒'")
   }

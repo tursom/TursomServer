@@ -19,12 +19,14 @@ fun addMailListener(
   folder: Folder,
   freq: Long, timeUnit: TimeUnit,
   listener: MessageCountListener,
-  newFolder: () -> Folder? = { null }
+  newFolder: () -> Folder? = { null },
+  onHeartBeat: Folder. () -> Unit = {}
 ): ScheduledFuture<*> {
   folder.addMessageCountListener(listener)
   var mailFOlder = folder
   return threadPool.scheduleAtFixedRate({
     try {
+      mailFOlder.onHeartBeat()
       mailFOlder.messageCount
     } catch (e: FolderClosedException) {
       mailFOlder = newFolder() ?: throw e
@@ -39,8 +41,9 @@ fun addMailListener(
 fun addMailListener(
   newFolder: () -> Folder,
   freq: Long, timeUnit: TimeUnit,
-  listener: MessageCountListener
-): ScheduledFuture<*> = addMailListener(newFolder(), freq, timeUnit, listener, newFolder)
+  listener: MessageCountListener,
+  onHeartBeat: Folder. () -> Unit = {}
+): ScheduledFuture<*> = addMailListener(newFolder(), freq, timeUnit, listener, newFolder, onHeartBeat)
 
 fun getStore(host: String, port: Int, account: String, password: String): Store {
   val props = System.getProperties()

@@ -150,36 +150,16 @@ open class AsyncRoutedHttpHandler(
 
 
   protected fun getAsyncRoutes(annotation: Annotation) = when (annotation) {
-    is Mapping -> {
-      annotation.route to getAsyncRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
-    }
-    is GetMapping -> {
-      annotation.route to getAsyncRouter("GET")
-    }
-    is PostMapping -> {
-      annotation.route to getAsyncRouter("POST")
-    }
-    is PutMapping -> {
-      annotation.route to getAsyncRouter("PUT")
-    }
-    is DeleteMapping -> {
-      annotation.route to getAsyncRouter("DELETE")
-    }
-    is PatchMapping -> {
-      annotation.route to getAsyncRouter("PATCH")
-    }
-    is TraceMapping -> {
-      annotation.route to getAsyncRouter("TRACE")
-    }
-    is HeadMapping -> {
-      annotation.route to getAsyncRouter("HEAD")
-    }
-    is OptionsMapping -> {
-      annotation.route to getAsyncRouter("OPTIONS")
-    }
-    is ConnectMapping -> {
-      annotation.route to getAsyncRouter("CONNECT")
-    }
+    is Mapping -> annotation.route to getAsyncRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
+    is GetMapping -> annotation.route to getAsyncRouter("GET")
+    is PostMapping -> annotation.route to getAsyncRouter("POST")
+    is PutMapping -> annotation.route to getAsyncRouter("PUT")
+    is DeleteMapping -> annotation.route to getAsyncRouter("DELETE")
+    is PatchMapping -> annotation.route to getAsyncRouter("PATCH")
+    is TraceMapping -> annotation.route to getAsyncRouter("TRACE")
+    is HeadMapping -> annotation.route to getAsyncRouter("HEAD")
+    is OptionsMapping -> annotation.route to getAsyncRouter("OPTIONS")
+    is ConnectMapping -> annotation.route to getAsyncRouter("CONNECT")
     else -> null
   }
 

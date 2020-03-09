@@ -23,7 +23,7 @@ import java.net.URI
 
 class WebSocketClient(uri: String, val handler: WebSocketHandler) {
   private val uri: URI = URI.create(uri)
-  private var ch: Channel? = null
+  internal var ch: Channel? = null
 
   fun open() {
     close()
@@ -72,7 +72,7 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
             handler)
         }
       })
-    ch = b.connect(uri.host, port).sync().channel()
+     b.connect(uri.host, port)
     //handler.handshakeFuture().sync()
   }
 
