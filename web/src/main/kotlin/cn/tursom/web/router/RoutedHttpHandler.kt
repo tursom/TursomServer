@@ -311,6 +311,7 @@ open class RoutedHttpHandler(
       if (doLog) log?.debug("{}: autoReturn: {}", content.clientIp, result)
       result ?: return
       when (result) {
+        null -> content.finish(404)
         is ByteBuffer -> content.finishText(result)
         is String -> content.finishText(result.toByteArray())
         is StringBuilder -> content.finishText(result.toString().toByteArray())
@@ -332,6 +333,7 @@ open class RoutedHttpHandler(
       if (doLog) log?.debug("{} finishHtml {}", content.clientIp, result)
       result ?: return
       when (result) {
+        null -> content.finish(404)
         is ByteBuffer -> content.finishHtml(result)
         is ByteArray -> content.finishHtml(result)
         is String -> content.finishHtml(result.toByteArray())
@@ -349,6 +351,7 @@ open class RoutedHttpHandler(
       if (doLog) log?.debug("{} finishText {}", content.clientIp, result)
       result ?: return
       when (result) {
+        null -> content.finish(404)
         is ByteBuffer -> content.finishText(result)
         is ByteArray -> content.finishText(result)
         is String -> content.finishText(result.toByteArray())
@@ -366,6 +369,7 @@ open class RoutedHttpHandler(
       if (doLog) log?.debug("{} finishJson {}", content.clientIp, result)
       result ?: return
       when (result) {
+        null -> content.finish(404)
         is ByteBuffer -> content.finishJson(result)
         is ByteArray -> content.finishJson(result)
         is String -> content.finishJson("\"$result\"".toByteArray())
