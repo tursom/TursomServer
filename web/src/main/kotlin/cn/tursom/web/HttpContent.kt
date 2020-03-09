@@ -118,7 +118,8 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
     addCookie(name, "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT", path = path)
 
   fun writeChunkedHeader()
-  fun addChunked(buffer: ByteBuffer)
+  fun addChunked(buffer: ByteBuffer) = addChunked { buffer }
+  fun addChunked(buffer: () -> ByteBuffer)
   fun finishChunked()
   fun finishChunked(chunked: Chunked)
 

@@ -7,6 +7,7 @@ import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.CompositeByteBuf
 import io.netty.buffer.Unpooled
+import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedFile
@@ -46,8 +47,15 @@ open class NettyHttpContent(
     }
   override var responseMessage: String? = null
   override val method: String get() = httpMethod.name()
-  val chunkedList = ArrayList<ByteBuffer>()
-  val responseBodyBuf: CompositeByteBuf = ctx.alloc().compositeBuffer()!!
+  val chunkedList = ArrayList<() -> ByteBuffer>()
+  private var responseBodyBuf: CompositeByteBuf? = null
+
+  fun getResponseBodyBuf(): CompositeByteBuf {
+    if (responseBodyBuf == null) {
+      responseBodyBuf = ctx.alloc().compositeBuffer()!!
+    }
+    return responseBodyBuf!!
+  }
 
   override fun getHeader(header: String): String? {
     log?.trace("getHeader {}", header)
@@ -84,27 +92,27 @@ open class NettyHttpContent(
 
   override fun write(message: String) {
     log?.trace("write {}", message)
-    responseBodyBuf.addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
+    getResponseBodyBuf().addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
     //responseBody.write(message.toByteArray())
   }
 
   override fun write(byte: Byte) {
     log?.trace("write {}", byte)
     val buffer = ctx.alloc().buffer(1).writeByte(byte.toInt())
-    responseBodyBuf.addComponent(buffer)
+    getResponseBodyBuf().addComponent(buffer)
     //responseBody.write(byte.toInt())
   }
 
   override fun write(bytes: ByteArray, offset: Int, size: Int) {
     log?.trace("write {}({}:{})", bytes, offset, size)
-    responseBodyBuf.addComponent(Unpooled.wrappedBuffer(bytes, offset, size))
+    getResponseBodyBuf().addComponent(Unpooled.wrappedBuffer(bytes, offset, size))
     //responseBody.write(bytes, offset, size)
   }
 
   override fun write(buffer: ByteBuffer) {
     //buffer.writeTo(responseBody)
     log?.trace("write {}", buffer)
-    responseBodyBuf.addComponent(if (buffer is NettyByteBuffer) {
+    getResponseBodyBuf().addComponent(if (buffer is NettyByteBuffer) {
       buffer.byteBuf
     } else {
       val buf = Unpooled.wrappedBuffer(buffer.readBuffer())
@@ -115,12 +123,12 @@ open class NettyHttpContent(
 
   override fun reset() {
     log?.trace("reset")
-    responseBodyBuf.clear()
+    getResponseBodyBuf().clear()
   }
 
   override fun finish() {
     log?.trace("finish")
-    finish(responseBodyBuf)
+    finish(getResponseBodyBuf())
   }
 
   override fun finish(buffer: ByteArray, offset: Int, size: Int) {
@@ -138,18 +146,15 @@ open class NettyHttpContent(
   }
 
   fun finish(buf: ByteBuf) = finish(buf, responseStatus)
-  fun finish(buf: ByteBuf, responseCode: HttpResponseStatus) {
+  fun finish(buf: ByteBuf, responseCode: HttpResponseStatus): ChannelFuture {
     log?.trace("finish {}: {}", responseCode, buf)
     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseCode, buf)
-    finish(response)
+    return finish(response)
   }
 
-  fun finish(response: FullHttpResponse) {
+  fun finish(response: FullHttpResponse): ChannelFuture {
     log?.trace("finish {}", response)
     finished = true
-    if (response.content() != responseBodyBuf) {
-      responseBodyBuf.release()
-    }
     val heads = response.headers()
     addHeaders(
       heads,
@@ -159,7 +164,14 @@ open class NettyHttpContent(
         HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE
       )
     )
-    ctx.writeAndFlush(response)
+    val write = ctx.writeAndFlush(response)
+    write.addListener {
+      if (it.isDone) {
+        val bodyBuf = responseBodyBuf ?: return@addListener
+        bodyBuf.release(bodyBuf.refCnt())
+      }
+    }
+    return write
   }
 
   override fun writeChunkedHeader() {
@@ -169,16 +181,17 @@ open class NettyHttpContent(
     else responseStatus
     val heads = response.headers()
     addHeaders(
-      heads, mapOf(
-      HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
-      HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE,
-      HttpHeaderNames.TRANSFER_ENCODING to "chunked"
-    )
+      heads,
+      mapOf(
+        HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
+        HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE,
+        HttpHeaderNames.TRANSFER_ENCODING to "chunked"
+      )
     )
     ctx.write(response)
   }
 
-  override fun addChunked(buffer: ByteBuffer) {
+  override fun addChunked(buffer: () -> ByteBuffer) {
     log?.trace("addChunked {}", buffer)
     chunkedList.add(buffer)
   }
@@ -186,7 +199,7 @@ open class NettyHttpContent(
   override fun finishChunked() {
     log?.trace("finishChunked {}", chunkedList)
     finished = true
-    responseBodyBuf.release()
+    responseBodyBuf?.release()
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedByteBuffer(chunkedList))
     ctx.writeAndFlush(httpChunkWriter)
@@ -195,7 +208,7 @@ open class NettyHttpContent(
   override fun finishChunked(chunked: Chunked) {
     log?.trace("finishChunked {}", chunked)
     finished = true
-    responseBodyBuf.release()
+    responseBodyBuf?.release()
     writeChunkedHeader()
     val httpChunkWriter = HttpChunkedInput(NettyChunkedInput(chunked))
     ctx.writeAndFlush(httpChunkWriter)
@@ -204,7 +217,7 @@ open class NettyHttpContent(
   override fun finishFile(file: File, chunkSize: Int) {
     log?.trace("finishFile {} chunkSize {}", file, chunkSize)
     finished = true
-    responseBodyBuf.release()
+    responseBodyBuf?.release()
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, chunkSize)))
   }
@@ -212,7 +225,7 @@ open class NettyHttpContent(
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {
     log?.trace("finishFile {}({}:{}) chunkSize {}", file, offset, length, chunkSize)
     finished = true
-    responseBodyBuf.release()
+    responseBodyBuf?.release()
     writeChunkedHeader()
     ctx.writeAndFlush(HttpChunkedInput(ChunkedFile(file, offset, length, chunkSize)))
   }
