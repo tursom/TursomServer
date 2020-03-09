@@ -5,9 +5,12 @@ import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*
 import cn.tursom.web.result.*
 import cn.tursom.web.router.impl.SimpleRouter
+import cn.tursom.web.utils.ContextTypeEnum
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.jvm.jvmErasure
@@ -41,7 +44,17 @@ open class AsyncRoutedHttpHandler(
 
   open suspend fun handle(content: HttpContent, handler: (suspend (HttpContent) -> Unit)?) {
     if (handler != null) {
-      handler(content)
+      try {
+        handler(content)
+      } catch (e: Throwable) {
+        val bos = ByteArrayOutputStream()
+        @Suppress("BlockingMethodInNonBlockingContext")
+        bos.write("处理时发生异常：\n".toByteArray())
+        e.printStackTrace(PrintStream(bos))
+        content.setContextType(ContextTypeEnum.txt.value)
+        content.write(bos.toByteArray())
+        content.finish(502)
+      }
     } else {
       notFound(content)
     }

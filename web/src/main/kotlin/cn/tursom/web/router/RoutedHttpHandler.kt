@@ -1,6 +1,8 @@
 package cn.tursom.web.router
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.cast
+import cn.tursom.core.lambda
 import cn.tursom.core.regex.regex
 import cn.tursom.json.JsonWorkerImpl
 import cn.tursom.web.ExceptionContent
@@ -11,9 +13,9 @@ import cn.tursom.web.mapping.*
 import cn.tursom.web.result.*
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.Chunked
+import cn.tursom.web.utils.ContextTypeEnum
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.RandomAccessFile
+import java.io.*
 import java.lang.reflect.Method
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
@@ -40,7 +42,7 @@ open class RoutedHttpHandler(
     Runtime.getRuntime().availableProcessors() * 4,
     Runtime.getRuntime().availableProcessors() * 4,
     0L, TimeUnit.MILLISECONDS,
-    LinkedBlockingQueue<Runnable>(),
+    LinkedBlockingQueue(),
     ThreadFactory {
       Thread(it, "TreeDiagramWorker-${threadNumber.incrementAndGet()}")
     }
@@ -61,7 +63,16 @@ open class RoutedHttpHandler(
 
   open fun handle(content: HttpContent, handler: ((HttpContent) -> Any?)?) {
     if (handler != null) {
-      handler(content)
+      try {
+        handler(content)
+      } catch (e: Throwable) {
+        val bos = ByteArrayOutputStream()
+        bos.write("处理时发生异常：\n".toByteArray())
+        e.printStackTrace(PrintStream(bos))
+        content.setContextType(ContextTypeEnum.txt.value)
+        content.write(bos.toByteArray())
+        content.finish(502)
+      }
     } else {
       notFound(content)
     }
@@ -128,44 +139,43 @@ open class RoutedHttpHandler(
     }
   }
 
+  @Suppress("UNREACHABLE_CODE")
   fun addRouter(obj: Any, method: Method, route: String, router: Router<Pair<Any?, (HttpContent) -> Any?>>) {
     val doLog = method.doLog
-    router[safeRoute(route)] = obj to (if (method.parameterTypes.isEmpty()) {
-      when {
-        method.getAnnotation(Html::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishHtml(result, content, doLog) }
-        }
-        method.getAnnotation(Text::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishText(result, content, doLog) }
-        }
-        method.getAnnotation(Json::class.java) != null -> { content ->
-          method(obj)?.let { result -> finishJson(result, content, doLog) }
-        }
-        else -> { content ->
-          method(obj)?.let { result -> autoReturn(method, result, content, doLog) }
-        }
-      }
-    } else when (method.returnType) {
-      Void::class.java -> { content -> method(obj, content) }
-      Void.TYPE -> { content -> method(obj, content) }
-      Unit::class.java -> { content -> method(obj, content) }
+    router[safeRoute(route)] = obj to (if (method.parameterTypes.isNotEmpty()) when (method.returnType) {
+      Void::class.java -> lambda { content: HttpContent -> method(obj, content) }
+      Void.TYPE -> lambda { content: HttpContent -> method(obj, content) }
+      Unit::class.java -> lambda { content: HttpContent -> method(obj, content) }
       else -> when {
-        method.getAnnotation(Html::class.java) != null -> { content ->
+        method.getAnnotation(Html::class.java) != null -> lambda { content: HttpContent ->
           method(obj, content)?.let { result -> finishHtml(result, content, doLog) }
         }
-        method.getAnnotation(Text::class.java) != null -> { content ->
+        method.getAnnotation(Text::class.java) != null -> lambda { content: HttpContent ->
           method(obj, content)?.let { result -> finishText(result, content, doLog) }
         }
-        method.getAnnotation(Json::class.java) != null -> { content ->
+        method.getAnnotation(Json::class.java) != null -> lambda { content: HttpContent ->
           method(obj, content)?.let { result -> finishJson(result, content, doLog) }
         }
-        else -> { content: HttpContent ->
+        else -> lambda { content: HttpContent ->
           method(obj, content)?.let { result -> autoReturn(method, result, content, doLog) }
         }
       }
+    } else when {
+      method.getAnnotation(Html::class.java) != null -> lambda { content: HttpContent ->
+        method(obj)?.let { result -> finishHtml(result, content, doLog) }
+      }
+      method.getAnnotation(Text::class.java) != null -> lambda { content: HttpContent ->
+        method(obj)?.let { result -> finishText(result, content, doLog) }
+      }
+      method.getAnnotation(Json::class.java) != null -> lambda { content: HttpContent ->
+        method(obj)?.let { result -> finishJson(result, content, doLog) }
+      }
+      else -> lambda { content: HttpContent ->
+        method(obj)?.let { result -> autoReturn(method, result, content, doLog) }
+      }
     }).let {
-      if (method.getAnnotation(BlockHandler::class.java) != null) { content ->
-        workerThread.execute { it(content) }
+      if (method.getAnnotation(BlockHandler::class.java) != null) lambda { content ->
+        workerThread.execute { handle(content, it) }
       } else
         it
     }

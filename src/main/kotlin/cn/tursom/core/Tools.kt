@@ -257,3 +257,6 @@ inline fun loop(`continue`: () -> Boolean = { true }, action: () -> Unit) {
 }
 
 inline fun <reified T> getClazz() = T::class.java
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <R, T : Function<R>> lambda(lambda: T) = lambda
