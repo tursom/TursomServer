@@ -173,14 +173,14 @@ class AsyncMongoOperator<T : Any>(
         }
       }
 
-      override suspend fun hasNext(): Boolean = if (cache.isEmpty()) {
-        suspendCoroutine<Unit> {
-          notify.set(it)
-          subscription.request(bufSize.toLong())
+      override suspend fun hasNext(): Boolean {
+        if (cache.isEmpty() && !compete) {
+          suspendCoroutine<Unit> {
+            notify.set(it)
+            subscription.request(bufSize.toLong())
+          }
         }
-        !compete
-      } else {
-        !compete
+        return cache.isNotEmpty()
       }
     }
     publisher.subscribe(subscriber)
