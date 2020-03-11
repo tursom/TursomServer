@@ -195,4 +195,14 @@ class AsyncMongoOperator<T : Any>(
     val document = convertToBson(entity)
     upsert(document, document)
   }
+
+  suspend fun count(): Long {
+    val publisher = countDocuments()
+    return suspendCoroutine { cont ->
+      publisher.subscribe(object : AbstractSubscriber<Long>(true) {
+        override fun onNext(t: Long) = cont.resume(t)
+        override fun onError(t: Throwable) = cont.resumeWithException(t)
+      })
+    }
+  }
 }
