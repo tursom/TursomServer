@@ -16,13 +16,11 @@ import org.bson.conversions.Bson
 import kotlin.reflect.KProperty1
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter", "unused")
-class MongoOperator<T : Any>(
+open class MongoOperator<T : Any>(
   val collection: MongoCollection<Document>,
-  val clazz: Class<T>
-) : MongoCollection<Document> by collection {
+   clazz: Class<T>
+) : MongoCollection<Document> by collection, BsonFactoryImpl<T>(clazz) {
   constructor(clazz: Class<T>, database: MongoDatabase) : this(database.getCollection(MongoUtil.collectionName(clazz)), clazz)
-
-  fun parse(document: Document) = Parser.parse(document, clazz)
 
   private val fields = clazz.declaredFields.filter {
     it.isAccessible = true
@@ -120,26 +118,5 @@ class MongoOperator<T : Any>(
     val document = convertToBson(entity)
     upsert(document, document)
   }
-
-  fun convertToBson(entity: Any): Document {
-    val bson = Document()
-    fields.forEach {
-      MongoUtil.injectValue(bson, it.get(entity) ?: return@forEach, it)
-    }
-    return bson
-  }
-
-  fun convertToEntity(bson: Document): T {
-    val entity = try {
-      clazz.newInstance()
-    } catch (e: Exception) {
-      Unsafe.unsafe.allocateInstance(clazz)
-    }.cast<T>()
-    fields.forEach {
-      val value = bson[MongoUtil.fieldName(it)] ?: return@forEach
-      MongoUtil.injectValue(bson, value, it)
-    }
-    return entity
-  }
-
 }
+

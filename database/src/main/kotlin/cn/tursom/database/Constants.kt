@@ -13,7 +13,7 @@ object Constants {
   /**
    * project name
    */
-  const val MYBATIS_PLUS = "mybatis-plus"
+  const val TABLE = "table"
   /**
    * MD5
    */
@@ -34,38 +34,7 @@ object Constants {
    * wrapper 类 带后缀 ==> .
    */
   const val WRAPPER_DOT = WRAPPER + DOT
-  /**
-   * wrapper 类的属性 entity
-   */
-  const val WRAPPER_ENTITY = WRAPPER_DOT + "entity"
-  /**
-   * wrapper 类的属性 sqlSegment
-   */
-  const val WRAPPER_SQLSEGMENT = WRAPPER_DOT + "sqlSegment"
-  /**
-   * wrapper 类的属性 emptyOfNormal
-   */
-  const val WRAPPER_EMPTYOFNORMAL = WRAPPER_DOT + "emptyOfNormal"
-  /**
-   * wrapper 类的属性 nonEmptyOfNormal
-   */
-  const val WRAPPER_NONEMPTYOFNORMAL = WRAPPER_DOT + "nonEmptyOfNormal"
-  /**
-   * wrapper 类的属性 nonEmptyOfEntity
-   */
-  const val WRAPPER_NONEMPTYOFENTITY = WRAPPER_DOT + "nonEmptyOfEntity"
-  /**
-   * wrapper 类的属性 emptyOfWhere
-   */
-  const val WRAPPER_EMPTYOFWHERE = WRAPPER_DOT + "emptyOfWhere"
-  /**
-   * wrapper 类的判断属性 nonEmptyOfWhere
-   */
-  const val WRAPPER_NONEMPTYOFWHERE = WRAPPER_DOT + "nonEmptyOfWhere"
-  /**
-   * wrapper 类的属性 entity 带后缀 ==> .
-   */
-  const val WRAPPER_ENTITY_DOT = WRAPPER_DOT + "entity" + DOT
+  const val WRAPPER_WHERE = WRAPPER_DOT + "where"
   /**
    * UpdateWrapper 类的属性 sqlSet
    */

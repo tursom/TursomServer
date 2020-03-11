@@ -1,86 +1,53 @@
 package cn.tursom.database.wrapper
 
+import cn.tursom.database.SqlUtils
 import java.io.Serializable
-import java.util.function.BiPredicate
 import kotlin.reflect.KProperty1
 
-interface Compare<Children, T> : Serializable {
-  fun <V> allEq(params: Map<KProperty1<T,*>, V>?): Children {
-    return this.allEq(params, true)
-  }
+interface Compare<T, Children> : Serializable {
+  /**
+   * map 所有属性等于 =
+   *
+   * @param params      map 类型的参数, key 是字段名, value 是字段值
+   * @return children
+   */
+  fun allEq(params: Map<String, Any?>): Children
+  fun Map<KProperty1<T, *>, Any?>.eq(): Children = allEq(SqlUtils { mapKeys { it.key.tableField } })
 
-  fun <V> allEq(params: Map<KProperty1<T,*>, V>?, null2IsNull: Boolean): Children {
-    return this.allEq(true, params, null2IsNull)
-  }
+  infix fun String.eq(value: Any?): Children
+  infix fun <V> KProperty1<T, V>.eq(value: V): Children = SqlUtils { tableField }.eq(value)
 
-  fun <V> allEq(condition: Boolean, params: Map<KProperty1<T,*>, V>?, null2IsNull: Boolean): Children
-  fun <V> allEq(filter: BiPredicate<KProperty1<T,*>, V>?, params: Map<KProperty1<T,*>, V>?): Children {
-    return this.allEq(filter, params, true)
-  }
+  infix fun String.ne(value: Any?): Children
+  infix fun <V> KProperty1<T, V>.ne(value: V): Children = SqlUtils { tableField }.ne(value)
 
-  fun <V> allEq(filter: BiPredicate<KProperty1<T,*>, V>?, params: Map<KProperty1<T,*>, V>?, null2IsNull: Boolean): Children {
-    return this.allEq(true, filter, params, null2IsNull)
-  }
+  infix fun String.gt(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.gt(value: V): Children = SqlUtils { tableField }.gt(value)
 
-  fun <V> allEq(condition: Boolean, filter: BiPredicate<KProperty1<T,*>, V>?, params: Map<KProperty1<T,*>, V>?, null2IsNull: Boolean): Children
-  fun eq(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.eq(true, column, `val`)
-  }
+  infix fun String.ge(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.ge(value: V): Children = SqlUtils { tableField }.ge(value)
 
-  fun eq(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun ne(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.ne(true, column, `val`)
-  }
+  infix fun String.le(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.le(value: V): Children = SqlUtils { tableField }.le(value)
 
-  fun ne(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun gt(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.gt(true, column, `val`)
-  }
+  infix fun String.lt(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.lt(value: V): Children = SqlUtils { tableField }.lt(value)
 
-  fun gt(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun ge(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.ge(true, column, `val`)
-  }
+  fun String.between(val1: Any, val2: Any): Children
+  fun <V : Any> KProperty1<T, V>.between(val1: V, val2: V): Children = SqlUtils { tableField }.between(val1, val2)
 
-  fun ge(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun lt(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.lt(true, column, `val`)
-  }
+  fun String.notBetween(val1: Any, val2: Any): Children
+  fun <V : Any> KProperty1<T, V>.notBetween(val1: V, val2: V): Children = SqlUtils { tableField }.notBetween(val1, val2)
 
-  fun lt(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun le(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.le(true, column, `val`)
-  }
+  infix fun String.like(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.like(value: V): Children = SqlUtils { tableField }.like(value)
 
-  fun le(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun between(column: KProperty1<T,*>, val1: Any?, val2: Any?): Children {
-    return this.between(true, column, val1, val2)
-  }
+  infix fun String.notLike(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.notLike(value: V): Children = SqlUtils { tableField }.notLike(value)
 
-  fun between(condition: Boolean, column: KProperty1<T,*>, val1: Any?, val2: Any?): Children
-  fun notBetween(column: KProperty1<T,*>, val1: Any?, val2: Any?): Children {
-    return this.notBetween(true, column, val1, val2)
-  }
+  infix fun String.likeLeft(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.likeLeft(value: V): Children = SqlUtils { tableField }.likeLeft(value)
 
-  fun notBetween(condition: Boolean, column: KProperty1<T,*>, val1: Any?, val2: Any?): Children
-  fun like(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.like(true, column, `val`)
-  }
+  infix fun String.likeRight(value: Any): Children
+  infix fun <V : Any> KProperty1<T, V>.likeRight(value: V): Children = SqlUtils { tableField }.likeRight(value)
 
-  fun like(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun notLike(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.notLike(true, column, `val`)
-  }
-
-  fun notLike(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun likeLeft(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.likeLeft(true, column, `val`)
-  }
-
-  fun likeLeft(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
-  fun likeRight(column: KProperty1<T,*>, `val`: Any?): Children {
-    return this.likeRight(true, column, `val`)
-  }
-
-  fun likeRight(condition: Boolean, column: KProperty1<T,*>, `val`: Any?): Children
 }

@@ -3,13 +3,17 @@ package cn.tursom.utils
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlin.reflect.jvm.javaMethod
 
 @Suppress("unused", "SpellCheckingInspection")
-val gson =GsonBuilder()
+val gson = GsonBuilder()
   .registerTypeAdapterFactory(GsonDataTypeAdaptor.FACTORY)
   .create()
 

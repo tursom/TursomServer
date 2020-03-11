@@ -1,5 +1,7 @@
 package cn.tursom.database
 
+import cn.tursom.database.annotations.Delete
+import cn.tursom.database.annotations.Insert
 import cn.tursom.database.annotations.Param
 import cn.tursom.database.wrapper.Wrapper
 import java.io.Serializable
@@ -18,20 +20,23 @@ interface Mapper<T> {
    *
    * @param entity 实体对象
    */
-  fun insert(entity: T): Int
+  @Insert("insert into \${${Constants.TABLE}} #{${Constants.ENTITY}}")
+  fun insert(@Param(Constants.ENTITY) entity: T): Int
 
   /**
    * 根据 ID 删除
    *
    * @param id 主键ID
    */
-  fun deleteById(id: Serializable): Int
+  @Delete("delete from \${${Constants.TABLE}} where id=#{id}")
+  fun deleteById(@Param("id") id: Serializable): Int
 
   /**
    * 根据 columnMap 条件，删除记录
    *
    * @param columnMap 表字段 map 对象
    */
+  @Delete("delete from \${${Constants.TABLE}} where #{${Constants.COLUMN_MAP}}")
   fun deleteByMap(@Param(Constants.COLUMN_MAP) columnMap: Map<String, Any?>): Int
 
   /**
@@ -39,6 +44,7 @@ interface Mapper<T> {
    *
    * @param wrapper 实体对象封装操作类（可以为 null）
    */
+  @Delete("delete from \${${Constants.TABLE}} where #{${Constants.WRAPPER_WHERE}}")
   fun delete(@Param(Constants.WRAPPER) wrapper: Wrapper<T>): Int
 
   /**
@@ -120,4 +126,9 @@ interface Mapper<T> {
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
   fun selectObjs(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): List<Any>
+
+  companion object {
+    fun <T> instance(clazz: Class<out Mapper<T>>) {
+    }
+  }
 }

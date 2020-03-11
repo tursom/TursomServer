@@ -1,10 +1,11 @@
 package cn.tursom.database
 
+import cn.tursom.database.wrapper.IUpdateWrapper
 import cn.tursom.database.wrapper.Wrapper
 import java.io.Serializable
 
 @Suppress("unused")
-interface SqlHelper<T, W : Wrapper<T>> {
+interface SqlHelper<T> {
   /**
    * 插入一条记录（选择字段，策略插入）
    *
@@ -17,34 +18,24 @@ interface SqlHelper<T, W : Wrapper<T>> {
    *
    * @param entityList 实体对象集合
    */
-  fun saveBatch(entityList: Collection<T>): Boolean {
-    return saveBatch(entityList, 1000)
-  }
+  fun saveBatch(entityList: Collection<T>): Int
 
-  /**
-   * 插入（批量）
-   *
-   * @param entityList 实体对象集合
-   * @param batchSize  插入批次数量
-   */
-  fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean
-
-  /**
-   * 批量修改插入
-   *
-   * @param entityList 实体对象集合
-   */
-  fun saveOrUpdateBatch(entityList: Collection<T>): Boolean {
-    return saveOrUpdateBatch(entityList, 1000)
-  }
-
-  /**
-   * 批量修改插入
-   *
-   * @param entityList 实体对象集合
-   * @param batchSize  每次的数量
-   */
-  fun saveOrUpdateBatch(entityList: Collection<T>, batchSize: Int): Boolean
+  ///**
+  // * 批量修改插入
+  // *
+  // * @param entityList 实体对象集合
+  // */
+  //fun saveOrUpdateBatch(entityList: Collection<T>): Boolean {
+  //  return saveOrUpdateBatch(entityList, 1000)
+  //}
+  //
+  ///**
+  // * 批量修改插入
+  // *
+  // * @param entityList 实体对象集合
+  // * @param batchSize  每次的数量
+  // */
+  //fun saveOrUpdateBatch(entityList: Collection<T>, batchSize: Int): Boolean
 
   /**
    * 根据 ID 删除
@@ -63,7 +54,7 @@ interface SqlHelper<T, W : Wrapper<T>> {
   /**
    * 根据 entity 条件，删除记录
    */
-  fun remove(queryWrapper: W): Boolean
+  fun remove(queryWrapper: Wrapper<T>): Boolean
 
   /**
    * 删除（根据ID 批量删除）
@@ -85,14 +76,14 @@ interface SqlHelper<T, W : Wrapper<T>> {
    * @param entity        实体对象
    * @param updateWrapper 实体对象封装操作类
    */
-  fun update(entity: T?, updateWrapper: W): Boolean
+  fun update(entity: T?, updateWrapper: IUpdateWrapper<T>): Boolean
 
   /**
    * 根据 UpdateWrapper 条件，更新记录 需要设置sqlset
    *
    * @param updateWrapper 实体对象封装操作类
    */
-  fun update(updateWrapper: W): Boolean {
+  fun update(updateWrapper: IUpdateWrapper<T>): Boolean {
     return update(null, updateWrapper)
   }
 
@@ -147,14 +138,14 @@ interface SqlHelper<T, W : Wrapper<T>> {
    * @param queryWrapper 实体对象封装操作类
    * @param throwEx      有多个 result 是否抛出异常
    */
-  fun getOne(queryWrapper: W, throwEx: Boolean = true): T?
+  fun getOne(queryWrapper: Wrapper<T>, throwEx: Boolean = true): T?
 
   /**
    * 根据 Wrapper，查询一条记录
    *
    * @param queryWrapper 实体对象封装操作类
    */
-  fun getMap(queryWrapper: W): Map<String, Any?>
+  fun getMap(queryWrapper: Wrapper<T>): Map<String, Any?>
 
   ///**
   // * 根据 Wrapper，查询一条记录
@@ -169,14 +160,14 @@ interface SqlHelper<T, W : Wrapper<T>> {
    *
    * @param queryWrapper 实体对象封装操作类
    */
-  fun count(queryWrapper: W): Int
+  fun count(queryWrapper: Wrapper<T>): Int
 
   /**
    * 查询列表
    *
    * @param queryWrapper 实体对象封装操作类
    */
-  fun list(queryWrapper: W): List<T>
+  fun list(queryWrapper: Wrapper<T>): List<T>
 
   /**
    * 获取对应 entity 的 BaseMapper
@@ -194,7 +185,7 @@ interface SqlHelper<T, W : Wrapper<T>> {
    *
    * @param entity 实体对象
    */
-  fun saveOrUpdate(entity: T?, updateWrapper: W): Boolean {
+  fun saveOrUpdate(entity: T?, updateWrapper: IUpdateWrapper<T>): Boolean {
     return update(entity, updateWrapper) || saveOrUpdate(entity)
   }
 }
