@@ -95,28 +95,28 @@ interface Mapper<T> {
    *
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
-  fun selectOne(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): T
+  fun selectOne(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>? = null): T
 
   /**
    * 根据 Wrapper 条件，查询总记录数
    *
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
-  fun selectCount(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): Int
+  fun selectCount(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>? = null): Int
 
   /**
    * 根据 entity 条件，查询全部记录
    *
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
-  fun selectList(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): List<T>
+  fun selectList(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>? = null): List<T>
 
   /**
    * 根据 Wrapper 条件，查询全部记录
    *
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
-  fun selectMaps(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): List<Map<String, Any?>>
+  fun selectMaps(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>? = null): List<Map<String, Any?>>
 
   /**
    * 根据 Wrapper 条件，查询全部记录
@@ -125,7 +125,7 @@ interface Mapper<T> {
    *
    * @param queryWrapper 实体对象封装操作类（可以为 null）
    */
-  fun selectObjs(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>): List<Any>
+  fun selectObjs(@Param(Constants.WRAPPER) queryWrapper: Wrapper<T>? = null): List<Any>
 
   companion object {
     fun <T> instance(clazz: Class<out Mapper<T>>) {

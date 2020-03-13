@@ -23,6 +23,10 @@ val prettyGson = GsonBuilder()
   .setPrettyPrinting()
   .create()
 
+fun Any.toJson(): String = gson.toJson(this)
+fun Any.toPrettyJson(): String = gson.toJson(this)
+inline fun <reified T : Any> String.fromJson(): T = gson.fromJson(this, T::class.java)
+
 inline fun <reified T : Any> Gson.fromJson(json: String) = this.fromJson(json, T::class.java)!!
 
 

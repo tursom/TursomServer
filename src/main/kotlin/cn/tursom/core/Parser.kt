@@ -6,6 +6,7 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
 object Parser {
@@ -21,6 +22,22 @@ object Parser {
         valueOf.invoke(null, yaml.toString().toUpperCase()) as T
       } catch (e: Exception) {
         null
+      }
+      clazz.isInheritanceFrom(Map::class.java) -> {
+        val map = try {
+          clazz.newInstance()
+        } catch (e: Exception) {
+          try {
+            unsafe.allocateInstance(clazz)
+          } catch (e: Exception) {
+            HashMap<Any?, Any?>()
+          }
+        }.cast<MutableMap<Any?, Any?>>()
+        if (yaml !is Map<*, *>) return null
+        yaml.forEach { (any, u) ->
+          map[any] = u
+        }
+        map.cast<T>()
       }
       yaml is List<*> && clazz.isArray -> parseArray(yaml, clazz) as T
       else -> when (clazz) {
