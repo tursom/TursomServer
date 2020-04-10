@@ -3,6 +3,10 @@
 package cn.tursom.core
 
 import sun.misc.Unsafe
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -13,7 +17,9 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.jar.JarFile
+import java.util.zip.*
 import kotlin.collections.ArrayList
+
 
 inline fun <reified T> Array<out T?>.excludeNull(): List<T> {
   val list = ArrayList<T>()
@@ -35,7 +41,8 @@ fun printNonDaemonThread() {
 }
 
 fun log(log: String) = println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
-fun logE(log: String) = System.err.println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
+fun logE(log: String) =
+  System.err.println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
 
 val String.urlDecode: String get() = URLDecoder.decode(this, "utf-8")
 val String.urlEncode: String get() = URLEncoder.encode(this, "utf-8")
@@ -175,6 +182,15 @@ fun ByteArray.toHexString(): String {
   return String(hexChars)
 }
 
+fun String.fromHexString(): ByteArray {
+  val source = toLowerCase()
+  val data = ByteArray(length / 2)
+  for (i in 0 until length / 2) {
+    data[i] = ((HEX_ARRAY.indexOf(source[i * 2]) shl 4) + HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
+  }
+  return data
+}
+
 fun ByteArray.toUTF8String() = String(this, Charsets.UTF_8)
 
 fun String.base64() = this.toByteArray().base64().toUTF8String()
@@ -201,7 +217,9 @@ fun ByteArray.digest(type: String) = try {
 
 val random = Random()
 fun randomInt() = random.nextInt()
-fun randomInt(min: Int, max: Int): Int = if (min > max) randomInt(max, min) else (random.nextInt() and Int.MAX_VALUE) % (max - min + 1) + min
+fun randomInt(min: Int, max: Int): Int =
+  if (min > max) randomInt(max, min) else (random.nextInt() and Int.MAX_VALUE) % (max - min + 1) + min
+
 fun randomLong() = random.nextLong()
 fun randomLong(min: Long, max: Long) = (random.nextLong() and Long.MAX_VALUE) % (max - min + 1) + min
 fun randomBoolean() = random.nextBoolean()
@@ -260,3 +278,66 @@ inline fun <reified T> getClazz() = T::class.java
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <R, T : Function<R>> lambda(lambda: T) = lambda
+
+fun ByteArray.gz(): ByteArray {
+  val os = ByteArrayOutputStream()
+  GZIPOutputStream(os).use {
+    it.write(this)
+  }
+  return os.toByteArray()
+}
+
+fun ByteArray.ungz(): ByteArray {
+  return GZIPInputStream(ByteArrayInputStream(this)).readBytes()
+}
+
+fun ByteArray.undeflate(): ByteArray {
+  var len = 0
+  val infl = Inflater()
+  infl.setInput(this)
+  val bos = ByteArrayOutputStream()
+  val outByte = ByteArray(1024)
+  bos.use {
+    while (!infl.finished()) {
+      // 解压缩并将解压缩后的内容输出到字节输出流bos中
+      len = infl.inflate(outByte)
+      if (len == 0) {
+        break
+      }
+      bos.write(outByte, 0, len)
+    }
+    infl.end()
+  }
+  return bos.toByteArray()
+}
+
+
+fun ByteArray.deflate(): ByteArray {
+  var len = 0
+  val defl = Deflater()
+  defl.setInput(this)
+  defl.finish()
+  val bos = ByteArrayOutputStream()
+  val outputByte = ByteArray(1024)
+  bos.use {
+    while (!defl.finished()) {
+      // 压缩并将压缩后的内容输出到字节输出流bos中
+      len = defl.deflate(outputByte)
+      bos.write(outputByte, 0, len)
+    }
+    defl.end()
+  }
+  return bos.toByteArray()
+}
+
+//fun ByteArray.deflate(): ByteArray {
+//  val os = ByteArrayOutputStream()
+//  DeflaterOutputStream(os).use {
+//    it.write(this)
+//  }
+//  return os.toByteArray()
+//}
+//
+//fun ByteArray.undeflate(): ByteArray {
+//  return DeflaterInputStream(ByteArrayInputStream(this)).readBytes()
+//}

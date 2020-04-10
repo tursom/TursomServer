@@ -30,13 +30,17 @@ object HttpRequest {
       } else {
         var endIndex = contentType.indexOf("charset=", startIndex = startIndex, ignoreCase = true) + 8
         if (endIndex < 0) endIndex = contentType.length
-        Charset.forName(contentType.substring(startIndex, endIndex))
+        if (startIndex == endIndex) {
+          Charsets.UTF_8
+        } else {
+          Charset.forName(contentType.substring(startIndex, endIndex))
+        }
       }
     }
   }
 
   fun URLConnection.getRealInputStream(): InputStream {
-    return if (getHeaderField("content-encoding").contains("gzip", true)) {
+    return if (getHeaderField("content-encoding")?.contains("gzip", true) == true) {
       GZIPInputStream(inputStream)
     } else {
       inputStream
@@ -103,11 +107,13 @@ object HttpRequest {
     url: String,
     param: String? = null,
     headers: Map<String, String> = defaultHeader
-  ): String = getContextStr("GET", if (param != null) {
-    "$url?$param"
-  } else {
-    url
-  }, headers)
+  ): String = getContextStr(
+    "GET", if (param != null) {
+      "$url?$param"
+    } else {
+      url
+    }, headers
+  )
 
   infix operator fun get(url: String): String = doGet(url, null)
 
