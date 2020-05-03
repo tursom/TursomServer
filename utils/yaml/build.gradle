@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(":")
+    compile project(":")
     // 解析YAML
     implementation group: 'org.yaml', name: 'snakeyaml', version: '1.25'
 }

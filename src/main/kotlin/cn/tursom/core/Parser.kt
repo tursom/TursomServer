@@ -4,22 +4,32 @@ import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
 object Parser {
-  private val simpleDateFormat = ThreadLocalSimpleDateFormat()
+  private val dateFormat = ThreadLocalSimpleDateFormat()
   private val Field.actualTypeArguments get() = (genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
+  fun withDateFormat(format: String, action: Parser.() -> Unit) {
+    val defaultFormat = dateFormat.get()
+    dateFormat.set(SimpleDateFormat(format))
+    try {
+      this.action()
+    } finally {
+      dateFormat.set(defaultFormat)
+    }
+  }
+
   fun <T> parse(yaml: Any, clazz: Class<T>): T? {
-    @Suppress("UNCHECKED_CAST")
     return when {
       clazz.isInstance(yaml) -> yaml.cast()
       clazz.isInheritanceFrom(Enum::class.java) -> try {
         val valueOf = clazz.getDeclaredMethod("valueOf", String::class.java)
-        valueOf.invoke(null, yaml.toString().toUpperCase()) as T
+        valueOf.invoke(null, yaml.toString().toUpperCase()).cast<T?>()
       } catch (e: Exception) {
         null
       }
@@ -37,9 +47,9 @@ object Parser {
         yaml.forEach { (any, u) ->
           map[any] = u
         }
-        map.cast<T>()
+        map.cast()
       }
-      yaml is List<*> && clazz.isArray -> parseArray(yaml, clazz) as T
+      yaml is List<*> && clazz.isArray -> parseArray(yaml, clazz).cast()
       else -> when (clazz) {
         Any::class.java -> yaml
         Int::class.java -> yaml.toInt()
@@ -75,7 +85,7 @@ object Parser {
           }
           instance
         }
-      } as T
+      }.cast()
     }
   }
 
@@ -201,7 +211,7 @@ object Parser {
     is Number -> Date(toLong())
     is Boolean -> null
     is String -> when (val time = toLongOrNull()) {
-      null -> simpleDateFormat.get().parse(this)
+      null -> dateFormat.get().parse(this)
       else -> Date(time)
     }
     is Iterable<*> -> null
@@ -210,7 +220,7 @@ object Parser {
     else -> {
       val str = toString()
       when (val time = str.toLongOrNull()) {
-        null -> simpleDateFormat.get().parse(str)
+        null -> dateFormat.get().parse(str)
         else -> Date(time)
       }
     }

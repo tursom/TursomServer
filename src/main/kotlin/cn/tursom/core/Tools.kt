@@ -267,8 +267,8 @@ fun <T> T.println(): T {
   return this
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T> Any?.cast(): T = this as T
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T> Any?.cast(): T = this as T
 
 inline fun loop(`continue`: () -> Boolean = { true }, action: () -> Unit) {
   while (`continue`()) action()

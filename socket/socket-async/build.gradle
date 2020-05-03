@@ -1,7 +1,7 @@
 dependencies {
-    implementation project(":")
-    implementation project(":socket")
+    //implementation project(":")
+    compile project(":socket")
 
     // kotlin 协程
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
 }

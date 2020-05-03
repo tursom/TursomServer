@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(":")
+    compile project(":")
     // https://mvnrepository.com/artifact/javax.mail/mail
     //compile group: 'javax.mail', name: 'mail', version: '1.4'
     // https://mvnrepository.com/artifact/com.sun.mail/javax.mail

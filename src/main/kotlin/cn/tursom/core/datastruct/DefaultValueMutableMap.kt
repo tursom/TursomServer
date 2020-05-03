@@ -1,35 +1,34 @@
 package cn.tursom.core.datastruct
 
 import cn.tursom.core.cast
-import java.util.*
+import java.util.NoSuchElementException
 
-class DefaultValueMap<K, V>(
-  private val map: Map<K, V?>,
+class DefaultValueMutableMap<K, V>(
+  private val map: MutableMap<K, V?>,
   private val defaultValue: (K) -> V
-) : Map<K, V> by map.cast() {
-  override val entries: Set<Map.Entry<K, V>> get() = Entry()
-  override val values: Collection<V> get() = Values()
+) : MutableMap<K, V> by map.cast() {
+  override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() = Entry()
+  override val values: MutableCollection<V> get() = Values()
 
   override fun get(key: K): V {
     val value = map[key]
     return value ?: run {
       val newValue = defaultValue(key)
-      if (map is MutableMap) {
-        map[key] = newValue
-      }
+      map[key] = newValue
       newValue
     }
   }
 
   inner class Entry(
-    private val entries: Set<Map.Entry<K, V?>> = map.entries
-  ) : Set<Map.Entry<K, V>> by entries.cast() {
+    private val entries: MutableSet<MutableMap.MutableEntry<K, V?>> = map.entries
+  ) : MutableSet<MutableMap.MutableEntry<K, V>> by entries.cast() {
     override val size: Int get() = entries.count { it.value != null }
     override fun isEmpty(): Boolean = entries.firstOrNull { it.value != null } == null
-    override fun iterator(): Iterator<Map.Entry<K, V>> = EntryIterator()
+    override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> = EntryIterator()
 
-    inner class EntryIterator : Iterator<Map.Entry<K, V>> {
-      private val iterator = entries.iterator()
+    inner class EntryIterator(
+      private val iterator: MutableIterator<MutableMap.MutableEntry<K, V?>> = entries.iterator()
+    ) : MutableIterator<MutableMap.MutableEntry<K, V>> by iterator.cast() {
       private var next: Map.Entry<K, V>? = null
       override fun hasNext(): Boolean {
         while (iterator.hasNext()) {
@@ -41,7 +40,7 @@ class DefaultValueMap<K, V>(
         return false
       }
 
-      override fun next(): Map.Entry<K, V> = when {
+      override fun next(): MutableMap.MutableEntry<K, V> = when {
         next != null -> next
         hasNext() -> next
         else -> throw NoSuchElementException()
@@ -50,14 +49,15 @@ class DefaultValueMap<K, V>(
   }
 
   inner class Values(
-    private val values: Collection<V?> = map.values
-  ) : Collection<V> by values.cast() {
+    private val values: MutableCollection<V?> = map.values
+  ) : MutableCollection<V> by values.cast() {
     override val size: Int get() = values.count { it != null }
     override fun isEmpty(): Boolean = values.first { it != null } == null
-    override fun iterator(): Iterator<V> = ValuesIterator()
+    override fun iterator(): MutableIterator<V> = ValuesIterator()
 
-    inner class ValuesIterator : Iterator<V> {
-      private val iterator = values.iterator()
+    inner class ValuesIterator(
+      private val iterator: MutableIterator<V?> = values.iterator()
+    ) : MutableIterator<V> by iterator.cast() {
       private var next: V? = null
 
       override fun hasNext(): Boolean {
