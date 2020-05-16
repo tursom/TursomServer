@@ -33,7 +33,7 @@ interface AsyncChannel : Closeable {
 
   suspend fun <T> write(timeout: Long, action: () -> T): T {
     return operate {
-      waitWrite()
+      waitWrite(timeout)
       action()
     }
   }
@@ -104,7 +104,11 @@ interface AsyncChannel : Closeable {
     if (Thread.currentThread() == nioThread.thread) {
       if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
     } else {
-      nioThread.execute { if (key.isValid) key.interestOps(SelectionKey.OP_WRITE) }
+      nioThread.execute {
+        if (key.isValid) {
+          key.interestOps(SelectionKey.OP_WRITE)
+        }
+      }
       nioThread.wakeup()
     }
   }

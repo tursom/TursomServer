@@ -341,3 +341,12 @@ fun ByteArray.deflate(): ByteArray {
 //fun ByteArray.undeflate(): ByteArray {
 //  return DeflaterInputStream(ByteArrayInputStream(this)).readBytes()
 //}
+
+inline fun <reified T : Any?> Any.assert(action: T.() -> Unit): Boolean {
+  return if (this is T) {
+    action()
+    true
+  } else {
+    false
+  }
+}

@@ -7,7 +7,7 @@ import java.nio.channels.Selector
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 class WorkerLoopNioThread(
   val threadName: String = "nioLoopThread",
-  override val selector: Selector = Selector.open(),
+  override var selector: Selector = Selector.open(),
   override val daemon: Boolean = false,
   override val timeout: Long = 3000,
   override val workLoop: (thread: NioThread, key: SelectionKey) -> Unit

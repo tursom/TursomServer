@@ -56,12 +56,12 @@ interface ByteBuffer : Closeable {
 
   fun readBuffer(): java.nio.ByteBuffer
   fun finishRead(buffer: java.nio.ByteBuffer) {
-    readPosition = buffer.position()
+    readPosition += buffer.position()
   }
 
   fun writeBuffer(): java.nio.ByteBuffer
   fun finishWrite(buffer: java.nio.ByteBuffer) {
-    writePosition = buffer.position()
+    writePosition += buffer.position()
   }
 
   fun reset()

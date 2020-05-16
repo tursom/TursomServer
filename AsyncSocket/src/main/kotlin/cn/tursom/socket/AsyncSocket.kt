@@ -44,7 +44,7 @@ interface AsyncSocket : AsyncChannel {
    */
   override suspend fun read(pool: MemoryPool, timeout: Long): ByteBuffer = read(timeout) {
     val buffer = pool.get()
-    if (channel.read(buffer) < 0) throw SocketException()
+    if (channel.read(buffer) < 0) throw SocketException("socket closed")
     buffer
   }
 }

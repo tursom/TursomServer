@@ -34,16 +34,16 @@ inline fun <T> ByteBuffer.write(block: (java.nio.ByteBuffer) -> T): T {
   }
 }
 
-fun ScatteringByteChannel.read(buffer: ByteBuffer): Int {
-  return if (buffer is MultipleByteBuffer) {
+fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
+  return if (buffer is MultipleByteBuffer && this is ScatteringByteChannel) {
     buffer.writeBuffers { read(it) }.toInt()
   } else {
     buffer.write { read(it) }
   }
 }
 
-fun GatheringByteChannel.write(buffer: ByteBuffer): Int {
-  return if (buffer is MultipleByteBuffer) {
+fun WritableByteChannel.write(buffer: ByteBuffer): Int {
+  return if (buffer is MultipleByteBuffer && this is GatheringByteChannel) {
     buffer.readBuffers { write(it) }.toInt()
   } else {
     buffer.read { write(it) }

@@ -33,11 +33,11 @@ class NettyByteBuffer(
   override val resized: Boolean get() = false
 
   override fun readBuffer(): java.nio.ByteBuffer {
-    return byteBuf.internalNioBuffer(readPosition, readable)
+    return byteBuf.internalNioBuffer(readPosition, readable).slice()
   }
 
   override fun writeBuffer(): java.nio.ByteBuffer {
-    return byteBuf.internalNioBuffer(writePosition, writeable)
+    return byteBuf.internalNioBuffer(writePosition, writeable).slice()
   }
 
   override val readOffset: Int get() = byteBuf.arrayOffset() + byteBuf.readerIndex()
