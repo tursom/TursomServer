@@ -2,6 +2,7 @@ package cn.tursom.channel
 
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.timer.Timer
 import cn.tursom.core.timer.WheelTimer
@@ -9,6 +10,7 @@ import cn.tursom.niothread.NioThread
 import java.io.Closeable
 import java.net.SocketException
 import java.nio.channels.*
+import java.nio.charset.Charset
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -66,6 +68,14 @@ interface AsyncChannel : Closeable {
     timeout: Long = 0
   ): Long = read(timeout) {
     file.transferFrom(channel as ReadableByteChannel, position, count)
+  }
+
+  suspend fun write(bytes: ByteArray, offset: Int = 0, len: Int = bytes.size - offset): Int {
+    return write(HeapByteBuffer(bytes, offset, len))
+  }
+
+  suspend fun write(str: String, charset: Charset = Charsets.UTF_8): Int {
+    return write(str.toByteArray(charset))
   }
 
   suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer

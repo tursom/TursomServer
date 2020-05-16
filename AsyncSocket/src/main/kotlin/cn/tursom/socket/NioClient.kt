@@ -24,28 +24,23 @@ object NioClient {
   )
 
   suspend fun connect(host: String, port: Int, timeout: Long = 0): NioSocket {
-    val key: SelectionKey = suspendCoroutine { cont ->
-      val channel = getConnection(host, port)
-      val timeoutTask = if (timeout > 0) AsyncChannel.timer.exec(timeout) {
-        channel.close()
-        cont.resumeWithException(TimeoutException())
-      } else {
-        null
-      }
-      nioThread.register(channel, 0) { key ->
-        timeoutTask?.cancel()
-        cont.resume(key)
-      }
-    }
+    val key = getConnection(host, port, timeout)
     return NioSocket(key, nioThread)
   }
 
-  private fun getConnection(host: String, port: Int): SelectableChannel {
-    val channel = SocketChannel.open()!!
-    if (!channel.connect(InetSocketAddress(host, port))) {
-      throw SocketException("connection failed")
+  private suspend fun getConnection(host: String, port: Int, timeout: Long): SelectionKey {
+    return suspendCoroutine { cont ->
+      val channel = SocketChannel.open()!!
+      channel.configureBlocking(false)
+      nioThread.register(channel, SelectionKey.OP_CONNECT) { key ->
+        key.attach(AsyncProtocol.ConnectContext(cont, if (timeout > 0) AsyncChannel.timer.exec(timeout) {
+          channel.close()
+          cont.resumeWithException(TimeoutException())
+        } else {
+          null
+        }))
+      }
+      channel.connect(InetSocketAddress(host, port))
     }
-    channel.configureBlocking(false)
-    return channel
   }
 }

@@ -18,7 +18,7 @@ class WorkerLoopNioThread(
   //val taskQueue = LinkedBlockingDeque<Future<Any?>>()
 
   override val thread = Thread {
-    while (!selector.isOpen) {
+    while (selector.isOpen) {
       try {
         if (selector.select(timeout) != 0) {
           val keyIter = selector.selectedKeys().iterator()

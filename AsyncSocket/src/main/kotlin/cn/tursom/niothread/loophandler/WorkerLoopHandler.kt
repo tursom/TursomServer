@@ -14,6 +14,9 @@ class WorkerLoopHandler(private val protocol: NioProtocol) : (NioThread, Selecti
         key.isWritable -> {
           protocol.handleWrite(key, nioThread)
         }
+        key.isConnectable -> {
+          protocol.handleConnect(key, nioThread)
+        }
       }
     } catch (e: Throwable) {
       try {

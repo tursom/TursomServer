@@ -29,7 +29,7 @@ class NioLoopServer(
   private val bossNioThread = nioThreadFactory("nio-boss", BossLoopHandler(
     protocol,
     workerNioThread
-  )::invoke)
+  ))
   private val started = AtomicBoolean(false)
 
   override fun run() {

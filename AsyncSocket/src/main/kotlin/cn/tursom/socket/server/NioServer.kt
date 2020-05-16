@@ -26,7 +26,7 @@ open class NioServer(
       try {
         socket.handler()
       } catch (e: Exception) {
-        Exception(e).printStackTrace()
+        e.printStackTrace()
       } finally {
         try {
           socket.close()
