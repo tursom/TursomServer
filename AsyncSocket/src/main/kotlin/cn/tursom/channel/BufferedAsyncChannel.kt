@@ -6,5 +6,6 @@ import cn.tursom.socket.AsyncSocket
 
 interface BufferedAsyncChannel : AsyncChannel {
   val pool: MemoryPool
+  val prevChannel: AsyncChannel
   suspend fun read(timeout: Long = 0L): ByteBuffer = read(pool, timeout)
 }

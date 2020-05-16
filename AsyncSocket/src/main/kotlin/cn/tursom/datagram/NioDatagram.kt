@@ -11,27 +11,10 @@ class NioDatagram(
 ) : AsyncDatagram {
   override val open: Boolean get() = channel.isOpen && key.isValid
 
-  private inline fun <T> operate(action: () -> T): T {
-    return try {
-      action()
-    } catch (e: Exception) {
-      waitMode()
-      throw e
-    }
-  }
+  override fun writeMode() {}
 
   override suspend fun <T> write(timeout: Long, action: () -> T): T {
-    return operate {
-      waitWrite(timeout)
-      action()
-    }
-  }
-
-  override suspend fun <T> read(timeout: Long, action: () -> T): T {
-    return operate {
-      waitRead(timeout)
-      action()
-    }
+    return action()
   }
 
   override fun close() {

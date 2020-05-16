@@ -1,10 +1,5 @@
 package cn.tursom.socket
 
-import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.pool.MemoryPool
-import cn.tursom.socket.AsyncSocket
+import cn.tursom.channel.BufferedAsyncChannel
 
-interface BufferedAsyncSocket : AsyncSocket {
-  val pool: MemoryPool
-  suspend fun read(timeout: Long = 0L): ByteBuffer = read(pool, timeout)
-}
+interface BufferedAsyncSocket : BufferedAsyncChannel, AsyncSocket

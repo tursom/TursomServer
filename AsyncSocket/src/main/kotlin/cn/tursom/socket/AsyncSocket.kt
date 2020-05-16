@@ -1,6 +1,7 @@
 package cn.tursom.socket
 
 import cn.tursom.channel.AsyncChannel
+import cn.tursom.channel.BufferedAsyncChannel
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
@@ -12,9 +13,7 @@ import java.nio.channels.SocketChannel
 @Suppress("unused")
 interface AsyncSocket : AsyncChannel {
   override val channel: SocketChannel
-
-  suspend fun <T> write(timeout: Long, action: () -> T): T
-  suspend fun <T> read(timeout: Long, action: () -> T): T
+  override fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedNioSocket(this, pool)
 
   override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long =
     write(timeout) { channel.write(buffer) }

@@ -15,7 +15,6 @@ import kotlin.coroutines.suspendCoroutine
 
 @Suppress("MemberVisibilityCanBePrivate")
 object NioClient {
-  private const val TIMEOUT = 1000L
   @JvmStatic
   private val nioThread = WorkerLoopNioThread(
     "nioClient",

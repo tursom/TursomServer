@@ -1,21 +1,13 @@
 package cn.tursom.socket
 
-import cn.tursom.channel.AsyncProtocol
-import cn.tursom.niothread.NioProtocol
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
 import cn.tursom.core.timer.Timer
-import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
-import java.util.concurrent.TimeoutException
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * 异步协程套接字对象
@@ -23,20 +15,6 @@ import kotlin.coroutines.suspendCoroutine
 class NioSocket(override val key: SelectionKey, override val nioThread: NioThread) : AsyncSocket {
   override val channel: SocketChannel = key.channel() as SocketChannel
   override val open: Boolean get() = channel.isOpen && key.isValid
-
-  override suspend fun <T> write(timeout: Long, action: () -> T): T {
-    return operate {
-      waitWrite(timeout)
-      action()
-    }
-  }
-
-  override suspend fun <T> read(timeout: Long, action: () -> T): T {
-    return operate {
-      waitRead(timeout)
-      action()
-    }
-  }
 
   override suspend fun read(buffer: ByteBuffer, timeout: Long): Int {
     if (buffer.writeable == 0) return emptyBufferCode

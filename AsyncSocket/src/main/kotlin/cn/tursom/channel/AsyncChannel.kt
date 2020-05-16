@@ -7,9 +7,7 @@ import cn.tursom.niothread.NioThread
 import cn.tursom.socket.NioSocket
 import java.io.Closeable
 import java.net.SocketException
-import java.nio.channels.FileChannel
-import java.nio.channels.SelectableChannel
-import java.nio.channels.SelectionKey
+import java.nio.channels.*
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -18,7 +16,31 @@ interface AsyncChannel : Closeable {
   val open: Boolean
   val key: SelectionKey
   val nioThread: NioThread
-  val channel: SelectableChannel
+  val channel: SelectableChannel get() = key.channel()
+  fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedAsyncChannelImpl(pool, this)
+
+  private inline fun <T> operate(action: () -> T): T {
+    return try {
+      action()
+    } catch (e: Exception) {
+      waitMode()
+      throw e
+    }
+  }
+
+  suspend fun <T> write(timeout: Long, action: () -> T): T {
+    return operate {
+      waitWrite()
+      action()
+    }
+  }
+
+  suspend fun <T> read(timeout: Long, action: () -> T): T {
+    return operate {
+      waitRead(timeout)
+      action()
+    }
+  }
 
   suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
   suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
@@ -32,20 +54,24 @@ interface AsyncChannel : Closeable {
     position: Long,
     count: Long,
     timeout: Long = 0
-  ): Long
+  ): Long = write(timeout) {
+    file.transferTo(position, count, channel as WritableByteChannel)
+  }
 
   suspend fun read(
     file: FileChannel,
     position: Long,
     count: Long,
     timeout: Long = 0
-  ): Long
+  ): Long = read(timeout) {
+    file.transferFrom(channel as ReadableByteChannel, position, count)
+  }
 
   suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer
 
   fun waitMode() {
     if (Thread.currentThread() == nioThread.thread) {
-      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
+      if (key.isValid) key.interestOps(0)
     } else {
       nioThread.execute { if (key.isValid) key.interestOps(0) }
       nioThread.wakeup()
