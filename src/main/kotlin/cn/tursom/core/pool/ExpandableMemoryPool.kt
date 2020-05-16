@@ -8,11 +8,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 可自动申请新内存空间的内存池
  * 线程安全
  */
-class ExpandableMemoryPool(private val poolFactory: () -> MemoryPool) : MemoryPool {
+class ExpandableMemoryPool(val maxPoolCount: Int = -1, private val poolFactory: () -> MemoryPool) : MemoryPool {
   private val poolList = ConcurrentLinkedQueue<MemoryPool>()
+
   @Volatile
   private var usingPool: MemoryPool
   private val poolLock = AtomicBoolean(false)
+  private var poolCount: Int = 1
 
   init {
     usingPool = poolFactory()
@@ -23,8 +25,8 @@ class ExpandableMemoryPool(private val poolFactory: () -> MemoryPool) : MemoryPo
    * 强制释放所有内存
    */
   override fun gc() {
-    poolList.clear()
     usingPool = poolFactory()
+    poolList.clear()
     poolList.add(usingPool)
   }
 
@@ -51,14 +53,21 @@ class ExpandableMemoryPool(private val poolFactory: () -> MemoryPool) : MemoryPo
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
   private fun newPool(): ByteBuffer {
     return if (poolLock.compareAndSet(false, true)) {
-      val newPool = poolFactory()
-      poolList.add(newPool)
-      poolLock.set(false)
-      usingPool = newPool
-      synchronized(poolLock) {
-        (poolLock as Object).notifyAll()
+      if (maxPoolCount < 0 || poolCount++ < maxPoolCount) {
+        val newPool = poolFactory()
+        poolList.add(newPool)
+        poolLock.set(false)
+        usingPool = newPool
+        synchronized(poolLock) {
+          (poolLock as Object).notifyAll()
+        }
+        newPool.getMemory()
+      } else {
+        synchronized(poolLock) {
+          (poolLock as Object).notifyAll()
+        }
+        usingPool.getMemory()
       }
-      newPool.getMemory()
     } else {
       synchronized(poolLock) {
         (poolLock as Object).wait(500)
