@@ -15,7 +15,7 @@ object AsyncDatagramClient {
   private val nioThread = WorkerLoopNioThread(
     "nioClient",
     daemon = false,
-    workLoop = WorkerLoopHandler(AsyncProtocol)::handle
+    workLoop = WorkerLoopHandler(AsyncProtocol)
   )
 
   suspend fun connect(host: String, port: Int): NioDatagram = connect(InetSocketAddress(host, port))

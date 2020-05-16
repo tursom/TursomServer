@@ -1,5 +1,6 @@
 package cn.tursom.socket
 
+import cn.tursom.channel.AsyncChannel
 import cn.tursom.channel.AsyncProtocol
 import cn.tursom.niothread.WorkerLoopNioThread
 import cn.tursom.niothread.loophandler.WorkerLoopHandler
@@ -19,13 +20,13 @@ object NioClient {
   private val nioThread = WorkerLoopNioThread(
     "nioClient",
     daemon = false,
-    workLoop = WorkerLoopHandler(AsyncProtocol)::handle
+    workLoop = WorkerLoopHandler(AsyncProtocol)
   )
 
   suspend fun connect(host: String, port: Int, timeout: Long = 0): NioSocket {
     val key: SelectionKey = suspendCoroutine { cont ->
       val channel = getConnection(host, port)
-      val timeoutTask = if (timeout > 0) NioSocket.timer.exec(timeout) {
+      val timeoutTask = if (timeout > 0) AsyncChannel.timer.exec(timeout) {
         channel.close()
         cont.resumeWithException(TimeoutException())
       } else {

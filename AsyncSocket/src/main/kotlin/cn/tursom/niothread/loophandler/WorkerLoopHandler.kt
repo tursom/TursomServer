@@ -4,8 +4,8 @@ import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey
 
-class WorkerLoopHandler(private val protocol: NioProtocol) {
-  fun handle(nioThread: NioThread, key: SelectionKey) {
+class WorkerLoopHandler(private val protocol: NioProtocol) : (NioThread, SelectionKey) -> Unit {
+  override fun invoke(nioThread: NioThread, key: SelectionKey) {
     try {
       when {
         key.isReadable -> {

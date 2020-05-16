@@ -5,8 +5,11 @@ import cn.tursom.niothread.NioProtocol
 import java.nio.channels.SelectionKey
 import java.nio.channels.ServerSocketChannel
 
-class BossLoopHandler(private val protocol: NioProtocol, private val workerThread: NioThread? = null) {
-  fun handle(nioThread: NioThread, key: SelectionKey) {
+class BossLoopHandler(
+  private val protocol: NioProtocol,
+  private val workerThread: NioThread? = null
+) : (NioThread, SelectionKey) -> Unit {
+  override fun invoke(nioThread: NioThread, key: SelectionKey) {
     val workerThread: NioThread = workerThread ?: nioThread
     try {
       when {
