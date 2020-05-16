@@ -31,6 +31,7 @@ class NettyByteBuffer(
       byteBuf.readerIndex(value)
     }
   override val resized: Boolean get() = false
+  override var closed: Boolean = false
 
   override fun readBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
@@ -128,5 +129,12 @@ class NettyByteBuffer(
 
   override fun toString(): String {
     return "Nettyjava.nio.ByteBuffer(byteBuf=$byteBuf)"
+  }
+
+  override fun close() {
+    if (closed) {
+      closed = true
+      byteBuf.release()
+    }
   }
 }
