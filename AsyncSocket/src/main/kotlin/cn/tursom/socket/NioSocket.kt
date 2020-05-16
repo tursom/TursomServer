@@ -3,8 +3,6 @@ package cn.tursom.socket
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
-import cn.tursom.core.timer.Timer
-import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
@@ -71,8 +69,6 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
    * 伴生对象
    */
   companion object {
-    //val timer = StaticWheelTimer.timer
-    val timer: Timer = WheelTimer.timer
 
     const val emptyBufferCode = 0
     const val emptyBufferLongCode = 0L

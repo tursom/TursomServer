@@ -3,8 +3,9 @@ package cn.tursom.channel
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.pool.MemoryPool
+import cn.tursom.core.timer.Timer
+import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
-import cn.tursom.socket.NioSocket
 import java.io.Closeable
 import java.net.SocketException
 import java.nio.channels.*
@@ -121,7 +122,7 @@ interface AsyncChannel : Closeable {
 
   suspend fun waitRead(timeout: Long = 0) {
     suspendCoroutine<Int> {
-      key.attach(AsyncProtocol.Context(it, if (timeout > 0) NioSocket.timer.exec(timeout) {
+      key.attach(AsyncProtocol.Context(it, if (timeout > 0) timer.exec(timeout) {
         key.attach(null)
         waitMode()
         it.resumeWithException(TimeoutException())
@@ -133,7 +134,7 @@ interface AsyncChannel : Closeable {
 
   suspend fun waitWrite(timeout: Long = 0) {
     suspendCoroutine<Int> {
-      key.attach(AsyncProtocol.Context(it, if (timeout > 0) NioSocket.timer.exec(timeout) {
+      key.attach(AsyncProtocol.Context(it, if (timeout > 0) timer.exec(timeout) {
         key.attach(null)
         waitMode()
         it.resumeWithException(TimeoutException())
@@ -156,5 +157,8 @@ interface AsyncChannel : Closeable {
   companion object {
     const val emptyBufferCode = 0
     const val emptyBufferLongCode = 0L
+
+    //val timer = StaticWheelTimer.timer
+    val timer: Timer = WheelTimer.timer
   }
 }
