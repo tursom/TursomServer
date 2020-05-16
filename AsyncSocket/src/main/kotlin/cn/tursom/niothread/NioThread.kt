@@ -46,7 +46,7 @@ interface NioThread : Closeable {
   }
 
   fun <T> call(task: () -> T): T {
-    return call(Callable<T> { task() })
+    return call(Callable { task() })
   }
 
   fun <T> submit(task: Callable<T>): NioThreadTaskFuture<T> = submit(task::call)

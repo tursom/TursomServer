@@ -1,6 +1,6 @@
 package cn.tursom.niothread.loophandler
 
-import cn.tursom.socket.NioProtocol
+import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey
 

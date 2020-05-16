@@ -12,22 +12,20 @@ class WorkerLoopNioThread(
   override val timeout: Long = 3000,
   override val workLoop: (thread: NioThread, key: SelectionKey) -> Unit
 ) : NioThread {
-  override var closed: Boolean = false
+  override val closed: Boolean get() = !selector.isOpen
 
   val waitQueue = NonLockLinkedList<() -> Unit>()
   //val taskQueue = LinkedBlockingDeque<Future<Any?>>()
 
   override val thread = Thread {
-    while (!closed) {
+    while (!selector.isOpen) {
       try {
-        if (selector.isOpen) {
-          if (selector.select(timeout) != 0) {
-            val keyIter = selector.selectedKeys().iterator()
-            while (keyIter.hasNext()) {
-              val key = keyIter.next()
-              keyIter.remove()
-              workLoop(this, key)
-            }
+        if (selector.select(timeout) != 0) {
+          val keyIter = selector.selectedKeys().iterator()
+          while (keyIter.hasNext()) {
+            val key = keyIter.next()
+            keyIter.remove()
+            workLoop(this, key)
           }
         }
       } catch (e: Exception) {
@@ -64,7 +62,10 @@ class WorkerLoopNioThread(
   }
 
   override fun close() {
-    closed = true
+    execute {
+      selector.close()
+    }
+    wakeup()
   }
 
   override fun wakeup() {

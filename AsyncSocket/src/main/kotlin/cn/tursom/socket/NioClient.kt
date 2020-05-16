@@ -1,5 +1,6 @@
 package cn.tursom.socket
 
+import cn.tursom.channel.AsyncProtocol
 import cn.tursom.niothread.WorkerLoopNioThread
 import cn.tursom.niothread.loophandler.WorkerLoopHandler
 import java.net.InetSocketAddress
@@ -15,12 +16,11 @@ import kotlin.coroutines.suspendCoroutine
 @Suppress("MemberVisibilityCanBePrivate")
 object NioClient {
   private const val TIMEOUT = 1000L
-  private val protocol = NioSocket.nioSocketProtocol
   @JvmStatic
   private val nioThread = WorkerLoopNioThread(
     "nioClient",
-    daemon = true,
-    workLoop = WorkerLoopHandler(protocol)::handle
+    daemon = false,
+    workLoop = WorkerLoopHandler(AsyncProtocol)::handle
   )
 
   suspend fun connect(host: String, port: Int, timeout: Long = 0): NioSocket {

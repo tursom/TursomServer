@@ -24,7 +24,7 @@ class ThreadPoolNioThread(
       thread.name = threadName
       thread
     })
-  override var closed: Boolean = false
+  override val closed: Boolean get() = !selector.isOpen
 
   init {
     threadPool.execute(object : Runnable {
@@ -38,8 +38,8 @@ class ThreadPoolNioThread(
               workLoop(this@ThreadPoolNioThread, key)
             }
           }
+          if (!threadPool.isShutdown) threadPool.execute(this)
         }
-        if (!threadPool.isShutdown) threadPool.execute(this)
       }
     })
   }
@@ -64,7 +64,7 @@ class ThreadPoolNioThread(
   override fun <T> submit(task: () -> T): NioThreadTaskFuture<T> = ThreadPoolTaskFuture(threadPool.submit(task))
 
   override fun close() {
-    closed = true
+    selector.close()
     threadPool.shutdown()
   }
 

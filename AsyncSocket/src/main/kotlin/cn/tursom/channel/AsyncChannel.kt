@@ -1,0 +1,134 @@
+package cn.tursom.channel
+
+import cn.tursom.buffer.MultipleByteBuffer
+import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.pool.MemoryPool
+import cn.tursom.niothread.NioThread
+import cn.tursom.socket.NioSocket
+import java.io.Closeable
+import java.net.SocketException
+import java.nio.channels.FileChannel
+import java.nio.channels.SelectableChannel
+import java.nio.channels.SelectionKey
+import java.util.concurrent.TimeoutException
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
+interface AsyncChannel : Closeable {
+  val open: Boolean
+  val key: SelectionKey
+  val nioThread: NioThread
+  val channel: SelectableChannel
+
+  suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
+  suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
+  suspend fun write(buffer: ByteBuffer, timeout: Long = 0L): Int = write(arrayOf(buffer), timeout).toInt()
+  suspend fun read(buffer: ByteBuffer, timeout: Long = 0L): Int = read(arrayOf(buffer), timeout).toInt()
+  suspend fun write(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = write(buffer.buffers, timeout)
+  suspend fun read(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = read(buffer.buffers, timeout)
+
+  suspend fun write(
+    file: FileChannel,
+    position: Long,
+    count: Long,
+    timeout: Long = 0
+  ): Long
+
+  suspend fun read(
+    file: FileChannel,
+    position: Long,
+    count: Long,
+    timeout: Long = 0
+  ): Long
+
+  suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer
+
+  fun waitMode() {
+    if (Thread.currentThread() == nioThread.thread) {
+      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
+    } else {
+      nioThread.execute { if (key.isValid) key.interestOps(0) }
+      nioThread.wakeup()
+    }
+  }
+
+  fun readMode() {
+    if (Thread.currentThread() == nioThread.thread) {
+      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
+    } else {
+      nioThread.execute {
+        if (key.isValid) key.interestOps(SelectionKey.OP_READ)
+      }
+      nioThread.wakeup()
+    }
+  }
+
+  fun writeMode() {
+    if (Thread.currentThread() == nioThread.thread) {
+      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
+    } else {
+      nioThread.execute { if (key.isValid) key.interestOps(SelectionKey.OP_WRITE) }
+      nioThread.wakeup()
+    }
+  }
+
+  /**
+   * 如果通道已断开则会抛出异常
+   */
+  suspend fun recv(buffer: ByteBuffer, timeout: Long = 0): Int {
+    if (buffer.writeable == 0) return emptyBufferCode
+    val readSize = read(buffer, timeout)
+    if (readSize < 0) {
+      throw SocketException("channel closed")
+    }
+    return readSize
+  }
+
+  suspend fun recv(buffers: Array<out ByteBuffer>, timeout: Long = 0): Long {
+    if (buffers.isEmpty()) return emptyBufferLongCode
+    val readSize = read(buffers, timeout)
+    if (readSize < 0) {
+      throw SocketException("channel closed")
+    }
+    return readSize
+  }
+
+  suspend fun waitRead(timeout: Long = 0) {
+    suspendCoroutine<Int> {
+      key.attach(AsyncProtocol.Context(it, if (timeout > 0) NioSocket.timer.exec(timeout) {
+        key.attach(null)
+        waitMode()
+        it.resumeWithException(TimeoutException())
+      } else null))
+      readMode()
+      nioThread.wakeup()
+    }
+  }
+
+  suspend fun waitWrite(timeout: Long = 0) {
+    suspendCoroutine<Int> {
+      key.attach(AsyncProtocol.Context(it, if (timeout > 0) NioSocket.timer.exec(timeout) {
+        key.attach(null)
+        waitMode()
+        it.resumeWithException(TimeoutException())
+      } else null))
+      writeMode()
+      nioThread.wakeup()
+    }
+  }
+
+  override fun close() {
+    if (channel.isOpen || key.isValid) {
+      nioThread.execute {
+        channel.close()
+        key.cancel()
+      }
+      nioThread.wakeup()
+    }
+  }
+
+  companion object {
+    const val emptyBufferCode = 0
+    const val emptyBufferLongCode = 0L
+  }
+}

@@ -1,4 +1,4 @@
-package cn.tursom.socket
+package cn.tursom.niothread
 
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey

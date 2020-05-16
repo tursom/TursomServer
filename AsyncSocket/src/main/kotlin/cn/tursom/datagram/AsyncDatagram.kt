@@ -1,4 +1,4 @@
-package cn.tursom.socket
+package cn.tursom.datagram
 
 import cn.tursom.channel.AsyncChannel
 import cn.tursom.core.buffer.ByteBuffer
@@ -6,12 +6,11 @@ import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
 import cn.tursom.core.pool.MemoryPool
 import java.net.SocketException
+import java.nio.channels.DatagramChannel
 import java.nio.channels.FileChannel
-import java.nio.channels.SocketChannel
 
-@Suppress("unused")
-interface AsyncSocket : AsyncChannel {
-  override val channel: SocketChannel
+interface AsyncDatagram : AsyncChannel {
+  val channel: DatagramChannel
 
   suspend fun <T> write(timeout: Long, action: () -> T): T
   suspend fun <T> read(timeout: Long, action: () -> T): T

@@ -13,7 +13,7 @@ import kotlinx.coroutines.GlobalScope
  * 带内存池的 NIO 套接字服务器。
  * 在处理结束后会自动释放由内存池分配的内存
  */
-class BuffedNioServer(
+open class BuffedNioServer(
   port: Int,
   private val memoryPool: MemoryPool,
   backlog: Int = 50,

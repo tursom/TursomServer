@@ -2,7 +2,7 @@ package cn.tursom.socket.server
 
 import cn.tursom.niothread.WorkerLoopNioThread
 import cn.tursom.niothread.loophandler.BossLoopHandler
-import cn.tursom.socket.NioProtocol
+import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.loophandler.WorkerLoopHandler
 import cn.tursom.niothread.NioThread
 import java.net.InetSocketAddress
@@ -25,9 +25,7 @@ class NioLoopServer(
   }
 ) : SocketServer {
   private val listenChannel = ServerSocketChannel.open()
-  private val workerNioThread = nioThreadFactory("nio-worker", WorkerLoopHandler(
-    protocol
-  )::handle)
+  private val workerNioThread = nioThreadFactory("nio-worker", WorkerLoopHandler(protocol)::handle)
   private val bossNioThread = nioThreadFactory("nio-boss", BossLoopHandler(
     protocol,
     workerNioThread

@@ -7,7 +7,7 @@ package cn.tursom.core.buffer
 
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
-import java.nio.channels.SocketChannel
+import java.nio.channels.*
 
 
 /**
@@ -34,7 +34,7 @@ inline fun <T> ByteBuffer.write(block: (java.nio.ByteBuffer) -> T): T {
   }
 }
 
-fun SocketChannel.read(buffer: ByteBuffer): Int {
+fun ScatteringByteChannel.read(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer) {
     buffer.writeBuffers { read(it) }.toInt()
   } else {
@@ -42,7 +42,7 @@ fun SocketChannel.read(buffer: ByteBuffer): Int {
   }
 }
 
-fun SocketChannel.write(buffer: ByteBuffer): Int {
+fun GatheringByteChannel.write(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer) {
     buffer.readBuffers { write(it) }.toInt()
   } else {
@@ -50,15 +50,15 @@ fun SocketChannel.write(buffer: ByteBuffer): Int {
   }
 }
 
-fun SocketChannel.read(buffer: MultipleByteBuffer): Long {
+fun ScatteringByteChannel.read(buffer: MultipleByteBuffer): Long {
   return buffer.writeBuffers { read(it) }
 }
 
-fun SocketChannel.write(buffer: MultipleByteBuffer): Long {
+fun GatheringByteChannel.write(buffer: MultipleByteBuffer): Long {
   return buffer.readBuffers { write(it) }
 }
 
-fun SocketChannel.read(buffers: Array<out ByteBuffer>): Long {
+fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
   val bufferArray = Array(buffers.size) { buffers[it].writeBuffer() }
   return try {
     read(bufferArray)
@@ -67,7 +67,7 @@ fun SocketChannel.read(buffers: Array<out ByteBuffer>): Long {
   }
 }
 
-fun SocketChannel.write(buffers: Array<out ByteBuffer>): Long {
+fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
   val bufferArray = Array(buffers.size) { buffers[it].readBuffer() }
   return try {
     write(bufferArray)

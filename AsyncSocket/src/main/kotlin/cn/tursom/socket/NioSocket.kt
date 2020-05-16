@@ -1,15 +1,14 @@
 package cn.tursom.socket
 
+import cn.tursom.channel.AsyncProtocol
+import cn.tursom.niothread.NioProtocol
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
-import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.timer.Timer
 import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
-import java.net.SocketException
-import java.nio.channels.FileChannel
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 import java.util.concurrent.TimeoutException
@@ -86,33 +85,6 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
     }
   }
 
-  private suspend inline fun waitRead(timeout: Long = 0) {
-    suspendCoroutine<Int> {
-      key.attach(Context(it, if (timeout > 0) timer.exec(timeout) {
-        key.attach(null)
-        waitMode()
-        it.resumeWithException(TimeoutException())
-      } else null))
-      readMode()
-      nioThread.wakeup()
-    }
-  }
-
-  private suspend inline fun waitWrite(timeout: Long = 0) {
-    suspendCoroutine<Int> {
-      key.attach(Context(it, if (timeout > 0) timer.exec(timeout) {
-        key.attach(null)
-        waitMode()
-        it.resumeWithException(TimeoutException())
-      } else null))
-      writeMode()
-      nioThread.wakeup()
-    }
-  }
-
-  data class Context(val cont: Continuation<Int>, val timeoutTask: TimerTask? = null)
-  data class ConnectContext(val cont: Continuation<SelectionKey>, val timeoutTask: TimerTask? = null)
-
   protected fun finalize() {
     close()
   }
@@ -121,43 +93,6 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
    * 伴生对象
    */
   companion object {
-
-    val nioSocketProtocol = object : NioProtocol {
-      override fun handleConnect(key: SelectionKey, nioThread: NioThread) {
-        key.interestOps(0)
-        val context = key.attachment() as ConnectContext? ?: return
-        context.timeoutTask?.cancel()
-        context.cont.resume(key)
-      }
-
-      override fun handleRead(key: SelectionKey, nioThread: NioThread) {
-        key.interestOps(0)
-        //logE("read ready")
-        val context = key.attachment() as Context? ?: return
-        context.timeoutTask?.cancel()
-        context.cont.resume(0)
-      }
-
-      override fun handleWrite(key: SelectionKey, nioThread: NioThread) {
-        key.interestOps(0)
-        val context = key.attachment() as Context? ?: return
-        context.timeoutTask?.cancel()
-        context.cont.resume(0)
-      }
-
-      override fun exceptionCause(key: SelectionKey, nioThread: NioThread, e: Throwable) {
-        key.interestOps(0)
-        val context = key.attachment() as Context?
-        if (context != null)
-          context.cont.resumeWithException(e)
-        else {
-          key.cancel()
-          key.channel().close()
-          e.printStackTrace()
-        }
-      }
-    }
-
     //val timer = StaticWheelTimer.timer
     val timer: Timer = WheelTimer.timer
 
