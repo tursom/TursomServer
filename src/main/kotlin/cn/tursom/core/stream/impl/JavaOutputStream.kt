@@ -10,12 +10,9 @@ class JavaOutputStream(
     outputStream.write(byte.toInt())
   }
 
-  override fun write(buffer: ByteArray) {
-    outputStream.write(buffer)
-  }
-
-  override fun write(buffer: ByteArray, offset: Int, len: Int) {
+  override fun write(buffer: ByteArray, offset: Int, len: Int): Int {
     outputStream.write(buffer, offset, len)
+    return len
   }
 
   override fun write(buffer: ByteBuffer) {

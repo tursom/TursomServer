@@ -13,6 +13,7 @@ class BytesIOStream private constructor(
   override fun skip(n: Long, handler: () -> Unit) = buBufferIOStream.skip(n, handler)
   override fun read(handler: (Int) -> Unit) = buBufferIOStream.read(handler)
   override fun read(buffer: ByteBuffer, handler: () -> Unit) = buBufferIOStream.read(buffer, handler)
-  override fun read(buffer: ByteArray, handler: () -> Unit) = buBufferIOStream.read(buffer, handler)
-  override fun read(buffer: ByteArray, offset: Int, len: Int, handler: () -> Unit) = buBufferIOStream.read(buffer, offset, len, handler)
+  override fun read(buffer: ByteArray, handler: (Int) -> Unit) = buBufferIOStream.read(buffer, handler)
+  override fun read(buffer: ByteArray, offset: Int, len: Int, handler: (Int) -> Unit) =
+    buBufferIOStream.read(buffer, offset, len, handler)
 }

@@ -7,27 +7,25 @@ class ByteBufferOutputStream(
   val buffer: ByteBuffer
 ) : OutputStream {
   private var closed = false
-  override fun write(byte: Byte) = checkClosed {
-    buffer.put(byte)
+  override fun write(byte: Byte) {
+    checkClosed {
+      buffer.put(byte)
+    }
   }
 
-  override fun write(buffer: ByteArray) = checkClosed {
-    this.buffer.put(buffer)
-  }
-
-  override fun write(buffer: ByteArray, offset: Int, len: Int) = checkClosed {
+  override fun write(buffer: ByteArray, offset: Int, len: Int): Int = checkClosed {
     this.buffer.put(buffer, offset, len)
-  }
+  } ?: -1
 
-  override fun write(buffer: ByteBuffer) = checkClosed {
-    buffer.writeTo(this.buffer)
+  override fun write(buffer: ByteBuffer) {
+    checkClosed {
+      buffer.writeTo(this.buffer)
+    }
   }
 
   override fun flush() {}
 
-  private inline fun checkClosed(action: () -> Unit) {
-    if (!closed) action()
-  }
+  private inline fun <T> checkClosed(action: () -> T): T? = if (!closed) action() else null
 
   override fun close() {
     closed = true

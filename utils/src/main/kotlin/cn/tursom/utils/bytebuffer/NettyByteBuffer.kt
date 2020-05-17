@@ -119,12 +119,14 @@ class NettyByteBuffer(
     byteBuf.writeDouble(double)
   }
 
-  override fun put(str: String) {
-    byteBuf.writeCharSequence(str, Charsets.UTF_8)
+  override fun put(str: String): Int {
+    return byteBuf.writeCharSequence(str, Charsets.UTF_8)
   }
 
-  override fun put(byteArray: ByteArray, offset: Int, len: Int) {
+  override fun put(byteArray: ByteArray, offset: Int, len: Int): Int {
+    val writePosition = byteBuf.writerIndex()
     byteBuf.writeBytes(byteArray, offset, len - offset)
+    return byteBuf.writerIndex() - writePosition
   }
 
   override fun toString(): String {

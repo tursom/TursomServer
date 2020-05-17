@@ -13,12 +13,8 @@ class JavaInputStream(
 
   override fun read(): Int = inputStream.read()
 
-  override fun read(buffer: ByteArray) {
-    inputStream.read(buffer)
-  }
-
-  override fun read(buffer: ByteArray, offset: Int, len: Int) {
-    inputStream.read(buffer, offset, len)
+  override fun read(buffer: ByteArray, offset: Int, len: Int): Int {
+    return inputStream.read(buffer, offset, len)
   }
 
   override fun read(buffer: ByteBuffer) {

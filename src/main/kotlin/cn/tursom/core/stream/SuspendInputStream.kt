@@ -7,8 +7,8 @@ import kotlin.coroutines.suspendCoroutine
 interface SuspendInputStream : InputStream {
   fun skip(n: Long, handler: () -> Unit)
   fun read(handler: (Int) -> Unit)
-  fun read(buffer: ByteArray, handler: () -> Unit)
-  fun read(buffer: ByteArray, offset: Int, len: Int, handler: () -> Unit)
+  fun read(buffer: ByteArray, handler: (Int) -> Unit)
+  fun read(buffer: ByteArray, offset: Int, len: Int, handler: (Int) -> Unit)
   fun read(buffer: ByteBuffer, handler: () -> Unit)
 
   suspend fun suspendSkip(n: Long) {

@@ -2,75 +2,43 @@ package cn.tursom.core.stream.impl
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.stream.IOStream
+import cn.tursom.core.stream.InputStream
+import cn.tursom.core.stream.OutputStream
 import cn.tursom.core.stream.SuspendInputStream
 
-class ByteBufferIOStream(
-  private val buffer: ByteBuffer
-) : IOStream, SuspendInputStream {
-  @Volatile
-  private var handler: (() -> Unit)? = null
+class ByteBufferIOStream private constructor(
+  private val buffer: ByteBuffer,
+  val inputStream: ByteBufferInputStream,
+  val outputStream: ByteBufferOutputStream
+) : IOStream,
+  SuspendInputStream,
+  InputStream by inputStream,
+  OutputStream by outputStream {
+  constructor(buffer: ByteBuffer) : this(buffer, ByteBufferInputStream(buffer), ByteBufferOutputStream(buffer))
 
-  override fun skip(n: Long, handler: () -> Unit) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun skip(n: Long) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
+  override fun skip(n: Long, handler: () -> Unit) = handler()
+  override fun skip(n: Long) {}
 
   override fun read(handler: (Int) -> Unit) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    handler(read())
   }
 
-  override fun read(buffer: ByteArray, handler: () -> Unit) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  override fun read(buffer: ByteArray, handler: (Int) -> Unit) {
+    handler(read(buffer))
   }
 
-  override fun read(buffer: ByteArray, offset: Int, len: Int, handler: () -> Unit) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  override fun read(buffer: ByteArray, offset: Int, len: Int, handler: (Int) -> Unit) {
+    handler(read(buffer, offset, len))
   }
 
   override fun read(buffer: ByteBuffer, handler: () -> Unit) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun read(): Int {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun read(buffer: ByteArray) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun read(buffer: ByteArray, offset: Int, len: Int) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun read(buffer: ByteBuffer) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    read(buffer)
+    handler()
   }
 
   override fun close() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun write(byte: Byte) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun write(buffer: ByteArray) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun write(buffer: ByteArray, offset: Int, len: Int) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun write(buffer: ByteBuffer) {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
-  override fun flush() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    buffer.close()
+    inputStream.close()
+    outputStream.close()
   }
 }

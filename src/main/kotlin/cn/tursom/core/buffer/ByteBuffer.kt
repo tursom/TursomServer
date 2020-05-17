@@ -163,15 +163,18 @@ interface ByteBuffer : Closeable {
   fun put(long: Long): Unit = write { it.putLong(long) }
   fun put(float: Float): Unit = write { it.putFloat(float) }
   fun put(double: Double): Unit = write { it.putDouble(double) }
-  fun put(str: String): Unit = put(str.toByteArray())
+  fun put(str: String): Int = put(str.toByteArray())
   fun put(buffer: ByteBuffer): Int = buffer.writeTo(this)
-  fun put(byteArray: ByteArray, offset: Int = 0, len: Int = byteArray.size - offset) {
-    if (hasArray) {
+  fun put(byteArray: ByteArray, offset: Int = 0, len: Int = byteArray.size - offset): Int {
+    return if (hasArray) {
       byteArray.copyInto(array, writeOffset, offset, offset + len)
       writePosition += len
+      len
     } else {
       write {
+        val position = it.position()
         it.put(byteArray, offset, len)
+        it.position() - position
       }
     }
   }
@@ -237,7 +240,7 @@ interface ByteBuffer : Closeable {
   fun putLong(long: Long): Unit = put(long)
   fun putFloat(float: Float): Unit = put(float)
   fun putDouble(double: Double): Unit = put(double)
-  fun putString(str: String): Unit = put(str)
+  fun putString(str: String): Int = put(str)
   fun putBuffer(buffer: ByteBuffer): Int = put(buffer)
   fun putBytes(byteArray: ByteArray, startIndex: Int = 0, endIndex: Int = byteArray.size - startIndex) =
     put(byteArray, startIndex, endIndex)
