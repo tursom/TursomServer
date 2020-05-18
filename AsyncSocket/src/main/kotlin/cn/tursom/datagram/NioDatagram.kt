@@ -1,6 +1,7 @@
 package cn.tursom.datagram
 
 import cn.tursom.niothread.NioThread
+import java.net.SocketAddress
 import java.nio.channels.DatagramChannel
 import java.nio.channels.SelectionKey
 
@@ -10,7 +11,7 @@ open class NioDatagram(
   override val nioThread: NioThread
 ) : AsyncDatagram {
   override val open: Boolean get() = channel.isOpen && key.isValid
-
+  override val remoteAddress: SocketAddress get() = channel.remoteAddress
   override fun writeMode() {}
 
   override suspend fun <T> write(timeout: Long, action: () -> T): T {

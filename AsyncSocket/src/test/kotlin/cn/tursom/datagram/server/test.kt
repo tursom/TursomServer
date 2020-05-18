@@ -1,20 +1,23 @@
 package cn.tursom.datagram.server
 
+import cn.tursom.channel.BufferedAsyncChannel
 import cn.tursom.core.log
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
 import kotlinx.coroutines.runBlocking
 
+val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
+  while (true) {
+    val buffer = read()
+    log("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
+    write(buffer)
+  }
+}
+
 fun main() {
   val port = 12345
   val pool = DirectMemoryPool(1024, 16)
-  val server = BufferedAsyncDatagramServer(port, pool) {
-    while (true) {
-      val buffer = read()
-      log("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
-      write(buffer)
-    }
-  }
+  val server = BufferedAsyncDatagramServer(port, pool, echoHandler)
   //val server = LoopDatagramServer(port, protocol = object : NioProtocol {
   //  override fun handleRead(key: SelectionKey, nioThread: NioThread) {
   //    val datagramChannel = key.channel() as DatagramChannel

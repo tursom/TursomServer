@@ -17,7 +17,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class ServerNioDatagram(
-  val remoteAddress: SocketAddress,
+  override val remoteAddress: SocketAddress,
   val server: AsyncDatagramServer,
   channel: DatagramChannel,
   key: SelectionKey,

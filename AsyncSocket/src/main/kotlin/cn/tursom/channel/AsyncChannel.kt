@@ -9,6 +9,7 @@ import cn.tursom.core.timer.Timer
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.niothread.NioThread
 import java.io.Closeable
+import java.net.SocketAddress
 import java.net.SocketException
 import java.nio.channels.*
 import java.nio.charset.Charset
@@ -21,6 +22,7 @@ interface AsyncChannel : Closeable {
   val key: SelectionKey
   val nioThread: NioThread
   val channel: SelectableChannel get() = key.channel()
+  val remoteAddress: SocketAddress
   fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedAsyncChannelImpl(pool, this)
 
   private inline fun <T> operate(action: () -> T): T {
