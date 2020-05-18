@@ -232,7 +232,8 @@ fun getTAG(cls: Class<*>): String {
   return cls.name.split(".").last().dropLast(10)
 }
 
-operator fun <T> (() -> T).unaryPlus() = object {
+operator fun <T> (() -> T).unaryPlus() = object : () -> T {
+  override fun invoke(): T = this@unaryPlus()
   override fun toString() = this@unaryPlus().toString()
 }
 

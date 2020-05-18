@@ -1,0 +1,7 @@
+dependencies {
+    compile project(":")
+    compile project(":AsyncSocket")
+    compile project(":utils")
+    compile project(":utils:ws-client")
+    api group: "io.netty", name: "netty-all", version: "4.1.43.Final"
+}

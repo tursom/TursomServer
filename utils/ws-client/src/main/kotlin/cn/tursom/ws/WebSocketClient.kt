@@ -6,6 +6,7 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
+import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
@@ -53,9 +54,11 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
       null
     }
 
-    val handler = WebSocketClientChannelHandler(WebSocketClientHandshakerFactory.newHandshaker(
-      uri, WebSocketVersion.V13, null, false, DefaultHttpHeaders()
-    ), this, handler)
+    val handler = WebSocketClientChannelHandler(
+      WebSocketClientHandshakerFactory.newHandshaker(
+        uri, WebSocketVersion.V13, null, false, DefaultHttpHeaders()
+      ), this, handler
+    )
     val b = Bootstrap()
     b.group(group)
       .channel(NioSocketChannel::class.java)
@@ -69,10 +72,11 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
             HttpClientCodec(),
             HttpObjectAggregator(8192),
             WebSocketClientCompressionHandler.INSTANCE,
-            handler)
+            handler
+          )
         }
       })
-     b.connect(uri.host, port)
+    b.connect(uri.host, port)
     //handler.handshakeFuture().sync()
   }
 
@@ -81,23 +85,42 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
     ch?.closeFuture()?.sync()
   }
 
-  fun write(text: String) {
-    ch!!.writeAndFlush(TextWebSocketFrame(text))
+  fun write(text: String): ChannelFuture {
+    return ch!!.writeAndFlush(TextWebSocketFrame(text))
   }
 
-  fun write(data: ByteArray) {
-    ch!!.writeAndFlush(BinaryWebSocketFrame(Unpooled.wrappedBuffer(data)))
+  fun write(data: ByteArray): ChannelFuture {
+    return ch!!.writeAndFlush(BinaryWebSocketFrame(Unpooled.wrappedBuffer(data)))
   }
 
-  fun write(data: ByteBuffer) {
-    ch!!.writeAndFlush(BinaryWebSocketFrame(when (data) {
-      is NettyByteBuffer -> data.byteBuf
-      else -> Unpooled.wrappedBuffer(data.getBytes())
-    }))
+  fun write(data: ByteBuffer): ChannelFuture {
+    return ch!!.writeAndFlush(
+      BinaryWebSocketFrame(
+        when (data) {
+          is NettyByteBuffer -> data.byteBuf
+          else -> Unpooled.wrappedBuffer(data.getBytes())
+        }
+      )
+    )
   }
 
-  fun write(data: ByteBuf) {
-    ch!!.writeAndFlush(BinaryWebSocketFrame(data))
+  fun write(data: ByteBuf): ChannelFuture {
+    return ch!!.writeAndFlush(BinaryWebSocketFrame(data))
+  }
+
+  fun writeText(data: ByteBuffer): ChannelFuture {
+    return ch!!.writeAndFlush(
+      TextWebSocketFrame(
+        when (data) {
+          is NettyByteBuffer -> data.byteBuf
+          else -> Unpooled.wrappedBuffer(data.getBytes())
+        }
+      )
+    )
+  }
+
+  fun writeText(data: ByteBuf): ChannelFuture {
+    return ch!!.writeAndFlush(TextWebSocketFrame(data))
   }
 
   companion object {
