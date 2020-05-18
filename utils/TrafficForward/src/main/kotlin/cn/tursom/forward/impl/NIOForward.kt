@@ -97,7 +97,7 @@ open class NIOForward(
     }
   }
 
-  fun recvMsg(msg: ByteBuffer) {
+  open fun recvMsg(msg: ByteBuffer) {
     log.debug("connected from tcp {}", +{ msg.toString(msg.readable) })
     resetTimeout()
     forward?.write(msg)

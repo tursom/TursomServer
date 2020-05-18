@@ -31,7 +31,11 @@ open class SocketServer(
           val pipeline = ch.pipeline()
           if (readTimeout != null) pipeline.addLast(ReadTimeoutHandler(readTimeout!!))
           if (writeTimeout != null) pipeline.addLast(WriteTimeoutHandler(writeTimeout!!))
-          pipeline.addLast("handle", SocketServerHandler(handler(ch)))
+          try {
+            pipeline.addLast("handle", SocketServerHandler(handler(ch)))
+          } catch (e: Exception) {
+            ch.close()
+          }
         }
       })
     future = b?.bind(port)

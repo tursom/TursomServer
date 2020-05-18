@@ -6,7 +6,7 @@ interface Pool<T> {
 
   class NoCacheException : Exception()
 
-  fun <T> Pool<T>.forceGet(): T {
+  fun forceGet(): T {
     return get() ?: throw NoCacheException()
   }
 }

@@ -14,15 +14,16 @@ import io.netty.handler.timeout.WriteTimeoutException
 import io.netty.util.internal.logging.InternalLogger
 import io.netty.util.internal.logging.Slf4JLoggerFactory
 
-class NettyForward(
-  private val channel: Channel,
-  override var forward: Forward? = null
+open class NettyForward(
+  protected val channel: Channel,
+  final override var forward: Forward? = null
 ) : NettyHandler, Forward {
   companion object {
     private val log: InternalLogger = Slf4JLoggerFactory.getInstance(NettyForward::class.java)
   }
 
   init {
+    @Suppress("LeakingThis")
     forward?.forward = this
   }
 
