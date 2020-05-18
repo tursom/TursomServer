@@ -3,18 +3,16 @@ package cn.tursom.datagram.server
 import cn.tursom.core.log
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
-import cn.tursom.datagram.BufferedNioDatagram
 import kotlinx.coroutines.runBlocking
 
 fun main() {
   val port = 12345
   val pool = DirectMemoryPool(1024, 16)
-  val server = AsyncDatagramServer(port) {
-    val buffed = BufferedNioDatagram(pool, this)
+  val server = BufferedAsyncDatagramServer(port, pool) {
     while (true) {
-      val buffer = buffed.read()
-      log("recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
-      buffed.write(buffer)
+      val buffer = read()
+      log("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
+      write(buffer)
     }
   }
   //val server = LoopDatagramServer(port, protocol = object : NioProtocol {

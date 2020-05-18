@@ -65,6 +65,10 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
     close()
   }
 
+  override fun toString(): String {
+    return "NioSocket(key=$key, nioThread=$nioThread, channel=$channel)"
+  }
+
   /**
    * 伴生对象
    */

@@ -18,6 +18,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class ServerNioDatagram(
   val remoteAddress: SocketAddress,
+  val server: AsyncDatagramServer,
   channel: DatagramChannel,
   key: SelectionKey,
   nioThread: NioThread
@@ -77,5 +78,13 @@ class ServerNioDatagram(
     val buf = pool.get()
     read(buf, timeout)
     return buf
+  }
+
+  override fun close() {
+    server.closeChannel(remoteAddress)
+  }
+
+  override fun toString(): String {
+    return "ServerNioDatagram(remoteAddress=$remoteAddress, localAddress=${channel.localAddress})"
   }
 }

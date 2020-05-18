@@ -26,4 +26,8 @@ open class NioDatagram(
       nioThread.wakeup()
     }
   }
+
+  override fun toString(): String {
+    return "NioDatagram(channel=$channel, key=$key, nioThread=$nioThread)"
+  }
 }

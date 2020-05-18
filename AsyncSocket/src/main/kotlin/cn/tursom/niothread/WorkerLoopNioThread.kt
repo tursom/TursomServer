@@ -74,6 +74,10 @@ class WorkerLoopNioThread(
     }
   }
 
+  override fun toString(): String {
+    return "WorkerLoopNioThread(threadName='$threadName', selector=$selector, daemon=$daemon, timeout=$timeout, workLoop=$workLoop)"
+  }
+
   class Future<T> : NioThreadTaskFuture<T> {
     private val lock = Object()
     private var exception: Throwable? = null
@@ -111,4 +115,6 @@ class WorkerLoopNioThread(
       }
     }
   }
+
+
 }
