@@ -136,7 +136,7 @@ interface ByteBuffer : Closeable {
   }
 
   fun writeTo(buffer: ByteBuffer): Int {
-    val size = min(readable, buffer.readable)
+    val size = min(readable, buffer.writeable)
     if (hasArray) {
       buffer.put(array, readOffset, size)
       readPosition += size

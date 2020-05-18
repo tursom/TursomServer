@@ -4,7 +4,7 @@ import cn.tursom.niothread.NioThread
 import java.nio.channels.DatagramChannel
 import java.nio.channels.SelectionKey
 
-class NioDatagram(
+open class NioDatagram(
   override val channel: DatagramChannel,
   override val key: SelectionKey,
   override val nioThread: NioThread

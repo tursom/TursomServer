@@ -14,7 +14,7 @@ import cn.tursom.socket.enhance.impl.SocketWriterImpl
 object AsyncSocketSecurityUtil {
   private val memoryPool = HeapMemoryPool(4096)
 
-  suspend fun initAESByRSAServer(socket: AsyncSocket, rsa: PublicKeyEncrypt): EnhanceSocket<ByteArray, ByteArray> {
+  suspend fun initActiveAESSocket(socket: AsyncSocket, rsa: PublicKeyEncrypt): EnhanceSocket<ByteArray, ByteArray> {
     // 发送RSA公钥
     socket.write(HeapByteBuffer(rsa.publicKey!!.encoded))
     // 接受AES密钥
@@ -23,7 +23,7 @@ object AsyncSocketSecurityUtil {
     return SecurityEnhanceSocket(SocketReaderImpl(socket), ByteArrayWriter(SocketWriterImpl(socket)), aes)
   }
 
-  suspend fun AsyncSocket.initAESByRSAClient(
+  suspend fun initPassiveAESSocket(
     socket: AsyncSocket,
     publicKeyEncryptBuilder: (key: ByteArray) -> PublicKeyEncrypt = { RSA(it) }
   ): EnhanceSocket<ByteArray, ByteArray> {

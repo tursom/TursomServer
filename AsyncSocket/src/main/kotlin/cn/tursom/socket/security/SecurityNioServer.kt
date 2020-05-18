@@ -13,7 +13,7 @@ class SecurityNioServer(
   @Suppress("MemberVisibilityCanBePrivate") val rsa: RSA = RSA(),
   val handler: suspend AsyncSocket.() -> Unit
 ) : NioServer(port, backlog, coroutineScope, {
-  AsyncSocketSecurityUtil.initAESByRSAServer(this, rsa)
+  AsyncSocketSecurityUtil.initActiveAESSocket(this, rsa)
   handler()
 }) {
   constructor(

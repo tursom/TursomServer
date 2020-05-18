@@ -1,6 +1,5 @@
 package cn.tursom.niothread
 
-import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey
 
 interface NioProtocol {

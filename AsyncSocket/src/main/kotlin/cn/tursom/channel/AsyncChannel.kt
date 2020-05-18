@@ -3,6 +3,7 @@ package cn.tursom.channel
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
+import cn.tursom.core.buffer.read
 import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.timer.Timer
 import cn.tursom.core.timer.WheelTimer
@@ -78,7 +79,11 @@ interface AsyncChannel : Closeable {
     return write(str.toByteArray(charset))
   }
 
-  suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer
+  suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer = read(timeout) {
+    val buffer = pool.get()
+    if ((channel as ReadableByteChannel).read(buffer) < 0) throw SocketException()
+    buffer
+  }
 
   fun waitMode() {
     if (Thread.currentThread() == nioThread.thread) {
