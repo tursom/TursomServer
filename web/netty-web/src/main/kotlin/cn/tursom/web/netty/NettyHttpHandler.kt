@@ -19,7 +19,7 @@ class NettyHttpHandler(
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest) {
     val handlerContext = NettyHttpContent(ctx, msg)
-    log?.debug("{} {} {}", handlerContext.clientIp, handlerContext.method, handlerContext.uri)
+    log?.debug("{} {} {}", handlerContext.remoteAddress, handlerContext.method, handlerContext.uri)
     handler.handle(handlerContext)
   }
 

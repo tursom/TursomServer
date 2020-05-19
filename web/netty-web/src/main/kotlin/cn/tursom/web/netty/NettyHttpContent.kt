@@ -33,7 +33,7 @@ open class NettyHttpContent(
     }
     uri
   }
-  override val clientIp get() = ctx.channel().remoteAddress()!!
+  override val remoteAddress get() = ctx.channel().remoteAddress()!!
   override val realIp: String = super.realIp
   val httpMethod: HttpMethod get() = request.method()
   val protocolVersion: HttpVersion get() = request.protocolVersion()
@@ -70,6 +70,8 @@ open class NettyHttpContent(
       handler(end)
     }
   }
+
+  override fun peekBody(): ByteBuffer? = bodyList.peek()?.content()?.let { NettyByteBuffer(it.slice()) }
 
   override fun waitBody(action: (end: Boolean) -> Unit) {
     if (!requestSendFully) {

@@ -15,13 +15,14 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
   var responseCode: Int
   var responseMessage: String?
   val body: ByteBuffer?
-  val clientIp: SocketAddress
+  val remoteAddress: SocketAddress
   val method: String
   val realIp
-    get() = getHeader("X-Forwarded-For") ?: clientIp.toString().let { str ->
+    get() = getHeader("X-Forwarded-For") ?: remoteAddress.toString().let { str ->
       str.substring(1, str.indexOf(':').let { if (it < 1) str.length else it - 1 })
     }
 
+  fun peekBody(): ByteBuffer?
   fun waitBody(action: (end: Boolean) -> Unit = { addBodyParam() })
   fun addBodyParam(body: ByteBuffer)
   fun addBodyParam() {

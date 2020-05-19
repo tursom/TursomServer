@@ -14,7 +14,7 @@ class EmptyHttpContent(
   override var responseCode: Int = 200,
   override var responseMessage: String? = null,
   override val body: ByteBuffer? = null,
-  override val clientIp: SocketAddress = InetSocketAddress(0),
+  override val remoteAddress: SocketAddress = InetSocketAddress(0),
   override val method: String = "GET",
   override val cookieMap: Map<String, String> = mapOf(),
   override val requestSendFully: Boolean
@@ -46,5 +46,6 @@ class EmptyHttpContent(
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {}
   override fun addBodyParam(body: ByteBuffer) {}
   override fun waitBody(action: (end: Boolean) -> Unit) {}
+  override fun peekBody(): ByteBuffer? = null
 }
 

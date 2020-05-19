@@ -1,7 +1,6 @@
 package cn.tursom.web.router
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.cast
 import cn.tursom.core.lambda
 import cn.tursom.core.regex.regex
 import cn.tursom.json.JsonWorkerImpl
@@ -282,13 +281,13 @@ open class RoutedHttpHandler(
     fun autoReturn(method: Method, result: Any?, content: HttpContent, doLog: Boolean? = null) {
       method.getAnnotation(ContextType::class.java)?.let {
         content.setContextType(it.type.value)
-        log?.debug("{}: autoReturn context type auto set to {}({})", content.clientIp, it.type.key, it.type.value)
+        log?.debug("{}: autoReturn context type auto set to {}({})", content.remoteAddress, it.type.key, it.type.value)
       }
       autoReturn(result, content, doLog ?: method.doLog)
     }
 
     fun autoReturn(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{}: autoReturn: {}", content.clientIp, result)
+      if (doLog) log?.debug("{}: autoReturn: {}", content.remoteAddress, result)
       result ?: return
       when (result) {
         null -> content.finish(404)
@@ -310,7 +309,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishHtml(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{} finishHtml {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishHtml {}", content.remoteAddress, result)
       result ?: return
       when (result) {
         null -> content.finish(404)
@@ -328,7 +327,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishText(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{} finishText {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishText {}", content.remoteAddress, result)
       result ?: return
       when (result) {
         null -> content.finish(404)
@@ -346,7 +345,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishJson(result: Any?, content: HttpContent, doLog: Boolean = true) {
-      if (doLog) log?.debug("{} finishJson {}", content.clientIp, result)
+      if (doLog) log?.debug("{} finishJson {}", content.remoteAddress, result)
       result ?: return
       when (result) {
         null -> content.finish(404)
@@ -362,7 +361,7 @@ open class RoutedHttpHandler(
         }
         else -> {
           val json = json?.toJson(result)
-          if (doLog) log?.debug("{} finishJson: generate json {}", content.clientIp, json)
+          if (doLog) log?.debug("{} finishJson: generate json {}", content.remoteAddress, json)
           if (json != null) {
             content.finishJson(json.toByteArray())
           } else {

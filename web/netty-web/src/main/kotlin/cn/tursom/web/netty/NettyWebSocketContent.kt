@@ -8,10 +8,12 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import java.net.SocketAddress
 
 class NettyWebSocketContent(
-  private val channel: Channel
+  val channel: Channel
 ) : WebSocketContent {
+  override val remoteAddress: SocketAddress get() = channel.remoteAddress()
   override fun writeText(buffer: ByteBuffer) {
     if (buffer is NettyByteBuffer) {
       channel.writeAndFlush(TextWebSocketFrame(buffer.byteBuf))

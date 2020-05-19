@@ -27,7 +27,7 @@ class NettyHttpServer(
   var bodySize: Int = 512 * 1024,
   autoRun: Boolean = false,
   var webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
-  var readTimeout: Int? = null,
+  var readTimeout: Int? = 60,
   var writeTimeout: Int? = null,
   decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
   backlog: Int = 1024
@@ -37,7 +37,7 @@ class NettyHttpServer(
     bodySize: Int = 512 * 1024,
     autoRun: Boolean = false,
     webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
-    readTimeout: Int? = null,
+    readTimeout: Int? = 60,
     writeTimeout: Int? = null,
     decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
     handler: (content: NettyHttpContent) -> Unit
@@ -48,7 +48,6 @@ class NettyHttpServer(
     },
     bodySize, autoRun, webSocketPath, readTimeout, writeTimeout, decodeType
   )
-
 
   var decodeType: NettyHttpDecodeType = decodeType
     set(value) {

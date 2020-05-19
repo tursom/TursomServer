@@ -223,7 +223,7 @@ open class AsyncRoutedHttpHandler(
     fun autoReturn(method: KCallable<*>, result: Any?, content: HttpContent, doLog: Boolean? = null) {
       method.findAnnotation<ContextType>()?.let {
         content.setContextType(it.type.value)
-        log?.debug("{}: autoReturn context type auto set to {}({})", content.clientIp, it.type.key, it.type.value)
+        log?.debug("{}: autoReturn context type auto set to {}({})", content.remoteAddress, it.type.key, it.type.value)
       }
       autoReturn(result, content, doLog ?: method.doLog)
     }
