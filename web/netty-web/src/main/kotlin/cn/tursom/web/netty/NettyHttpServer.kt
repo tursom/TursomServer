@@ -2,6 +2,7 @@ package cn.tursom.web.netty
 
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.HttpServer
+import cn.tursom.web.WebSocketHandler
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
@@ -23,7 +24,7 @@ class NettyHttpServer(
   handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
   bodySize: Int = 512 * 1024,
   autoRun: Boolean = false,
-  webSocketPath: String? = null,
+  webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContext>>> = listOf(),
   readTimeout: Int? = null,
   writeTimeout: Int? = null
 ) : HttpServer {
@@ -31,14 +32,16 @@ class NettyHttpServer(
     port: Int,
     bodySize: Int = 512 * 1024,
     autoRun: Boolean = false,
+    webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContext>>> = listOf(),
+    readTimeout: Int? = null,
+    writeTimeout: Int? = null,
     handler: (content: NettyHttpContent) -> Unit
   ) : this(
     port,
     object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
       override fun handle(content: NettyHttpContent) = handler(content)
     },
-    bodySize,
-    autoRun
+    bodySize, autoRun, webSocketPath, readTimeout, writeTimeout
   )
 
   val httpHandler = NettyHttpHandler(handler)
@@ -58,8 +61,9 @@ class NettyHttpServer(
           .addLast("aggregator", HttpObjectAggregator(bodySize))
           .addLast("http-chunked", ChunkedWriteHandler())
           .apply {
-            if (webSocketPath != null) {
-              addLast("ws", WebSocketServerProtocolHandler(webSocketPath))
+            webSocketPath.forEach { (webSocketPath, handler) ->
+              addLast("ws-$webSocketPath", WebSocketServerProtocolHandler(webSocketPath))
+              addLast("wsHandler-$webSocketPath", NettyWebSocketHandler(ch, handler))
             }
           }
           .addLast("handle", httpHandler)
