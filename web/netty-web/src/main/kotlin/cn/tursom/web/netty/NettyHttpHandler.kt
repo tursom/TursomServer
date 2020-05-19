@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory
 class NettyHttpHandler(
   private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
+  override fun channelActive(ctx: ChannelHandlerContext) {
+    handler.newRequest()
+    super.channelActive(ctx)
+  }
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest) {
     val handlerContext = NettyHttpContent(ctx, msg)

@@ -7,9 +7,11 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
+import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.handler.codec.http.HttpObject
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpServerCodec
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
@@ -22,54 +24,71 @@ import org.slf4j.LoggerFactory
 class NettyHttpServer(
   override val port: Int,
   handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
-  bodySize: Int = 512 * 1024,
+  var bodySize: Int = 512 * 1024,
   autoRun: Boolean = false,
-  webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContext>>> = listOf(),
-  readTimeout: Int? = null,
-  writeTimeout: Int? = null
+  var webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
+  var readTimeout: Int? = null,
+  var writeTimeout: Int? = null,
+  decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
+  backlog: Int = 1024
 ) : HttpServer {
   constructor(
     port: Int,
     bodySize: Int = 512 * 1024,
     autoRun: Boolean = false,
-    webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContext>>> = listOf(),
+    webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
     readTimeout: Int? = null,
     writeTimeout: Int? = null,
+    decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
     handler: (content: NettyHttpContent) -> Unit
   ) : this(
     port,
     object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
       override fun handle(content: NettyHttpContent) = handler(content)
     },
-    bodySize, autoRun, webSocketPath, readTimeout, writeTimeout
+    bodySize, autoRun, webSocketPath, readTimeout, writeTimeout, decodeType
   )
 
-  val httpHandler = NettyHttpHandler(handler)
+
+  var decodeType: NettyHttpDecodeType = decodeType
+    set(value) {
+      if (value != field) {
+        field = value
+        updateHandler()
+      }
+    }
+  var handler: HttpHandler<NettyHttpContent, NettyExceptionContent> = handler
+    set(value) {
+      field = value
+      updateHandler()
+    }
+
+  private var httpHandler = updateHandler()
   private val group = NioEventLoopGroup()
   private val b = ServerBootstrap().group(group)
     .channel(NioServerSocketChannel::class.java)
     .childHandler(object : ChannelInitializer<SocketChannel>() {
       override fun initChannel(ch: SocketChannel) {
-        ch.pipeline()
-          .apply {
-            if (readTimeout != null) addLast(ReadTimeoutHandler(readTimeout))
-          }
-          .apply {
-            if (writeTimeout != null) addLast(WriteTimeoutHandler(writeTimeout))
-          }
-          .addLast("codec", HttpServerCodec())
-          .addLast("aggregator", HttpObjectAggregator(bodySize))
-          .addLast("http-chunked", ChunkedWriteHandler())
-          .apply {
-            webSocketPath.forEach { (webSocketPath, handler) ->
-              addLast("ws-$webSocketPath", WebSocketServerProtocolHandler(webSocketPath))
-              addLast("wsHandler-$webSocketPath", NettyWebSocketHandler(ch, handler))
-            }
-          }
-          .addLast("handle", httpHandler)
+        val pipeline = ch.pipeline()
+        readTimeout?.let {
+          pipeline.addLast(ReadTimeoutHandler(it))
+        }
+        writeTimeout?.let {
+          pipeline.addLast(WriteTimeoutHandler(it))
+        }
+        pipeline.addLast("codec", HttpServerCodec())
+        if (this@NettyHttpServer.decodeType == NettyHttpDecodeType.FULL_HTTP) {
+          pipeline.addLast("aggregator", HttpObjectAggregator(bodySize))
+        }
+        pipeline.addLast("http-chunked", ChunkedWriteHandler())
+        this@NettyHttpServer.webSocketPath.forEach { (webSocketPath, handler) ->
+          pipeline.addLast("ws-$webSocketPath", WebSocketServerProtocolHandler(webSocketPath))
+          pipeline.addLast("wsHandler-$webSocketPath", NettyWebSocketHandler(ch, handler))
+        }
+        pipeline.addLast("handle", httpHandler)
       }
     })
-    .option(ChannelOption.SO_BACKLOG, 1024) // determining the number of connections queued
+    .option(ChannelOption.SO_BACKLOG, backlog) // determining the number of connections queued
     .option(ChannelOption.SO_REUSEADDR, true)
     .childOption(ChannelOption.SO_KEEPALIVE, java.lang.Boolean.TRUE)
   private val future: ChannelFuture = b.bind(port)
@@ -88,6 +107,14 @@ class NettyHttpServer(
     log?.warn("NettyHttpServer({}) closed", port)
     future.cancel(false)
     future.channel().close()
+  }
+
+  private fun updateHandler(): SimpleChannelInboundHandler<out HttpObject> {
+    httpHandler = when (decodeType) {
+      NettyHttpDecodeType.FULL_HTTP -> NettyHttpHandler(handler)
+      NettyHttpDecodeType.MULTI_PART -> NettyHttpObjectHandler(handler)
+    }
+    return httpHandler
   }
 
   companion object {

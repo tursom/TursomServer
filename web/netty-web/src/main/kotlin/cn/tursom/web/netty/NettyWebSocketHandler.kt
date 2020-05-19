@@ -11,9 +11,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame
 
 class NettyWebSocketHandler(
   channel: Channel,
-  private val handler: WebSocketHandler<NettyWebSocketContext>
+  private val handler: WebSocketHandler<NettyWebSocketContent>
 ) : SimpleChannelInboundHandler<WebSocketFrame>() {
-  private val webSocketContext = NettyWebSocketContext(channel)
+  private val webSocketContext = NettyWebSocketContent(channel)
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: WebSocketFrame) {
     when (msg) {

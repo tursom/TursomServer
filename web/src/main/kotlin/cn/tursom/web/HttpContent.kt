@@ -9,6 +9,7 @@ import java.io.RandomAccessFile
 import java.net.SocketAddress
 
 interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
+  val requestSendFully: Boolean
   val finished: Boolean
   val uri: String
   var responseCode: Int
@@ -20,6 +21,12 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
     get() = getHeader("X-Forwarded-For") ?: clientIp.toString().let { str ->
       str.substring(1, str.indexOf(':').let { if (it < 1) str.length else it - 1 })
     }
+
+  fun waitBody(action: (end: Boolean) -> Unit = { addBodyParam() })
+  fun addBodyParam(body: ByteBuffer)
+  fun addBodyParam() {
+    addBodyParam(body ?: return)
+  }
 
   fun getParam(param: String): String? = getParams(param)?.firstOrNull()
   fun getParams(): Map<String, List<String>>

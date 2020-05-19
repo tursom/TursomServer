@@ -10,20 +10,24 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.*
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
 import io.netty.handler.stream.ChunkedFile
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.collections.set
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class NettyHttpContent(
   val ctx: ChannelHandlerContext,
-  val msg: FullHttpRequest
+  val request: HttpRequest
 ) : MutableHttpContent, NettyResponseHeaderAdapter() {
+  val decoder = HttpPostRequestDecoder(request)
+  override var requestSendFully: Boolean = false
   override var finished: Boolean = false
   override val uri: String by lazy {
-    var uri = msg.uri()
+    var uri = request.uri()
     while (uri.contains("//")) {
       uri = uri.replace("//", "/")
     }
@@ -31,12 +35,15 @@ open class NettyHttpContent(
   }
   override val clientIp get() = ctx.channel().remoteAddress()!!
   override val realIp: String = super.realIp
-  val httpMethod: HttpMethod get() = msg.method()
-  val protocolVersion: HttpVersion get() = msg.protocolVersion()
-  val headers: HttpHeaders get() = msg.headers()
-  protected val paramMap by lazy { ParamParser.parse(msg) }
+  val httpMethod: HttpMethod get() = request.method()
+  val protocolVersion: HttpVersion get() = request.protocolVersion()
+  val headers: HttpHeaders get() = request.headers()
+  protected val paramMap by lazy { ParamParser.parse(request) }
   override val cookieMap by lazy { getHeader("Cookie")?.let { decodeCookie(it) } ?: mapOf() }
-  override val body = msg.content()?.let { NettyByteBuffer(it) }
+
+  private var waitBodyHandler = ConcurrentLinkedQueue<(end: Boolean) -> Unit>()
+  override val body: ByteBuffer? get() = bodyList.poll()?.content()?.let { NettyByteBuffer(it) }
+  val bodyList = ConcurrentLinkedQueue<HttpContent>()
 
   //override val responseBody = ByteArrayOutputStream()
   var responseStatus: HttpResponseStatus = HttpResponseStatus.OK
@@ -49,6 +56,40 @@ open class NettyHttpContent(
   override val method: String get() = httpMethod.name()
   val chunkedList = ArrayList<() -> ByteBuffer>()
   private var responseBodyBuf: CompositeByteBuf? = null
+
+  fun newResponseBody(httpContent: HttpContent) {
+    bodyList.add(httpContent)
+    val end = if (httpContent is LastHttpContent) {
+      requestSendFully = true
+      true
+    } else {
+      false
+    }
+    while (waitBodyHandler.isNotEmpty()) {
+      val handler = waitBodyHandler.poll() ?: continue
+      handler(end)
+    }
+  }
+
+  override fun waitBody(action: (end: Boolean) -> Unit) {
+    if (!requestSendFully) {
+      waitBodyHandler.add(action)
+    }
+  }
+
+  override fun addBodyParam() {
+    ParamParser.parse(request, bodyList.poll()!!, paramMap)
+  }
+
+  override fun addBodyParam(body: ByteBuffer) {
+    val byteBuf = if (body is NettyByteBuffer) {
+      body.byteBuf
+    } else {
+      Unpooled.wrappedBuffer(body.readBuffer())
+    }
+    ParamParser.parse(request, DefaultHttpContent(byteBuf), paramMap)
+    body.close()
+  }
 
   fun getResponseBodyBuf(): CompositeByteBuf {
     if (responseBodyBuf == null) {
@@ -112,13 +153,15 @@ open class NettyHttpContent(
   override fun write(buffer: ByteBuffer) {
     //buffer.writeTo(responseBody)
     log?.trace("write {}", buffer)
-    getResponseBodyBuf().addComponent(if (buffer is NettyByteBuffer) {
-      buffer.byteBuf
-    } else {
-      val buf = Unpooled.wrappedBuffer(buffer.readBuffer())
-      buffer.clear()
-      buf
-    })
+    getResponseBodyBuf().addComponent(
+      if (buffer is NettyByteBuffer) {
+        buffer.byteBuf
+      } else {
+        val buf = Unpooled.wrappedBuffer(buffer.readBuffer())
+        buffer.clear()
+        buf
+      }
+    )
   }
 
   override fun reset() {

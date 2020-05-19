@@ -1,6 +1,7 @@
 package cn.tursom.web
 
 interface HttpHandler<in T : HttpContent, in E : ExceptionContent> {
+  fun newRequest() {}
   fun handle(content: T)
 
   fun exceptionCause(e: E) {

@@ -16,7 +16,8 @@ class EmptyHttpContent(
   override val body: ByteBuffer? = null,
   override val clientIp: SocketAddress = InetSocketAddress(0),
   override val method: String = "GET",
-  override val cookieMap: Map<String, String> = mapOf()
+  override val cookieMap: Map<String, String> = mapOf(),
+  override val requestSendFully: Boolean
 ) : HttpContent {
   override fun getHeader(header: String): String? = null
   override fun getHeaders(header: String): List<String> = listOf()
@@ -43,5 +44,7 @@ class EmptyHttpContent(
   override fun finishChunked(chunked: Chunked) {}
   override fun finishFile(file: File, chunkSize: Int) {}
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {}
+  override fun addBodyParam(body: ByteBuffer) {}
+  override fun waitBody(action: (end: Boolean) -> Unit) {}
 }
 
