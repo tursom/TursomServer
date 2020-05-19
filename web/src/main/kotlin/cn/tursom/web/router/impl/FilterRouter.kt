@@ -7,16 +7,15 @@ import kotlin.collections.ArrayList
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-class FilterRouter<T> : Router<T> {
-  companion object {
-    val flower = Regex("\\{[^{}]*\\}")
-  }
-
+class FilterRouter<T>(
+  val matchPair: Pair<Char, Char> = '{' to '}'
+) : Router<T> {
+  private val flower = Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
   private val lock = ReentrantReadWriteLock()
   private val routeList = ArrayList<RouteContext<T>>()
 
   override fun addSubRoute(route: String, value: T?, onDestroy: ((oldValue: T) -> Unit)?) = lock.write {
-    val matcher = DefaultMatcher(route)
+    val matcher = DefaultMatcher(route, matchPair)
     val context = RouteContext(matcher.route, value, onDestroy, matcher)
     routeList.add(context)
     Unit
@@ -52,8 +51,9 @@ class FilterRouter<T> : Router<T> {
     val matcher: Matcher
   )
 
-  class DefaultMatcher(route: String) : Matcher {
-    val route: String = route.substringBefore('?').replace(flower, "{}")
+  class DefaultMatcher(route: String, matchPair: Pair<Char, Char> = '{' to '}') : Matcher {
+    private val flower = Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
+    val route: String = route.substringBefore('?').replace(flower, "${matchPair.first}${matchPair.second}")
     private val matchList = route.split(flower).toMutableList()
     private val paramList: List<String>
 
@@ -61,25 +61,25 @@ class FilterRouter<T> : Router<T> {
       matchList.add("")
       val rRoute = route.substringBefore('?')
       val paramList = ArrayList<String>()
-      var match = '{'
+      var match = matchPair.first
       var startIndex = 0
       if (startIndex >= 0) {
         while (true) {
           val endIndex = rRoute.indexOf(match, startIndex)
           if (endIndex < 0) {
-            if (match == '}') {
+            if (match == matchPair.second) {
               paramList.add(rRoute.substring(startIndex))
             }
             break
           }
-          if (match == '}') {
+          if (match == matchPair.second) {
             paramList.add(rRoute.substring(startIndex, endIndex))
           }
           startIndex = endIndex + 1
           match = when (match) {
-            '{' -> '}'
-            '}' -> '{'
-            else -> '{'
+            matchPair.first -> matchPair.second
+            matchPair.second -> matchPair.first
+            else -> matchPair.first
           }
         }
       }
