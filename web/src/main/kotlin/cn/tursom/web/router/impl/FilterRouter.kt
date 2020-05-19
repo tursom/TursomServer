@@ -10,6 +10,10 @@ import kotlin.concurrent.write
 class FilterRouter<T>(
   val matchPair: Pair<Char, Char> = '{' to '}'
 ) : Router<T> {
+  companion object {
+    val slashOnceMore = Regex("/+")
+  }
+
   private val flower = Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
   private val lock = ReentrantReadWriteLock()
   private val routeList = ArrayList<RouteContext<T>>()
@@ -52,14 +56,28 @@ class FilterRouter<T>(
   )
 
   class DefaultMatcher(route: String, matchPair: Pair<Char, Char> = '{' to '}') : Matcher {
-    private val flower = Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
-    val route: String = route.substringBefore('?').replace(flower, "${matchPair.first}${matchPair.second}")
-    private val matchList = route.split(flower).toMutableList()
+    val route: String
+    private val matchList: List<String>
     private val paramList: List<String>
 
     init {
+      val flower = Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
+      this.route = route.substringBefore('?').replace(flower, "${matchPair.first}${matchPair.second}").let {
+        if (it.endsWith('/')) {
+          it
+        } else {
+          "$it/"
+        }
+      }.replace(slashOnceMore, "/")
+      val rRoute = route.substringBefore('?').let {
+        if (it.endsWith('/')) {
+          it
+        } else {
+          "$it/"
+        }
+      }.replace(slashOnceMore, "/")
+      this.matchList = rRoute.split(flower).toMutableList()
       matchList.add("")
-      val rRoute = route.substringBefore('?')
       val paramList = ArrayList<String>()
       var match = matchPair.first
       var startIndex = 0
@@ -87,32 +105,39 @@ class FilterRouter<T>(
     }
 
     override fun match(route: String): Pair<Boolean, List<Pair<String, String>>> {
+      val rRoute = if (route.endsWith('/')) {
+        route
+      } else {
+        "$route/"
+      }.replace(slashOnceMore, "/")
       val iterator = matchList.iterator()
       val paramIterator = paramList.iterator()
       var context = iterator.next()
-      if (!route.startsWith(context)) return false to listOf()
+      if (!rRoute.startsWith(context)) return false to listOf()
       var startIndex = context.length
       val paramList = LinkedList<Pair<String, String>>()
       while (iterator.hasNext()) {
         val preContext = context
         context = iterator.next()
-        val endIndex = route.indexOf(context, startIndex)
+        val endIndex = rRoute.indexOf(context, startIndex)
         if (endIndex < 0) {
           break
         }
-        val paramValue = route.substring(startIndex, endIndex)
+        val paramValue = rRoute.substring(startIndex, endIndex)
         if (paramValue.contains('/')) {
           break
         }
         if (paramIterator.hasNext()) {
           paramList.add(paramIterator.next() to paramValue)
-        } else {
+        } else if (context.isEmpty() && paramValue.isEmpty()) {
           startIndex += preContext.length - 1
+          break
+        } else {
           break
         }
         startIndex = endIndex + 1
       }
-      return (startIndex == route.length) to paramList
+      return (startIndex == rRoute.length) to paramList
     }
   }
 }
