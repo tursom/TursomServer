@@ -1,5 +1,7 @@
 package cn.tursom.socket
 
+import cn.tursom.channel.AsyncChannel.Companion.emptyBufferCode
+import cn.tursom.channel.AsyncChannel.Companion.emptyBufferLongCode
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
@@ -52,29 +54,11 @@ class NioSocket(override val key: SelectionKey, override val nioThread: NioThrea
     }
   }
 
-  private inline fun <T> operate(action: () -> T): T {
-    return try {
-      action()
-    } catch (e: Exception) {
-      waitMode()
-      throw e
-    }
-  }
-
   protected fun finalize() {
     close()
   }
 
   override fun toString(): String {
     return "NioSocket(key=$key, nioThread=$nioThread, channel=$channel)"
-  }
-
-  /**
-   * 伴生对象
-   */
-  companion object {
-
-    const val emptyBufferCode = 0
-    const val emptyBufferLongCode = 0L
   }
 }

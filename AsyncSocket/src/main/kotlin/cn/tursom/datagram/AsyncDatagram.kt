@@ -1,16 +1,14 @@
 package cn.tursom.datagram
 
-import cn.tursom.channel.AsyncChannel
-import cn.tursom.channel.BufferedAsyncChannel
+import cn.tursom.channel.AsyncNioChannel
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
 import cn.tursom.core.pool.MemoryPool
 import java.net.SocketException
 import java.nio.channels.DatagramChannel
-import java.nio.channels.FileChannel
 
-interface AsyncDatagram : AsyncChannel {
+interface AsyncDatagram : AsyncNioChannel {
   override val channel: DatagramChannel
   override fun getBuffed(pool: MemoryPool): BufferedAsyncDatagram = BufferedNioDatagram(pool, this)
 

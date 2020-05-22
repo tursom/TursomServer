@@ -73,6 +73,6 @@ class ThreadPoolNioThread(
   }
 
   override fun toString(): String {
-    return "SingleThreadNioThread($threadName)"
+    return "ThreadPoolNioThread($threadName)"
   }
 }

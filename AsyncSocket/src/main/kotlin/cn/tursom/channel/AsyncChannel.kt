@@ -19,34 +19,8 @@ import kotlin.coroutines.suspendCoroutine
 
 interface AsyncChannel : Closeable {
   val open: Boolean
-  val key: SelectionKey
-  val nioThread: NioThread
-  val channel: SelectableChannel get() = key.channel()
   val remoteAddress: SocketAddress
   fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedAsyncChannelImpl(pool, this)
-
-  private inline fun <T> operate(action: () -> T): T {
-    return try {
-      action()
-    } catch (e: Exception) {
-      waitMode()
-      throw e
-    }
-  }
-
-  suspend fun <T> write(timeout: Long, action: () -> T): T {
-    return operate {
-      waitWrite(timeout)
-      action()
-    }
-  }
-
-  suspend fun <T> read(timeout: Long, action: () -> T): T {
-    return operate {
-      waitRead(timeout)
-      action()
-    }
-  }
 
   suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
   suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
@@ -60,18 +34,14 @@ interface AsyncChannel : Closeable {
     position: Long,
     count: Long,
     timeout: Long = 0
-  ): Long = write(timeout) {
-    file.transferTo(position, count, channel as WritableByteChannel)
-  }
+  ): Long
 
   suspend fun read(
     file: FileChannel,
     position: Long,
     count: Long,
     timeout: Long = 0
-  ): Long = read(timeout) {
-    file.transferFrom(channel as ReadableByteChannel, position, count)
-  }
+  ): Long
 
   suspend fun write(bytes: ByteArray, offset: Int = 0, len: Int = bytes.size - offset): Int {
     return write(HeapByteBuffer(bytes, offset, len))
@@ -81,44 +51,7 @@ interface AsyncChannel : Closeable {
     return write(str.toByteArray(charset))
   }
 
-  suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer = read(timeout) {
-    val buffer = pool.get()
-    if ((channel as ReadableByteChannel).read(buffer) < 0) throw SocketException()
-    buffer
-  }
-
-  fun waitMode() {
-    if (Thread.currentThread() == nioThread.thread) {
-      if (key.isValid) key.interestOps(0)
-    } else {
-      nioThread.execute { if (key.isValid) key.interestOps(0) }
-      nioThread.wakeup()
-    }
-  }
-
-  fun readMode() {
-    if (Thread.currentThread() == nioThread.thread) {
-      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
-    } else {
-      nioThread.execute {
-        if (key.isValid) key.interestOps(SelectionKey.OP_READ)
-      }
-      nioThread.wakeup()
-    }
-  }
-
-  fun writeMode() {
-    if (Thread.currentThread() == nioThread.thread) {
-      if (key.isValid) key.interestOps(SelectionKey.OP_WRITE)
-    } else {
-      nioThread.execute {
-        if (key.isValid) {
-          key.interestOps(SelectionKey.OP_WRITE)
-        }
-      }
-      nioThread.wakeup()
-    }
-  }
+  suspend fun read(pool: MemoryPool, timeout: Long = 0L): ByteBuffer
 
   /**
    * 如果通道已断开则会抛出异常
@@ -141,45 +74,8 @@ interface AsyncChannel : Closeable {
     return readSize
   }
 
-  suspend fun waitRead(timeout: Long = 0) {
-    suspendCoroutine<Int> {
-      key.attach(AsyncProtocol.Context(it, if (timeout > 0) timer.exec(timeout) {
-        key.attach(null)
-        waitMode()
-        it.resumeWithException(TimeoutException())
-      } else null))
-      readMode()
-      nioThread.wakeup()
-    }
-  }
-
-  suspend fun waitWrite(timeout: Long = 0) {
-    suspendCoroutine<Int> {
-      key.attach(AsyncProtocol.Context(it, if (timeout > 0) timer.exec(timeout) {
-        key.attach(null)
-        waitMode()
-        it.resumeWithException(TimeoutException())
-      } else null))
-      writeMode()
-      nioThread.wakeup()
-    }
-  }
-
-  override fun close() {
-    if (channel.isOpen || key.isValid) {
-      nioThread.execute {
-        channel.close()
-        key.cancel()
-      }
-      nioThread.wakeup()
-    }
-  }
-
   companion object {
     const val emptyBufferCode = 0
     const val emptyBufferLongCode = 0L
-
-    //val timer = StaticWheelTimer.timer
-    val timer: Timer = WheelTimer.timer
   }
 }

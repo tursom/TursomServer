@@ -5,12 +5,13 @@ import java.nio.channels.SelectableChannel
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.util.concurrent.Callable
+import java.util.concurrent.Executor
 
 /**
  * 一个 nio 工作线程
  * 一个线程对应一个 Selector （选择器）
  */
-interface NioThread : Closeable {
+interface NioThread : Closeable, Executor {
   val selector: Selector
   val closed: Boolean
   val timeout: Long
@@ -38,7 +39,7 @@ interface NioThread : Closeable {
     }
   }
 
-  fun execute(command: Runnable) = execute(command::run)
+  override fun execute(command: Runnable) = execute(command::run)
   fun execute(command: () -> Unit)
 
   fun <T> call(task: Callable<T>): T {

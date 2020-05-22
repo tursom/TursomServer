@@ -1,6 +1,6 @@
 package cn.tursom.socket
 
-import cn.tursom.channel.AsyncChannel
+import cn.tursom.channel.AsyncNioChannel
 import cn.tursom.channel.BufferedAsyncChannel
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
@@ -12,7 +12,7 @@ import java.nio.channels.FileChannel
 import java.nio.channels.SocketChannel
 
 @Suppress("unused")
-interface AsyncSocket : AsyncChannel {
+interface AsyncSocket : AsyncNioChannel {
   override val channel: SocketChannel
   override val remoteAddress: SocketAddress get() = channel.remoteAddress
   override fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedNioSocket(this, pool)

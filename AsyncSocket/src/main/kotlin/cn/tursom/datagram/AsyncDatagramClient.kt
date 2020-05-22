@@ -3,6 +3,7 @@ package cn.tursom.datagram
 import cn.tursom.channel.AsyncProtocol
 import cn.tursom.niothread.WorkerLoopNioThread
 import cn.tursom.niothread.loophandler.WorkerLoopHandler
+import cn.tursom.niothread.registerSuspend
 import java.net.InetSocketAddress
 import java.net.SocketAddress
 import java.nio.channels.DatagramChannel
@@ -22,11 +23,7 @@ object AsyncDatagramClient {
 
   suspend fun connect(address: SocketAddress): NioDatagram {
     val channel = getConnection(address)
-    val key: SelectionKey = suspendCoroutine { cont ->
-      nioThread.register(channel, 0) { key ->
-        cont.resume(key)
-      }
-    }
+    val key: SelectionKey = nioThread.registerSuspend(channel, 0)
     return NioDatagram(channel, key, nioThread)
   }
 

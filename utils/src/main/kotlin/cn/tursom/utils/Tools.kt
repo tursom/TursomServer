@@ -29,7 +29,6 @@ inline fun <reified T : Any> String.fromJson(): T = gson.fromJson(this, T::class
 
 inline fun <reified T : Any> Gson.fromJson(json: String) = this.fromJson(json, T::class.java)!!
 
-
 suspend fun <T> io(block: suspend CoroutineScope.() -> T): T {
   return withContext(Dispatchers.IO, block)
 }
