@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(":")
+    compile project(":")
 
     // kotlin 协程
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'

@@ -34,9 +34,28 @@ inline fun <T> ByteBuffer.write(block: (java.nio.ByteBuffer) -> T): T {
   }
 }
 
+inline fun <T> MultipleByteBuffer.reads(block: (List<java.nio.ByteBuffer>) -> T): T {
+  val bufferList = readBuffers()
+  try {
+    return block(bufferList)
+  } finally {
+    finishRead(bufferList)
+  }
+}
+
+
+inline fun <T> MultipleByteBuffer.writes(block: (List<java.nio.ByteBuffer>) -> T): T {
+  val bufferList = writeBuffers()
+  try {
+    return block(bufferList)
+  } finally {
+    finishWrite(bufferList)
+  }
+}
+
 fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer && this is ScatteringByteChannel) {
-    buffer.writeBuffers { read(it) }.toInt()
+    buffer.writeBuffers { read(it.toTypedArray()) }.toInt()
   } else {
     buffer.write { read(it) }
   }
@@ -44,35 +63,75 @@ fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
 
 fun WritableByteChannel.write(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer && this is GatheringByteChannel) {
-    buffer.readBuffers { write(it) }.toInt()
+    buffer.readBuffers { write(it.toTypedArray()) }.toInt()
   } else {
     buffer.read { write(it) }
   }
 }
 
 fun ScatteringByteChannel.read(buffer: MultipleByteBuffer): Long {
-  return buffer.writeBuffers { read(it) }
+  return buffer.writeBuffers { read(it.toTypedArray()) }
 }
 
 fun GatheringByteChannel.write(buffer: MultipleByteBuffer): Long {
-  return buffer.readBuffers { write(it) }
+  return buffer.readBuffers { write(it.toTypedArray()) }
 }
 
 fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
-  val bufferArray = Array(buffers.size) { buffers[it].writeBuffer() }
+  val bufferList = ArrayList<java.nio.ByteBuffer>()
+  buffers.forEach {
+    if (it is MultipleByteBuffer) {
+      it.forEach {
+        bufferList.add(it.writeBuffer())
+      }
+    } else {
+      bufferList.add(it.writeBuffer())
+    }
+  }
+  val bufferArray = bufferList.toTypedArray()
   return try {
     read(bufferArray)
   } finally {
-    buffers.forEachIndexed { index, byteBuffer -> byteBuffer.finishWrite(bufferArray[index]) }
+    var index = 0
+    buffers.forEach {
+      if (it is MultipleByteBuffer) {
+        it.forEach {
+          it.finishWrite(bufferArray[index])
+        }
+      } else {
+        it.finishRead(bufferArray[index])
+      }
+    }
+    index++
   }
 }
 
 fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
-  val bufferArray = Array(buffers.size) { buffers[it].readBuffer() }
+  val bufferList = ArrayList<java.nio.ByteBuffer>()
+  buffers.forEach {
+    if (it is MultipleByteBuffer) {
+      it.forEach {
+        bufferList.add(it.readBuffer())
+      }
+    } else {
+      bufferList.add(it.readBuffer())
+    }
+  }
+  val bufferArray = bufferList.toTypedArray()
   return try {
     write(bufferArray)
   } finally {
-    buffers.forEachIndexed { index, byteBuffer -> byteBuffer.finishRead(bufferArray[index]) }
+    var index = 0
+    buffers.forEach {
+      if (it is MultipleByteBuffer) {
+        it.forEach {
+          it.finishRead(bufferArray[index])
+        }
+      } else {
+        it.finishRead(bufferArray[index])
+      }
+    }
+    index++
   }
 }
 

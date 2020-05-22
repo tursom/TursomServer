@@ -8,23 +8,26 @@ import cn.tursom.channel.enhance.ChannelReader
 import cn.tursom.channel.enhance.ChannelWriter
 
 class SecurityEnhanceChannel(
-  val reader: ChannelReader<ByteBuffer>,
-  val writer: ChannelWriter<ByteArray>,
+  val preReader: ChannelReader<ByteBuffer>,
+  val preWriter: ChannelWriter<ByteArray>,
   val aes: AES
 ) : EnhanceChannel<ByteArray, ByteArray> {
+  override val reader: ChannelReader<ByteArray> get() = this
+  override val writer: ChannelWriter<ByteArray> get() = this
+
   override fun close() {
-    reader.close()
-    writer.close()
+    preReader.close()
+    preWriter.close()
   }
 
   override suspend fun read(pool: MemoryPool, timeout: Long): ByteArray {
-    val buffer = reader.read(pool, timeout)
+    val buffer = preReader.read(pool, timeout)
     return aes.decrypt(buffer)
   }
 
   override suspend fun write(value: ByteArray) {
-    writer.write(aes.encrypt(value))
+    preWriter.write(aes.encrypt(value))
   }
 
-  override suspend fun flush(timeout: Long): Long = writer.flush()
+  override suspend fun flush(timeout: Long): Long = preWriter.flush()
 }

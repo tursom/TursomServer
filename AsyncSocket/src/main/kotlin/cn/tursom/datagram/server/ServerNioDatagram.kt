@@ -1,5 +1,6 @@
 package cn.tursom.datagram.server
 
+import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.pool.MemoryPool
@@ -39,7 +40,10 @@ class ServerNioDatagram(
   override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
     var write = 0L
     buffer.forEach { buf ->
-      write += buf.read { channel.send(it, remoteAddress) }
+      if (buf is MultipleByteBuffer) {
+      } else {
+        write += buf.read { channel.send(it, remoteAddress) }
+      }
     }
     return write
   }

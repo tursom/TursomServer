@@ -15,7 +15,7 @@ import kotlinx.coroutines.GlobalScope
  */
 open class BuffedNioServer(
   port: Int,
-  private val memoryPool: MemoryPool,
+  val memoryPool: MemoryPool,
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
   handler: suspend BufferedAsyncSocket.() -> Unit
