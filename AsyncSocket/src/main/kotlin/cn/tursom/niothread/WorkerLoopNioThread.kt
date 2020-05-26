@@ -25,7 +25,13 @@ class WorkerLoopNioThread(
           while (keyIter.hasNext()) {
             val key = keyIter.next()
             keyIter.remove()
-            workLoop(this, key)
+            try {
+              workLoop(this, key)
+            } catch (e: Exception) {
+              e.printStackTrace()
+              key.cancel()
+              key.channel().close()
+            }
           }
         }
       } catch (e: Exception) {
@@ -115,6 +121,4 @@ class WorkerLoopNioThread(
       }
     }
   }
-
-
 }

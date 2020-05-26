@@ -29,14 +29,7 @@ open class BossLoopHandler(
         }
       }
     } catch (e: Throwable) {
-      try {
-        protocol.exceptionCause(key, nioThread, e)
-      } catch (e1: Throwable) {
-        e.printStackTrace()
-        e1.printStackTrace()
-        key.cancel()
-        key.channel().close()
-      }
+      protocol.exceptionCause(key, nioThread, e)
     }
   }
 }

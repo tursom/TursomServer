@@ -16,7 +16,7 @@ class ThreadPoolNioThread(
   override lateinit var thread: Thread
   val threadPool: ExecutorService = ThreadPoolExecutor(1, 1,
     0L, TimeUnit.MILLISECONDS,
-    LinkedBlockingQueue<Runnable>(),
+    LinkedBlockingQueue(),
     ThreadFactory {
       val thread = Thread(it)
       this.thread = thread
@@ -35,7 +35,13 @@ class ThreadPoolNioThread(
             while (keyIter.hasNext()) {
               val key = keyIter.next()
               keyIter.remove()
-              workLoop(this@ThreadPoolNioThread, key)
+              try {
+                workLoop(this@ThreadPoolNioThread, key)
+              } catch (e: Exception) {
+                e.printStackTrace()
+                key.cancel()
+                key.channel().close()
+              }
             }
           }
           if (!threadPool.isShutdown) threadPool.execute(this)
