@@ -18,8 +18,9 @@ open class BuffedNioServer(
   val memoryPool: MemoryPool,
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
+  autoCloseSocket: Boolean = true,
   handler: suspend BufferedAsyncSocket.() -> Unit
-) : NioServer(port, backlog, coroutineScope, {
+) : NioServer(port, backlog, coroutineScope, autoCloseSocket, {
   MarkedMemoryPool(memoryPool).use { marked ->
     BufferedNioSocket(this, marked).handler()
   }
@@ -30,12 +31,14 @@ open class BuffedNioServer(
     blockCount: Int = 128,
     backlog: Int = 50,
     coroutineScope: CoroutineScope = GlobalScope,
+    autoCloseSocket: Boolean = true,
     handler: suspend BufferedAsyncSocket.() -> Unit
   ) : this(
     port,
     ExpandableMemoryPool { DirectMemoryPool(blockSize, blockCount) },
     backlog,
     coroutineScope,
+    autoCloseSocket,
     handler
   )
 

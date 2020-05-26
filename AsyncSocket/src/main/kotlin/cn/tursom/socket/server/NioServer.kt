@@ -18,6 +18,7 @@ open class NioServer(
   override val port: Int,
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
+  var autoCloseSocket: Boolean = true,
   private val handler: suspend AsyncSocket.() -> Unit
 ) : SocketServer by NioLoopServer(port, object : NioProtocol by AsyncProtocol {
   override fun handleConnect(key: SelectionKey, nioThread: NioThread) {
@@ -25,10 +26,8 @@ open class NioServer(
       val socket = NioSocket(key, nioThread)
       try {
         socket.handler()
-      } catch (e: Exception) {
-        Exception(e).printStackTrace()
       } finally {
-        try {
+        if (autoCloseSocket) try {
           socket.close()
         } catch (e: Exception) {
         }
