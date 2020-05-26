@@ -1,14 +1,15 @@
 package cn.tursom.web.netty
 
 import cn.tursom.web.HttpHandler
+import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.HttpContent
 import io.netty.handler.codec.http.HttpObject
 import io.netty.handler.codec.http.HttpRequest
-import io.netty.handler.codec.http.LastHttpContent
 import io.netty.util.AttributeKey
 
+@ChannelHandler.Sharable
 class NettyHttpObjectHandler(
   private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>
 ) : SimpleChannelInboundHandler<HttpObject>() {
