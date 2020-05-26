@@ -15,8 +15,8 @@ interface NioProtocol {
 
 	@Throws(Throwable::class)
 	fun exceptionCause(key: SelectionKey, nioThread: NioThread, e: Throwable) {
+		e.printStackTrace()
 		key.cancel()
 		key.channel().close()
-		e.printStackTrace()
 	}
 }

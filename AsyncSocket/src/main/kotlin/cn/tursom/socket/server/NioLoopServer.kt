@@ -36,7 +36,7 @@ class NioLoopServer(
     if (started.compareAndSet(false, true)) {
       listenChannel.socket().bind(InetSocketAddress(port), backLog)
       listenChannel.configureBlocking(false)
-      bossNioThread.register(listenChannel, SelectionKey.OP_ACCEPT) {}
+      bossNioThread.register(listenChannel, SelectionKey.OP_ACCEPT)
     }
   }
 

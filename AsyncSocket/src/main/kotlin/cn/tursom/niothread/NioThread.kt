@@ -26,7 +26,7 @@ interface NioThread : Closeable, Executor {
   /**
    * 将通道注册到线程对应的选择器上
    */
-  fun register(channel: SelectableChannel, ops: Int, onComplete: (key: SelectionKey) -> Unit) {
+  fun register(channel: SelectableChannel, ops: Int, onComplete: (key: SelectionKey) -> Unit = {}) {
     if (Thread.currentThread() == thread) {
       val key = channel.register(selector, ops)
       onComplete(key)
