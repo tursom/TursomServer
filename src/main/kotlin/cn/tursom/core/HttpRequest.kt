@@ -29,7 +29,7 @@ object HttpRequest {
         Charsets.UTF_8
       } else {
         var endIndex = contentType.indexOf("charset=", startIndex = startIndex, ignoreCase = true) + 8
-        if (endIndex < 0) endIndex = contentType.length
+        if (endIndex < 8) endIndex = contentType.length
         if (startIndex == endIndex) {
           Charsets.UTF_8
         } else {
