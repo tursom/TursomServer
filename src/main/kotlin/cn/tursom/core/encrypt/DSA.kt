@@ -1,10 +1,10 @@
 package cn.tursom.core.encrypt
 
-import sun.security.provider.DSAPublicKey
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.DSAPrivateKey
+import java.security.interfaces.DSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")

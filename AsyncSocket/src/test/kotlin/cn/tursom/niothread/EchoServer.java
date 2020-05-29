@@ -75,7 +75,7 @@ public class EchoServer implements Closeable, Runnable {
         }
 
         @Override
-        public void handleRead(@NotNull SelectionKey key, @NotNull NioThread nioThread) throws Throwable {
+        public void handleRead(@NotNull SelectionKey key, @NotNull NioThread nioThread) {
             ByteBuffer buffer = (ByteBuffer) key.attachment();
             SocketChannel channel = (SocketChannel) key.channel();
             ByteBufferExtensionKt.read(channel, buffer);
@@ -83,7 +83,7 @@ public class EchoServer implements Closeable, Runnable {
         }
 
         @Override
-        public void handleWrite(@NotNull SelectionKey key, @NotNull NioThread nioThread) throws Throwable {
+        public void handleWrite(@NotNull SelectionKey key, @NotNull NioThread nioThread) {
             ByteBuffer buffer = (ByteBuffer) key.attachment();
             SocketChannel channel = (SocketChannel) key.channel();
             ByteBufferExtensionKt.write(channel, buffer);

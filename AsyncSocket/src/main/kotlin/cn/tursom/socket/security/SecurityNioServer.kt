@@ -10,17 +10,19 @@ class SecurityNioServer(
   port: Int,
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
+  autoCloseSocket: Boolean = true,
   @Suppress("MemberVisibilityCanBePrivate") val rsa: RSA = RSA(),
   val handler: suspend AsyncSocket.() -> Unit
-) : NioServer(port, backlog, coroutineScope, {
+) : NioServer(port, backlog, coroutineScope, autoCloseSocket, {
   AsyncSocketSecurityUtil.initActiveAESSocket(this, rsa)
   handler()
 }) {
   constructor(
     port: Int,
+    keySize: Int,
     backlog: Int = 50,
     coroutineScope: CoroutineScope = GlobalScope,
-    keySize: Int,
+    autoCloseSocket: Boolean = true,
     handler: suspend AsyncSocket.() -> Unit
-  ) : this(port, backlog, coroutineScope, RSA(keySize), handler)
+  ) : this(port, backlog, coroutineScope, autoCloseSocket, RSA(keySize), handler)
 }
