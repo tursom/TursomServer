@@ -5,8 +5,6 @@ package cn.tursom.core
 import sun.misc.Unsafe
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -158,9 +156,9 @@ fun ByteArray.sha1(): ByteArray = sha1.digest(this)
 fun String.sha1(): String = toByteArray().sha1().toHexString()
 
 //获取sha384加密对象
-val shA384 by lazy { MessageDigest.getInstance("SHA-384")!! }
+val sha384 by lazy { MessageDigest.getInstance("SHA-384")!! }
 
-fun ByteArray.sha384(): ByteArray = shA384.digest(this)
+fun ByteArray.sha384(): ByteArray = sha384.digest(this)
 
 fun String.sha384(): String = toByteArray().sha384().toHexString()
 
