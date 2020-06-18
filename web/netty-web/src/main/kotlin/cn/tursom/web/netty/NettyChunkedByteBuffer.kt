@@ -1,6 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.log.traceEnabled
 import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
@@ -28,7 +29,9 @@ class NettyChunkedByteBuffer(
   override fun readChunk(allocator: ByteBufAllocator?): ByteBuf = readChunk()
 
   private fun readChunk(): ByteBuf {
-    log?.trace("readChunk")
+    if (log.traceEnabled) {
+      log?.trace("readChunk")
+    }
     this.next?.close()
     val next = iterator.next()()
     this.next = next
@@ -38,7 +41,9 @@ class NettyChunkedByteBuffer(
   }
 
   override fun close() {
-    log?.trace("close")
+    if (log.traceEnabled) {
+      log?.trace("close")
+    }
   }
 
   companion object {

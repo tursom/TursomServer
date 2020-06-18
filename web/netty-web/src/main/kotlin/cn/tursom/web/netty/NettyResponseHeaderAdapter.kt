@@ -1,6 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.log.lazyPrettyMap
+import cn.tursom.log.traceEnabled
 import cn.tursom.web.ResponseHeaderAdapter
 import io.netty.handler.codec.http.HttpHeaders
 import org.slf4j.LoggerFactory
@@ -14,13 +15,17 @@ open class NettyResponseHeaderAdapter : ResponseHeaderAdapter {
   val responseListMap = HashMap<String, ArrayList<Any>>()
 
   override fun setResponseHeader(name: String, value: Any) {
-    log?.trace("setResponseHeader {}: {}", name, value)
+    if (log.traceEnabled) {
+      log?.trace("setResponseHeader {}: {}", name, value)
+    }
     responseMap[name] = value
     responseListMap.remove(name)
   }
 
   override fun addResponseHeader(name: String, value: Any) {
-    log?.trace("addResponseHeader {}: {}", name, value)
+    if (log.traceEnabled) {
+      log?.trace("addResponseHeader {}: {}", name, value)
+    }
     val list = responseListMap[name] ?: run {
       val newList = ArrayList<Any>()
       responseListMap[name] = newList
@@ -33,21 +38,44 @@ open class NettyResponseHeaderAdapter : ResponseHeaderAdapter {
     list.add(value)
   }
 
-  protected fun addHeaders(heads: HttpHeaders, defaultHeaders: Map<out CharSequence, Any>) {
-    log?.trace("addHeader\nheaders {}\ndefault {}", lazyPrettyMap(heads), lazyPrettyMap(defaultHeaders))
+  protected fun HttpHeaders.addResponseListMap() {
     responseListMap.forEach { (t, u) ->
       u.forEach {
-        heads.add(t, it)
+        add(t, it)
       }
     }
+  }
+
+  protected fun HttpHeaders.addHeaders(defaultHeaders: Map<out CharSequence, Any>) {
+    if (log.traceEnabled) {
+      log?.trace("addHeader\nheaders {}\ndefault {}", lazyPrettyMap(this), lazyPrettyMap(defaultHeaders))
+    }
+    addResponseListMap()
 
     responseMap.forEach { (t, u) ->
-      heads.set(t, u)
+      set(t, u)
     }
 
     defaultHeaders.forEach { (t, u) ->
-      if (!heads.contains(t)) {
-        heads.set(t, u)
+      if (!contains(t)) {
+        set(t, u)
+      }
+    }
+  }
+
+  protected fun HttpHeaders.addHeaders(vararg defaultHeaders: Pair<CharSequence, Any>) {
+    if (log.traceEnabled) {
+      log?.trace("addHeader\nheaders {}\ndefault {}", lazyPrettyMap(this), defaultHeaders.asList())
+    }
+    addResponseListMap()
+
+    responseMap.forEach { (t, u) ->
+      set(t, u)
+    }
+
+    defaultHeaders.forEach { (t, u) ->
+      if (!contains(t)) {
+        set(t, u)
       }
     }
   }

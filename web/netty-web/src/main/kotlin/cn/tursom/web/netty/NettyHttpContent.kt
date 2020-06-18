@@ -1,6 +1,7 @@
 package cn.tursom.web.netty
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.log.traceEnabled
 import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.utils.Chunked
@@ -101,32 +102,44 @@ open class NettyHttpContent(
   }
 
   override fun getHeader(header: String): String? {
-    log?.trace("getHeader {}", header)
+    if (log.traceEnabled) {
+      log?.trace("getHeader {}", header)
+    }
     return headers[header]
   }
 
   override fun getHeaders(header: String): List<String> {
-    log?.trace("getHeaders {}", header)
+    if (log.traceEnabled) {
+      log?.trace("getHeaders {}", header)
+    }
     return headers.getAll(header)
   }
 
   override fun getHeaders(): Iterable<Map.Entry<String, String>> {
-    log?.trace("getHeaders")
+    if (log.traceEnabled) {
+      log?.trace("getHeaders")
+    }
     return headers
   }
 
   override fun getParams(): Map<String, List<String>> {
-    log?.trace("getParams")
+    if (log.traceEnabled) {
+      log?.trace("getParams")
+    }
     return paramMap
   }
 
   override fun getParams(param: String): List<String>? {
-    log?.trace("getParams {}", param)
+    if (log.traceEnabled) {
+      log?.trace("getParams {}", param)
+    }
     return paramMap[param]
   }
 
   override fun addParam(key: String, value: String) {
-    log?.trace("addParam {}: {}", key, value)
+    if (log.traceEnabled) {
+      log?.trace("addParam {}: {}", key, value)
+    }
     if (!paramMap.containsKey(key)) {
       paramMap[key] = ArrayList()
     }
@@ -134,27 +147,35 @@ open class NettyHttpContent(
   }
 
   override fun write(message: String) {
-    log?.trace("write {}", message)
+    if (log.traceEnabled) {
+      log?.trace("write {}", message)
+    }
     getResponseBodyBuf().addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
     //responseBody.write(message.toByteArray())
   }
 
   override fun write(byte: Byte) {
-    log?.trace("write {}", byte)
+    if (log.traceEnabled) {
+      log?.trace("write {}", byte)
+    }
     val buffer = ctx.alloc().buffer(1).writeByte(byte.toInt())
     getResponseBodyBuf().addComponent(buffer)
     //responseBody.write(byte.toInt())
   }
 
   override fun write(bytes: ByteArray, offset: Int, size: Int) {
-    log?.trace("write {}({}:{})", bytes, offset, size)
+    if (log.traceEnabled) {
+      log?.trace("write {}({}:{})", bytes, offset, size)
+    }
     getResponseBodyBuf().addComponent(Unpooled.wrappedBuffer(bytes, offset, size))
     //responseBody.write(bytes, offset, size)
   }
 
   override fun write(buffer: ByteBuffer) {
     //buffer.writeTo(responseBody)
-    log?.trace("write {}", buffer)
+    if (log.traceEnabled) {
+      log?.trace("write {}", buffer)
+    }
     getResponseBodyBuf().addComponent(
       if (buffer is NettyByteBuffer) {
         buffer.byteBuf
@@ -167,22 +188,30 @@ open class NettyHttpContent(
   }
 
   override fun reset() {
-    log?.trace("reset")
+    if (log.traceEnabled) {
+      log?.trace("reset")
+    }
     getResponseBodyBuf().clear()
   }
 
   override fun finish() {
-    log?.trace("finish")
+    if (log.traceEnabled) {
+      log?.trace("finish")
+    }
     finish(getResponseBodyBuf())
   }
 
   override fun finish(buffer: ByteArray, offset: Int, size: Int) {
-    log?.trace("finish ByteArray[{}]({}:{})", buffer.size, offset, size)
+    if (log.traceEnabled) {
+      log?.trace("finish ByteArray[{}]({}:{})", buffer.size, offset, size)
+    }
     finish(Unpooled.wrappedBuffer(buffer, offset, size))
   }
 
   override fun finish(buffer: ByteBuffer) {
-    log?.trace("finish {}", buffer)
+    if (log.traceEnabled) {
+      log?.trace("finish {}", buffer)
+    }
     if (buffer is NettyByteBuffer) {
       finish(buffer.byteBuf)
     } else {
@@ -192,57 +221,52 @@ open class NettyHttpContent(
 
   fun finish(buf: ByteBuf) = finish(buf, responseStatus)
   fun finish(buf: ByteBuf, responseCode: HttpResponseStatus): ChannelFuture {
-    log?.trace("finish {}: {}", responseCode, buf)
+    if (log.traceEnabled) {
+      log?.trace("finish {}: {}", responseCode, buf)
+    }
     val response = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseCode, buf)
     return finish(response)
   }
 
   fun finish(response: FullHttpResponse): ChannelFuture {
-    log?.trace("finish {}", response)
-    finished = true
-    val heads = response.headers()
-    addHeaders(
-      heads,
-      mapOf(
-        HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
-        HttpHeaderNames.CONTENT_LENGTH to response.content().readableBytes(),
-        HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE
-      )
-    )
-    val write = ctx.writeAndFlush(response)
-    write.addListener {
-      if (it.isDone) {
-        val bodyBuf = responseBodyBuf ?: return@addListener
-        bodyBuf.release(bodyBuf.refCnt())
-      }
+    if (log.traceEnabled) {
+      log?.trace("finish {}", response)
     }
-    return write
+    finished = true
+    response.headers().addHeaders(
+      HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
+      HttpHeaderNames.CONTENT_LENGTH to response.content().readableBytes(),
+      HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE
+    )
+    return ctx.writeAndFlush(response)
   }
 
   override fun writeChunkedHeader() {
-    log?.trace("writeChunkedHeader")
+    if (log.traceEnabled) {
+      log?.trace("writeChunkedHeader")
+    }
     val response = DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
     response.status = if (responseMessage != null) HttpResponseStatus(responseCode, responseMessage)
     else responseStatus
-    val heads = response.headers()
-    addHeaders(
-      heads,
-      mapOf(
-        HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
-        HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE,
-        HttpHeaderNames.TRANSFER_ENCODING to "chunked"
-      )
+    response.headers().addHeaders(
+      HttpHeaderNames.CONTENT_TYPE to "${HttpHeaderValues.TEXT_PLAIN}; charset=UTF-8",
+      HttpHeaderNames.CONNECTION to HttpHeaderValues.KEEP_ALIVE,
+      HttpHeaderNames.TRANSFER_ENCODING to "chunked"
     )
     ctx.write(response)
   }
 
   override fun addChunked(buffer: () -> ByteBuffer) {
-    log?.trace("addChunked {}", buffer)
+    if (log.traceEnabled) {
+      log?.trace("addChunked {}", buffer)
+    }
     chunkedList.add(buffer)
   }
 
   override fun finishChunked() {
-    log?.trace("finishChunked {}", chunkedList)
+    if (log.traceEnabled) {
+      log?.trace("finishChunked {}", chunkedList)
+    }
     finished = true
     responseBodyBuf?.release()
     writeChunkedHeader()
@@ -251,7 +275,9 @@ open class NettyHttpContent(
   }
 
   override fun finishChunked(chunked: Chunked) {
-    log?.trace("finishChunked {}", chunked)
+    if (log.traceEnabled) {
+      log?.trace("finishChunked {}", chunked)
+    }
     finished = true
     responseBodyBuf?.release()
     writeChunkedHeader()
@@ -260,7 +286,9 @@ open class NettyHttpContent(
   }
 
   override fun finishFile(file: File, chunkSize: Int) {
-    log?.trace("finishFile {} chunkSize {}", file, chunkSize)
+    if (log.traceEnabled) {
+      log?.trace("finishFile {} chunkSize {}", file, chunkSize)
+    }
     finished = true
     responseBodyBuf?.release()
     writeChunkedHeader()
@@ -268,7 +296,9 @@ open class NettyHttpContent(
   }
 
   override fun finishFile(file: RandomAccessFile, offset: Long, length: Long, chunkSize: Int) {
-    log?.trace("finishFile {}({}:{}) chunkSize {}", file, offset, length, chunkSize)
+    if (log.traceEnabled) {
+      log?.trace("finishFile {}({}:{}) chunkSize {}", file, offset, length, chunkSize)
+    }
     finished = true
     responseBodyBuf?.release()
     writeChunkedHeader()

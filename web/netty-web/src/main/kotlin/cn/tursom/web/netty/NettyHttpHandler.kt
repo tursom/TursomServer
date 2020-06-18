@@ -1,5 +1,6 @@
 package cn.tursom.web.netty
 
+import cn.tursom.log.debugEnabled
 import cn.tursom.web.HttpHandler
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
@@ -19,7 +20,9 @@ class NettyHttpHandler(
 
   override fun channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest) {
     val handlerContext = NettyHttpContent(ctx, msg)
-    log?.debug("{} {} {}", handlerContext.remoteAddress, handlerContext.method, handlerContext.uri)
+    if (log.debugEnabled) {
+      log?.debug("{} {} {}", handlerContext.remoteAddress, handlerContext.method, handlerContext.uri)
+    }
     handler.handle(handlerContext)
   }
 
