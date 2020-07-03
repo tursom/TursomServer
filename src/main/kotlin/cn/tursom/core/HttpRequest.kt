@@ -25,7 +25,7 @@ object HttpRequest {
       Charsets.UTF_8
     } else {
       val startIndex = contentType.indexOf("charset=", ignoreCase = true) + 8
-      if (startIndex < 0) {
+      if (startIndex < 8) {
         Charsets.UTF_8
       } else {
         var endIndex = contentType.indexOf(";", startIndex = startIndex, ignoreCase = true)

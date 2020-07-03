@@ -3,6 +3,7 @@ package cn.tursom.web
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.urlDecode
 import cn.tursom.web.utils.Chunked
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
@@ -38,7 +39,7 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
 
   fun write(message: String)
   fun write(byte: Byte)
-  fun write(bytes: ByteArray, offset: Int = 0, size: Int = 0)
+  fun write(bytes: ByteArray, offset: Int = 0, size: Int = bytes.size - offset)
   fun write(buffer: ByteBuffer)
   fun reset()
 
@@ -100,21 +101,27 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
   }
 
   fun finishHtml(response: ByteBuffer, code: Int = responseCode) {
-    log?.trace("finishHtml {}: {}", code, response)
+    if (log.traceEnabled) {
+      log?.trace("finishHtml {}: {}", code, response)
+    }
     responseHtml()
     responseCode = code
     finish(response)
   }
 
   fun finishText(response: ByteBuffer, code: Int = responseCode) {
-    log?.trace("finishText {}: {}", code, response)
+    if (log.traceEnabled) {
+      log?.trace("finishText {}: {}", code, response)
+    }
     responseText()
     responseCode = code
     finish(response)
   }
 
   fun finishJson(response: ByteBuffer, code: Int = responseCode) {
-    log?.trace("finishJson {}: {}", code, response)
+    if (log.traceEnabled) {
+      log?.trace("finishJson {}: {}", code, response)
+    }
     responseJson()
     responseCode = code
     finish(response)
@@ -143,20 +150,26 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
   fun moved(url: String) = permanentlyMoved(url)
 
   fun permanentlyMoved(url: String) {
-    log?.trace("permanentlyMoved {}", url)
+    if (log.traceEnabled) {
+      log?.trace("permanentlyMoved {}", url)
+    }
     setResponseHeader("Location", url)
     finish(301)
   }
 
   fun temporaryMoved(url: String) {
-    log?.trace("temporaryMoved {}", url)
+    if (log.traceEnabled) {
+      log?.trace("temporaryMoved {}", url)
+    }
     noStore()
     setResponseHeader("Location", url)
     finish(302)
   }
 
   fun finish(msg: String) {
-    log?.trace("finish {}", msg)
+    if (log.traceEnabled) {
+      log?.trace("finish {}", msg)
+    }
     write(msg)
     finish()
   }
@@ -167,5 +180,7 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
     } catch (e: Throwable) {
       null
     }
+
+    private inline val Logger?.traceEnabled get() = this?.isTraceEnabled ?: false
   }
 }

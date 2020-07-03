@@ -1,5 +1,6 @@
 package cn.tursom.web.netty
 
+import cn.tursom.log.traceEnabled
 import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import cn.tursom.web.utils.Chunked
 import io.netty.buffer.ByteBuf
@@ -16,16 +17,21 @@ class NettyChunkedInput(private val chunked: Chunked) : ChunkedInput<ByteBuf> {
 
   override fun readChunk(ctx: ChannelHandlerContext?): ByteBuf = readChunk()
   override fun readChunk(allocator: ByteBufAllocator?): ByteBuf = readChunk()
+
   @Suppress("MemberVisibilityCanBePrivate")
   fun readChunk(): ByteBuf {
     val buf = chunked.readChunk()
-    log?.trace("readChunk {}", buf)
+    if (log.traceEnabled) {
+      log?.trace("readChunk {}", buf)
+    }
     return if (buf is NettyByteBuffer) buf.byteBuf
     else Unpooled.wrappedBuffer(buf.readBuffer())
   }
 
   override fun close() {
-    log?.trace("close")
+    if (log.traceEnabled) {
+      log?.trace("close")
+    }
     chunked.close()
   }
 
