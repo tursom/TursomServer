@@ -62,7 +62,7 @@ object Yaml {
         var appended = 0
         obj.forEach {
           it ?: return@forEach
-          stringBuilder.append("${if (appended == 0) '\n' else ""}$indentation- ")
+          stringBuilder.append("${if (appended == 0) "\n" else ""}$indentation- ")
           appended++
           toYaml(it, stringBuilder, "$indentation  ", true)
           if (!stringBuilder.endsWith('\n')) {

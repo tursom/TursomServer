@@ -15,6 +15,11 @@ class NettyWebSocketHandler(
 ) : SimpleChannelInboundHandler<WebSocketFrame>() {
   private val webSocketContext = NettyWebSocketContent(channel)
 
+  override fun channelActive(ctx: ChannelHandlerContext?) {
+    handler.connected(webSocketContext)
+    super.channelActive(ctx)
+  }
+
   override fun channelRead0(ctx: ChannelHandlerContext, msg: WebSocketFrame) {
     when (msg) {
       is TextWebSocketFrame -> {

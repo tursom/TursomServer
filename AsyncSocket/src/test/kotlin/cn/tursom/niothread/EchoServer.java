@@ -87,7 +87,7 @@ public class EchoServer implements Closeable, Runnable {
             ByteBuffer buffer = (ByteBuffer) key.attachment();
             SocketChannel channel = (SocketChannel) key.channel();
             ByteBufferExtensionKt.write(channel, buffer);
-            key.interestOps(SelectionKey.OP_WRITE);
+            key.interestOps(SelectionKey.OP_READ);
         }
     };
 
