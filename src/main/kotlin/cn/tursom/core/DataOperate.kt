@@ -111,10 +111,10 @@ fun ByteArray.toShort(offset: Int = 0): Short {
 fun ByteArray.toInt(offset: Int = 0): Int {
   return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
     this[offset].toInt() and 0xff or (this[offset + 1].toInt() shl 8 and 0xff00) or
-        (this[offset + 2].toInt() shl 16 and 0xff0000) or (this[offset + 3].toInt() shl 24 and 0xff000000.toInt())
+      (this[offset + 2].toInt() shl 16 and 0xff0000) or (this[offset + 3].toInt() shl 24 and 0xff000000.toInt())
   } else {
     this[offset + 3].toInt() and 0xff or (this[offset + 2].toInt() shl 8 and 0xff00) or
-        (this[offset + 1].toInt() shl 16 and 0xff0000) or (this[offset].toInt() shl 24 and 0xff000000.toInt())
+      (this[offset + 1].toInt() shl 16 and 0xff0000) or (this[offset].toInt() shl 24 and 0xff000000.toInt())
   }
 }
 
@@ -695,13 +695,13 @@ inline fun toShort(get: () -> Byte): Short {
 inline fun toInt(get: () -> Byte): Int {
   return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
     get().toInt() and 0xff or (get().toInt() shl 8 and 0xff00) or
-        (get().toInt() shl 16 and 0xff0000) or (get().toInt() shl 24 and 0xff000000.toInt())
+      (get().toInt() shl 16 and 0xff0000) or (get().toInt() shl 24 and 0xff000000.toInt())
   } else {
     val i1 = get()
     val i2 = get()
     val i3 = get()
     get().toInt() and 0xff or (i3.toInt() shl 8 and 0xff00) or
-        (i2.toInt() shl 16 and 0xff0000) or (i1.toInt() shl 24 and 0xff000000.toInt())
+      (i2.toInt() shl 16 and 0xff0000) or (i1.toInt() shl 24 and 0xff000000.toInt())
   }
 }
 
@@ -721,3 +721,28 @@ inline fun toFloat(get: () -> Byte): Float {
 inline fun toDouble(get: () -> Byte): Double {
   return Double.fromBits(toLong(get))
 }
+
+
+private val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+private val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
+
+private inline fun <T> T.toHexString(upper: Boolean, length: Int, toBytes: ((Byte) -> Unit) -> Unit): String {
+  val hexArray = if (upper) UPPER_HEX_ARRAY else LOWER_HEX_ARRAY
+  val hexChars = CharArray(length)
+  var i = 0
+  toBytes { b ->
+    @Suppress("NAME_SHADOWING") val b = b.toInt()
+    hexChars[i shl 1] = hexArray[b ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = hexArray[b and 0x0F]
+    i++
+  }
+  return String(hexChars)
+}
+
+fun Char.toHexString(upper: Boolean = true): String = toHexString(upper, 4, ::toBytes)
+fun Short.toHexString(upper: Boolean = true): String = toHexString(upper, 4, ::toBytes)
+fun Int.toHexString(upper: Boolean = true): String = toHexString(upper, 8, ::toBytes)
+fun Long.toHexString(upper: Boolean = true): String = toHexString(upper, 16, ::toBytes)
+fun Float.toHexString(upper: Boolean = true): String = toHexString(upper, 8, ::toBytes)
+fun Double.toHexString(upper: Boolean = true): String = toHexString(upper, 16, ::toBytes)
+

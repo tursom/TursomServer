@@ -53,6 +53,13 @@ inline fun <T> usingTime(action: () -> T): Long {
   return t2 - t1
 }
 
+inline fun <T> usingNanoTime(action: () -> T): Long {
+  val t1 = System.nanoTime()
+  action()
+  val t2 = System.nanoTime()
+  return t2 - t1
+}
+
 inline fun <T> Collection<T>.toString(action: (T) -> Any): String {
   val iterator = iterator()
   if (!iterator.hasNext()) return "[]"

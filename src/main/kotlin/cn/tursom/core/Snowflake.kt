@@ -19,12 +19,13 @@ import java.util.concurrent.atomic.AtomicLong
  *
  * 当前最多支持 8192 个节点同时上线, 未来如果节点数超过了 8192 个, 也可以以ID生成的最晚时间为代价提升节点最高数量
  */
-@Suppress("MemberVisibilityCanBePrivate", "CanBeParameter", "unused")
+@Suppress("MemberVisibilityCanBePrivate")
 class Snowflake(
   @Suppress("MemberVisibilityCanBePrivate") val nodeId: Int,
   val executorService: ScheduledExecutorService? = null,
   val updateRateMs: Long = defaultUpdateRateMs,
-  val workMode: WorkMode = WorkMode.INCREMENT
+  val workMode: WorkMode = WorkMode.INCREMENT,
+  val incrementLength: Int = 7
 ) {
   constructor(
     workerId: String,
@@ -33,7 +34,7 @@ class Snowflake(
     workMode: WorkMode = WorkMode.INCREMENT
   ) : this(parseId(workerId), executorService, updateRateMs, workMode)
 
-  private var _timestamp = System.currentTimeMillis().and(0x00_00_07_ff__ff_ff_ff_ff).shl(7 + 13)
+  private var _timestamp = System.currentTimeMillis().shl(incrementLength + 13).and(0x7f_ff_ff_ff__ff_ff_ff_ff)
     set(value) {
       field = value
       seed = AtomicLong((nodeId and 0x1fff).toLong() or field)
@@ -50,13 +51,13 @@ class Snowflake(
       when (workMode) {
         WorkMode.REALTIME -> {
           val timestamp = System.currentTimeMillis()
-            .and(0x00_00_07_ff__ff_ff_ff_ff)
-            .shl(7 + 13)
-          if (seed.get() < timestamp - 0x10_00_00) {
+            .shl(incrementLength + 13)
+            .and(0x7f_ff_ff_ff__ff_ff_ff_ff)
+          if (seed.get() < timestamp - 1.shl(incrementLength + 13)) {
             _timestamp = timestamp
           }
         }
-        WorkMode.INCREMENT -> _timestamp += 0x10_00_00
+        WorkMode.INCREMENT -> _timestamp += 1.shl(incrementLength + 13)
         WorkMode.NO_INCREMENT -> {
         }
       }
@@ -64,8 +65,8 @@ class Snowflake(
   }
 
   override fun toString() = "Snowflake(workerId=${nodeId
-  }, timestamp=0x${timestamp.toByteArray().toHexString(false)
-  }, seed=0x${seed.get().toByteArray().toHexString(false)})"
+  }, timestamp=0x${timestamp.toHexString(false)
+  }, seed=0x${seed.get().toHexString(false)})"
 
   enum class WorkMode {
     REALTIME, INCREMENT, NO_INCREMENT
