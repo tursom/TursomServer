@@ -15,7 +15,10 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.jar.JarFile
-import java.util.zip.*
+import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import java.util.zip.Inflater
 import kotlin.collections.ArrayList
 import kotlin.experimental.and
 
@@ -213,15 +216,19 @@ fun String.fromHexString(): ByteArray {
 
 fun ByteArray.toUTF8String() = String(this, Charsets.UTF_8)
 
-fun String.base64() = this.toByteArray().base64().toUTF8String()
+fun String.base64(): String = this.toByteArray().base64().toUTF8String()
+fun ByteArray.base64(): ByteArray = Base64.getEncoder().encode(this)
+fun String.base64Url(): String = this.toByteArray().base64Url().toUTF8String()
+fun ByteArray.base64Url(): ByteArray = Base64.getUrlEncoder().encode(this)
+fun String.base64Mime(): String = this.toByteArray().base64Mime().toUTF8String()
+fun ByteArray.base64Mime(): ByteArray = Base64.getMimeEncoder().encode(this)
 
-fun ByteArray.base64(): ByteArray {
-  return Base64.getEncoder().encode(this)
-}
-
-fun String.base64decode() = Base64.getDecoder().decode(this).toUTF8String()
-
+fun String.base64decode(): String = Base64.getDecoder().decode(this).toUTF8String()
 fun ByteArray.base64decode(): ByteArray = Base64.getDecoder().decode(this)
+fun String.base64UrlDecode(): String = Base64.getUrlDecoder().decode(this).toUTF8String()
+fun ByteArray.base64UrlDecode(): ByteArray = Base64.getUrlDecoder().decode(this)
+fun String.base64MimeDecode(): String = Base64.getMimeDecoder().decode(this).toUTF8String()
+fun ByteArray.base64MimeDecode(): ByteArray = Base64.getMimeDecoder().decode(this)
 
 fun String.digest(type: String) = toByteArray().digest(type)?.toHexString()
 
