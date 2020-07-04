@@ -17,6 +17,7 @@ import java.util.concurrent.Executor
 import java.util.jar.JarFile
 import java.util.zip.*
 import kotlin.collections.ArrayList
+import kotlin.experimental.and
 
 
 inline fun <reified T> Array<out T?>.excludeNull(): List<T> {
@@ -169,13 +170,27 @@ fun ByteArray.sha512(): ByteArray = sha512.digest(this)
 
 fun String.sha512(): String = toByteArray().sha512().toHexString()
 
-private val HEX_ARRAY = "0123456789abcdef".toCharArray()
-fun ByteArray.toHexString(): String {
+
+fun ByteArray.toHexString(upper: Boolean = true): String = if (upper) toUpperHexString() else toLowerHexString()
+
+private val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+fun ByteArray.toUpperHexString(): String {
   val hexChars = CharArray(size * 2)
   for (i in indices) {
-    val b = this[i].toInt()
-    hexChars[i shl 1] = HEX_ARRAY[b ushr 4 and 0x0F]
-    hexChars[(i shl 1) + 1] = HEX_ARRAY[b and 0x0F]
+    val b = this[i]
+    hexChars[i shl 1] = UPPER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = UPPER_HEX_ARRAY[(b and 0x0F).toInt()]
+  }
+  return String(hexChars)
+}
+
+private val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
+fun ByteArray.toLowerHexString(): String {
+  val hexChars = CharArray(size * 2)
+  for (i in indices) {
+    val b = this[i]
+    hexChars[i shl 1] = LOWER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = LOWER_HEX_ARRAY[(b and 0x0F).toInt()]
   }
   return String(hexChars)
 }
@@ -184,7 +199,7 @@ fun String.fromHexString(): ByteArray {
   val source = toLowerCase()
   val data = ByteArray(length / 2)
   for (i in 0 until length / 2) {
-    data[i] = ((HEX_ARRAY.indexOf(source[i * 2]) shl 4) + HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
+    data[i] = ((LOWER_HEX_ARRAY.indexOf(source[i * 2]) shl 4) + LOWER_HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
   }
   return data
 }
