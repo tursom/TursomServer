@@ -726,7 +726,7 @@ inline fun toDouble(get: () -> Byte): Double {
 private val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
 private val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
 
-private inline fun <T> T.toHexString(upper: Boolean, length: Int, toBytes: ((Byte) -> Unit) -> Unit): String {
+private inline fun toHexString(upper: Boolean, length: Int, toBytes: ((Byte) -> Unit) -> Unit): String {
   val hexArray = if (upper) UPPER_HEX_ARRAY else LOWER_HEX_ARRAY
   val hexChars = CharArray(length)
   var i = 0
