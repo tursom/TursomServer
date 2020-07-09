@@ -15,8 +15,12 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.jar.JarFile
-import java.util.zip.*
+import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import java.util.zip.Inflater
 import kotlin.collections.ArrayList
+import kotlin.experimental.and
 
 
 inline fun <reified T> Array<out T?>.excludeNull(): List<T> {
@@ -49,6 +53,13 @@ inline fun <T> usingTime(action: () -> T): Long {
   val t1 = System.currentTimeMillis()
   action()
   val t2 = System.currentTimeMillis()
+  return t2 - t1
+}
+
+inline fun <T> usingNanoTime(action: () -> T): Long {
+  val t1 = System.nanoTime()
+  action()
+  val t2 = System.nanoTime()
   return t2 - t1
 }
 
@@ -169,13 +180,27 @@ fun ByteArray.sha512(): ByteArray = sha512.digest(this)
 
 fun String.sha512(): String = toByteArray().sha512().toHexString()
 
-private val HEX_ARRAY = "0123456789abcdef".toCharArray()
-fun ByteArray.toHexString(): String {
+
+fun ByteArray.toHexString(upper: Boolean = true): String = if (upper) toUpperHexString() else toLowerHexString()
+
+private val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+fun ByteArray.toUpperHexString(): String {
   val hexChars = CharArray(size * 2)
   for (i in indices) {
-    val b = this[i].toInt()
-    hexChars[i shl 1] = HEX_ARRAY[b ushr 4 and 0x0F]
-    hexChars[(i shl 1) + 1] = HEX_ARRAY[b and 0x0F]
+    val b = this[i]
+    hexChars[i shl 1] = UPPER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = UPPER_HEX_ARRAY[(b and 0x0F).toInt()]
+  }
+  return String(hexChars)
+}
+
+private val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
+fun ByteArray.toLowerHexString(): String {
+  val hexChars = CharArray(size * 2)
+  for (i in indices) {
+    val b = this[i]
+    hexChars[i shl 1] = LOWER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = LOWER_HEX_ARRAY[(b and 0x0F).toInt()]
   }
   return String(hexChars)
 }
@@ -184,22 +209,26 @@ fun String.fromHexString(): ByteArray {
   val source = toLowerCase()
   val data = ByteArray(length / 2)
   for (i in 0 until length / 2) {
-    data[i] = ((HEX_ARRAY.indexOf(source[i * 2]) shl 4) + HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
+    data[i] = ((LOWER_HEX_ARRAY.indexOf(source[i * 2]) shl 4) + LOWER_HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
   }
   return data
 }
 
 fun ByteArray.toUTF8String() = String(this, Charsets.UTF_8)
 
-fun String.base64() = this.toByteArray().base64().toUTF8String()
+fun String.base64(): String = this.toByteArray().base64().toUTF8String()
+fun ByteArray.base64(): ByteArray = Base64.getEncoder().encode(this)
+fun String.base64Url(): String = this.toByteArray().base64Url().toUTF8String()
+fun ByteArray.base64Url(): ByteArray = Base64.getUrlEncoder().encode(this)
+fun String.base64Mime(): String = this.toByteArray().base64Mime().toUTF8String()
+fun ByteArray.base64Mime(): ByteArray = Base64.getMimeEncoder().encode(this)
 
-fun ByteArray.base64(): ByteArray {
-  return Base64.getEncoder().encode(this)
-}
-
-fun String.base64decode() = Base64.getDecoder().decode(this).toUTF8String()
-
+fun String.base64decode(): String = Base64.getDecoder().decode(this).toUTF8String()
 fun ByteArray.base64decode(): ByteArray = Base64.getDecoder().decode(this)
+fun String.base64UrlDecode(): String = Base64.getUrlDecoder().decode(this).toUTF8String()
+fun ByteArray.base64UrlDecode(): ByteArray = Base64.getUrlDecoder().decode(this)
+fun String.base64MimeDecode(): String = Base64.getMimeDecoder().decode(this).toUTF8String()
+fun ByteArray.base64MimeDecode(): ByteArray = Base64.getMimeDecoder().decode(this)
 
 fun String.digest(type: String) = toByteArray().digest(type)?.toHexString()
 
