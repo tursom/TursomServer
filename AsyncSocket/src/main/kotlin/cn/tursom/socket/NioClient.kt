@@ -16,7 +16,7 @@ object NioClient {
   @JvmStatic
   private val nioThread = WorkerLoopNioThread(
     "nioClient",
-    daemon = false,
+    daemon = true,
     workLoop = WorkerLoopHandler(AsyncProtocol)
   )
 
@@ -29,6 +29,7 @@ object NioClient {
     return suspendCoroutine { cont ->
       val channel = SocketChannel.open()!!
       channel.configureBlocking(false)
+      channel.connect(InetSocketAddress(host, port))
       nioThread.register(channel, SelectionKey.OP_CONNECT) { key ->
         key.attach(AsyncProtocol.ConnectContext(cont, if (timeout > 0) AsyncNioChannel.timer.exec(timeout) {
           channel.close()
@@ -37,7 +38,6 @@ object NioClient {
           null
         }))
       }
-      channel.connect(InetSocketAddress(host, port))
     }
   }
 }
