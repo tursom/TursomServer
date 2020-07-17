@@ -6,7 +6,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 class CoroutineScopeContext(
-  var coroutineScope: CoroutineScope
+  var coroutineScope: CoroutineScope = GlobalScope
 ) : CoroutineContext.Element {
   override val key: CoroutineContext.Key<*> get() = Companion
   override fun toString(): String = "CoroutineScopeContext(coroutineScope=$coroutineScope)"

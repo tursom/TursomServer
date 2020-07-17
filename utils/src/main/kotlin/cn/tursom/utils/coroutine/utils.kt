@@ -75,3 +75,15 @@ fun <T> CoroutineScope.asyncWithCoroutineLocalAndCoroutineScopeContext(
 ): Deferred<T> {
   return async(context + CoroutineLocalContext(map) + CoroutineScopeContext(this), start, block)
 }
+
+@Throws(InterruptedException::class)
+fun <T> runBlockingWithCoroutineLocalAndCoroutineScopeContext(
+  context: CoroutineContext = EmptyCoroutineContext,
+  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  block: suspend CoroutineScope.() -> T
+): T {
+  return runBlocking(context + CoroutineLocalContext(map) + CoroutineScopeContext()) {
+    CoroutineScopeContext set this
+    block()
+  }
+}
