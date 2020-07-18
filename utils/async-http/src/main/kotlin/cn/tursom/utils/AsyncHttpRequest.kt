@@ -14,15 +14,13 @@ import kotlin.coroutines.suspendCoroutine
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object AsyncHttpRequest {
-	
 	val defaultClient: OkHttpClient = OkHttpClient().newBuilder()
 		.retryOnConnectionFailure(true)
 		.build()
 	val socketClient: OkHttpClient = proxyClient()
 	val httpProxyClient: OkHttpClient =
         proxyClient(port = 8080, type = Proxy.Type.HTTP)
-	
-	
+
 	fun proxyClient(
 		host: String = "127.0.0.1",
 		port: Int = 1080,
@@ -31,13 +29,13 @@ object AsyncHttpRequest {
 		.proxy(Proxy(type, InetSocketAddress(host, port) as SocketAddress))
 		.retryOnConnectionFailure(true)
 		.build()
-	
-	private suspend fun sendRequest(call: Call): Response = suspendCoroutine {
+
+	suspend fun sendRequest(call: Call): Response = suspendCoroutine {
 		call.enqueue(object : Callback {
 			override fun onFailure(call: Call, e: IOException) {
 				it.resumeWithException(e)
 			}
-			
+
 			override fun onResponse(call: Call, response: Response) {
 				it.resume(response)
 			}
