@@ -3,6 +3,7 @@ package cn.tursom.utils.coroutine
 import cn.tursom.core.cast
 import kotlinx.coroutines.Job
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 open class CoroutineLocal<T> {
@@ -33,7 +34,7 @@ open class CoroutineLocal<T> {
   }
 
   companion object {
-    private val attachMap = ConcurrentHashMap<Job, MutableMap<CoroutineLocal<*>, Any?>>()
+    private val attachMap = ConcurrentHashMap<CoroutineContext, MutableMap<CoroutineLocal<*>, Any?>>()
     override fun toString(): String = attachMap.toString()
   }
 }
