@@ -1,12 +1,12 @@
 package cn.tursom.utils.coroutine
 
-import kotlinx.coroutines.*
+import cn.tursom.core.cast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.coroutineContext
 
 val testCoroutineLocal = CoroutineLocal<Int>()
-val testCoroutineLocalList = Array(100000) {
-  CoroutineLocal<Int>()
-}.asList()
 
 suspend fun test() {
   println(coroutineContext)
@@ -15,30 +15,51 @@ suspend fun test() {
   println(Thread.currentThread().name)
 }
 
-suspend fun main() {
-  CurrentThreadCoroutineScope.launch {
-    println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
-    delay(50)
-    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-    delay(50)
-    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+@Suppress("NOTHING_TO_INLINE")
+inline fun getContinuation(continuation: Continuation<*>): Continuation<*> {
+  return continuation
+}
+
+suspend inline fun getContinuation(): Continuation<*> {
+  val getContinuation: (continuation: Continuation<*>) -> Continuation<*> = ::getContinuation
+  return (getContinuation.cast<suspend () -> Continuation<*>>()).invoke()
+}
+
+suspend fun testCustomContext(): Int? = runWithCoroutineLocal {
+  println(coroutineContext)
+  return testCoroutineLocal.get()
+}
+
+suspend fun main(): Unit = runWithCoroutineLocal {
+  repeat(100) {
+    testCoroutineLocal.set(it)
+    println(testCustomContext())
   }
-  GlobalScope.launch(Dispatchers.Unconfined) { // 非受限的——将和主线程一起工作
-    println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
-    delay(50)
-    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-    delay(50)
-    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-  }
-  GlobalScope.launch { // 父协程的上下文，主 runBlocking 协程
-    println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
-    delay(100)
-    println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
-    delay(100)
-    println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
-  }
-  println("end")
-  delay(1000)
+  ////println(::main.javaMethod?.parameters?.get(0))
+  //println(coroutineContext)
+  //CurrentThreadCoroutineScope.launch {
+  //  println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+  //  delay(50)
+  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+  //  delay(50)
+  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+  //}
+  //GlobalScope.launch(Dispatchers.Unconfined) { // 非受限的——将和主线程一起工作
+  //  println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+  //  delay(50)
+  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+  //  delay(50)
+  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+  //}
+  //GlobalScope.launch { // 父协程的上下文，主 runBlocking 协程
+  //  println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
+  //  delay(100)
+  //  println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+  //  delay(100)
+  //  println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+  //}
+  //println("end")
+  //delay(1000)
   //runBlockingWithEnhanceContext {
   //  println(coroutineContext)
   //  println(coroutineContext[Job] is CoroutineScope)

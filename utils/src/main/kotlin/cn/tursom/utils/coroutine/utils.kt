@@ -1,8 +1,11 @@
 package cn.tursom.utils.coroutine
 
+import cn.tursom.core.cast
 import kotlinx.coroutines.*
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
 
 
 fun CoroutineScope.launchWithCoroutineLocalContext(
@@ -117,4 +120,25 @@ fun <T> runBlockingWithEnhanceContext(
   return runBlocking(context + CoroutineLocalContext(map)) {
     block()
   }
+}
+
+suspend inline fun <T> runWithCoroutineLocalContext(block: () -> T): T {
+  return (block.cast<(Continuation<*>) -> T>()).invoke(CoroutineLocalContinuation(getContinuation()))
+}
+
+suspend inline fun <T> runWithCoroutineLocal(block: () -> T): T {
+  if (coroutineContext[CoroutineLocalContext] == null) {
+    return runWithCoroutineLocalContext(block)
+  }
+  return block()
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun getContinuation(continuation: Continuation<*>): Continuation<*> {
+  return continuation
+}
+
+suspend inline fun getContinuation(): Continuation<*> {
+  val getContinuation: (continuation: Continuation<*>) -> Continuation<*> = ::getContinuation
+  return (getContinuation.cast<suspend () -> Continuation<*>>()).invoke()
 }
