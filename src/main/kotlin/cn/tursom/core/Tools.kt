@@ -399,3 +399,10 @@ fun Class<*>.forAllFields(action: (Field) -> Unit) {
   }
   clazz.declaredFields.forEach(action)
 }
+
+fun <T, R> Iterable<T>.firstNotNull(selector: (T) -> R): R? {
+  forEach {
+    return selector(it) ?: return@forEach
+  }
+  return null
+}

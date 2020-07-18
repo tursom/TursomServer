@@ -1,12 +1,18 @@
 package cn.tursom.http
 
+import cn.tursom.utils.coroutine.MainDispatcher
 import cn.tursom.utils.gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jsoup.nodes.Document
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
+
 
 interface CoroutineLocalTest {
   @GET("/")
@@ -17,21 +23,31 @@ interface CoroutineLocalTest {
 
   @GET("status/{db}")
   suspend fun status(@Path("db") db: String): RoomStatus
+
+  @GET("room/v1/Room/get_info")
+  suspend fun getRoomInfo(@Query("id") roomId: Int, @Query("from") from: String = "room"): String
 }
 
 suspend fun main() {
+  MainDispatcher.init()
   val retrofit = Retrofit.Builder()
     //.baseUrl("http://tursom.cn:15015")
-    .baseUrl("https://www.baidu.com")
+    //.baseUrl("https://www.baidu.com")
+    .baseUrl("https://api.live.bilibili.com")
+    .addCallAdapterFactory(BlockingCallAdapterFactory)
     .addConverterFactory(StringConverterFactory)
     .addConverterFactory(HtmlConverterFactory)
     .addConverterFactory(XmlConverterFactory)
     .addConverterFactory(GsonConverterFactory.create(gson))
     .build()
-  val coroutineLocalTest: CoroutineLocalTest = retrofit.create()
-  println(coroutineLocalTest.test())
-  //println(coroutineLocalTest.status())
-  //println(coroutineLocalTest.status("wula"))
+  GlobalScope.launch(Dispatchers.Main) {
+    launch {
+      println(Thread.currentThread().name)
+    }
+    val coroutineLocalTest: CoroutineLocalTest = retrofit.create()
+    //println(coroutineLocalTest.status())
+    println(coroutineLocalTest.getRoomInfo(801580))
+  }.join()
 }
 
 data class RoomStatus(
