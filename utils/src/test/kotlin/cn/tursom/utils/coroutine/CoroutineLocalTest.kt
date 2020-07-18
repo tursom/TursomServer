@@ -1,8 +1,11 @@
 package cn.tursom.utils.coroutine
 
+import cn.tursom.core.cast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.Closeable
 import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 val testCoroutineLocal = CoroutineLocal<Int>()
 
@@ -16,13 +19,11 @@ suspend fun testInlineCustomContext() {
   println("===================")
 }
 
-suspend fun main() {
-  println(getContinuation())
-  suspendCoroutine<Int> { cont ->
-    println(cont)
-    cont.resume(0)
+fun main() {
+  MainDispatcher.init()
+  GlobalScope.launch(Dispatchers.Main) {
+    println(Thread.currentThread().name)
+  }.invokeOnCompletion {
+    Dispatchers.Main.cast<Closeable>().close()
   }
-  testCustomContext()
-  println(testCoroutineLocal.get())
-  testInlineCustomContext()
 }
