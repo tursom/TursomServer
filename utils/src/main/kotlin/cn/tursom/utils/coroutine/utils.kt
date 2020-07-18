@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package cn.tursom.utils.coroutine
 
 import cn.tursom.core.cast
@@ -167,38 +169,31 @@ private val BaseContinuationImpl = Class.forName("kotlin.coroutines.jvm.internal
 private val BaseContinuationImplCompletion = BaseContinuationImpl.getDeclaredField("completion").apply { isAccessible = true }
 
 fun Continuation<*>.injectCoroutineLocalContext(coroutineLocalContext: CoroutineLocalContext = CoroutineLocalContext()): Boolean {
-  return if (context[CoroutineLocalContext] == null) {
-    if (BaseContinuationImpl.isInstance(this)) {
-      BaseContinuationImplCompletion.get(this).cast<Continuation<*>>().injectCoroutineLocalContext(coroutineLocalContext)
-    }
-    combinedContext(context)
-    if (context[CoroutineLocalContext] == null) {
-      javaClass.forAllFields {
-        if (!it.type.isInheritanceFrom(CoroutineContext::class.java)) {
-          return@forAllFields
-        }
-        it.isAccessible = true
-        val coroutineContext = it.get(this).cast<CoroutineContext>()
-        it.set(this, coroutineContext + coroutineLocalContext)
-      }
-      context[CoroutineLocalContext] != null
-    } else {
-      true
-    }
-  } else {
-    true
+  if (context[CoroutineLocalContext] != null) return true
+  if (BaseContinuationImpl.isInstance(this)) {
+    BaseContinuationImplCompletion.get(this).cast<Continuation<*>>().injectCoroutineLocalContext(coroutineLocalContext)
   }
+  combinedContext(context)
+  if (context[CoroutineLocalContext] != null) return true
+  javaClass.forAllFields {
+    if (!it.type.isInheritanceFrom(CoroutineContext::class.java)) {
+      return@forAllFields
+    }
+    it.isAccessible = true
+    val coroutineContext = it.get(this).cast<CoroutineContext>()
+    it.set(this, coroutineContext + coroutineLocalContext)
+  }
+  return context[CoroutineLocalContext] != null
 }
 
 private val combinedContextClass = Class.forName("kotlin.coroutines.CombinedContext")
 private val left = combinedContextClass.getDeclaredField("left").apply { isAccessible = true }
 
 fun combinedContext(coroutineContext: CoroutineContext): Boolean {
-  return if (coroutineContext.javaClass == combinedContextClass && coroutineContext[CoroutineLocalContext] == null) {
+  if (!combinedContextClass.isInstance(coroutineContext)) return false
+  if (coroutineContext[CoroutineLocalContext] == null) {
     val leftObj = left.get(coroutineContext).cast<CoroutineContext>()
     left.set(coroutineContext, leftObj + CoroutineLocalContext())
-    true
-  } else {
-    false
   }
+  return true
 }
