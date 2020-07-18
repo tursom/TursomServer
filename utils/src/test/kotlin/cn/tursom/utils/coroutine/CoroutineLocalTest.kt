@@ -1,8 +1,6 @@
 package cn.tursom.utils.coroutine
 
-import cn.tursom.core.cast
 import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 val testCoroutineLocal = CoroutineLocal<Int>()
@@ -17,37 +15,29 @@ suspend fun test() {
   println(Thread.currentThread().name)
 }
 
-val EventLoop = Class.forName("kotlinx.coroutines.EventLoop")
-val AbstractCoroutine = Class.forName("kotlinx.coroutines.AbstractCoroutine")
-
-val BlockingEventLoop = Class.forName("kotlinx.coroutines.BlockingEventLoop")
-val BlockingEventLoopConstructor = BlockingEventLoop.getConstructor(Thread::class.java).apply { isAccessible = true }
-fun newBlockingEventLoop(thread: Thread = Thread.currentThread()): CoroutineDispatcher {
-  return BlockingEventLoopConstructor.newInstance(thread) as CoroutineDispatcher
-}
-
-val BlockingCoroutine = Class.forName("kotlinx.coroutines.BlockingCoroutine")
-val BlockingCoroutineConstructor = BlockingCoroutine.constructors[0].apply { isAccessible = true }
-val BlockingCoroutineStart = BlockingCoroutine.methods.first { it.name == "start" && it.parameters.size == 3 }.apply { isAccessible = true }
-val BlockingCoroutineJoinBlocking = BlockingCoroutine.methods.first { it.name == "joinBlocking" }.apply { isAccessible = true }
-
-fun newBlockingCoroutine(coroutineContext: CoroutineContext, thread: Thread = Thread.currentThread(), eventLoop: CoroutineDispatcher): CoroutineScope {
-  return BlockingCoroutineConstructor.newInstance(coroutineContext, thread, eventLoop).cast()
-}
-
-fun CoroutineScope.start(start: CoroutineStart = CoroutineStart.DEFAULT, receiver: CoroutineScope = this, block: suspend CoroutineScope.() -> Any?) {
-  return BlockingCoroutineStart.invoke(this, start, receiver, block).cast()
-}
-
-fun CoroutineScope.joinBlocking() {
-  BlockingCoroutineJoinBlocking.invoke(this)
-}
-
 suspend fun main() {
-  test()
   CurrentThreadCoroutineScope.launch {
-    test()
+    println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+    delay(50)
+    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+    delay(50)
+    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
   }
+  GlobalScope.launch(Dispatchers.Unconfined) { // 非受限的——将和主线程一起工作
+    println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+    delay(50)
+    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+    delay(50)
+    println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+  }
+  GlobalScope.launch { // 父协程的上下文，主 runBlocking 协程
+    println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
+    delay(100)
+    println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+    delay(100)
+    println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+  }
+  println("end")
   delay(1000)
   //runBlockingWithEnhanceContext {
   //  println(coroutineContext)

@@ -1,30 +1,42 @@
 package cn.tursom.utils.coroutine
 
+import cn.tursom.core.SimpThreadLocal
 import cn.tursom.core.cast
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 object CurrentThreadCoroutineScope {
-  private val currentThreadCoroutineScopeThreadLocal = ThreadLocal<CoroutineScope>()
+  private val eventLoopThreadLocal: SimpThreadLocal<CoroutineDispatcher> = SimpThreadLocal {
+    newBlockingEventLoop()
+  }
 
   private suspend fun getCoroutineScope(): CoroutineScope {
-    return currentThreadCoroutineScopeThreadLocal.get() ?: kotlin.run {
-      val eventLoop = newBlockingEventLoop()
-      val coroutineScope = newBlockingCoroutine(coroutineContext, Thread.currentThread(), eventLoop)
-      currentThreadCoroutineScopeThreadLocal.set(coroutineScope)
-      coroutineScope
-    }
+    val eventLoop = eventLoopThreadLocal.get()
+    val coroutineScopeContext = CoroutineScopeContext()
+    val newBlockingCoroutine = newBlockingCoroutine(
+      coroutineContext + coroutineScopeContext + Dispatchers.Unconfined,
+      Thread.currentThread(),
+      eventLoop
+    )
+    coroutineScopeContext.coroutineScope = newBlockingCoroutine
+    return newBlockingCoroutine
   }
 
   suspend fun launch(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     block: suspend CoroutineScope.() -> Unit
-  ) {
-    getCoroutineScope().start(start, block = block)
+  ): Job {
+    val coroutineScope = getCoroutineScope()
+    //coroutineScope.launch(start = start, block = block)
+    coroutineScope.start(start, block = block)
+    return coroutineScope as Job
   }
+
+  private val EventLoop = Class.forName("kotlinx.coroutines.EventLoop")
+  private val EventLoopShouldBeProcessedFromContext = EventLoop.methods
+    .first { it.name == "shouldBeProcessedFromContext" }
+    .apply { isAccessible = true }
 
   private val BlockingEventLoop = Class.forName("kotlinx.coroutines.BlockingEventLoop")
   private val BlockingEventLoopConstructor = BlockingEventLoop
