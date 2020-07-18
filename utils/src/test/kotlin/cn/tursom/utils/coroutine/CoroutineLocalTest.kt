@@ -1,89 +1,59 @@
 package cn.tursom.utils.coroutine
 
+import cn.tursom.core.allFields
 import cn.tursom.core.cast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.coroutineContext
 
 val testCoroutineLocal = CoroutineLocal<Int>()
 
-suspend fun test() {
-  println(coroutineContext)
-  println(coroutineContext[Job] is CoroutineScope)
-  println(CoroutineScopeContext.get())
-  println(Thread.currentThread().name)
+suspend fun testCustomContext() {
+  testCoroutineLocal.set(1)
+  testInlineCustomContext()
 }
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun getContinuation(continuation: Continuation<*>): Continuation<*> {
+fun Any.printMsg() {
+  javaClass.allFields.forEach {
+    it.isAccessible = true
+    println("${it.type} ${it.name} = ${it.get(this)}")
+    val value: Any? = it.get(this)
+    println("${value?.javaClass} $value")
+    println(it.get(this) == this)
+    if (it.name == "completion") {
+      println((value as Continuation<*>).context)
+    }
+    println()
+  }
+}
+
+val BaseContinuationImpl = Class.forName("kotlin.coroutines.jvm.internal.BaseContinuationImpl")
+val BaseContinuationImplCompletion = BaseContinuationImpl.getDeclaredField("completion").apply { isAccessible = true }
+
+fun Continuation<*>.rootCompletion(): Continuation<*> {
+  var completion = this.javaClass.allFields.firstOrNull { it.name == "completion" }
+  val coroutineLocalContext = CoroutineLocalContext()
+  @Suppress("NAME_SHADOWING") var continuation = this
+  while (completion != null) {
+    continuation.injectCoroutineLocalContext(coroutineLocalContext)
+    completion.isAccessible = true
+    val newContinuation = completion.get(continuation)?.cast<Continuation<*>>() ?: return continuation
+    if (newContinuation == continuation) {
+      return continuation
+    }
+    completion = newContinuation.javaClass.allFields.firstOrNull { it.name == "completion" }
+    continuation = newContinuation
+  }
+  continuation.injectCoroutineLocalContext(coroutineLocalContext)
   return continuation
 }
 
-suspend inline fun getContinuation(): Continuation<*> {
-  val getContinuation: (continuation: Continuation<*>) -> Continuation<*> = ::getContinuation
-  return (getContinuation.cast<suspend () -> Continuation<*>>()).invoke()
-}
-
-suspend fun testCustomContext(): Int? = runWithCoroutineLocal {
+suspend inline fun testInlineCustomContext() {
   println(coroutineContext)
-  return testCoroutineLocal.get()
+  println("===================")
 }
 
-suspend fun main(): Unit = runWithCoroutineLocal {
-  repeat(100) {
-    testCoroutineLocal.set(it)
-    println(testCustomContext())
-  }
-  ////println(::main.javaMethod?.parameters?.get(0))
-  //println(coroutineContext)
-  //CurrentThreadCoroutineScope.launch {
-  //  println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
-  //  delay(50)
-  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-  //  delay(50)
-  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-  //}
-  //GlobalScope.launch(Dispatchers.Unconfined) { // 非受限的——将和主线程一起工作
-  //  println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
-  //  delay(50)
-  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-  //  delay(50)
-  //  println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
-  //}
-  //GlobalScope.launch { // 父协程的上下文，主 runBlocking 协程
-  //  println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
-  //  delay(100)
-  //  println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
-  //  delay(100)
-  //  println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
-  //}
-  //println("end")
-  //delay(1000)
-  //runBlockingWithEnhanceContext {
-  //  println(coroutineContext)
-  //  println(coroutineContext[Job] is CoroutineScope)
-  //  println(CoroutineScopeContext.get())
-  //  println(Thread.currentThread().name)
-  //  CoroutineContextScope(coroutineContext).launch {
-  //    println(coroutineContext)
-  //    println(coroutineContext[Job] is CoroutineScope)
-  //    println(CoroutineScopeContext.get())
-  //    println(Thread.currentThread().name)
-  //  }.join()
-  //  //CoroutineScopeContext.get().launchWithEnhanceContext {
-  //  //  println(coroutineContext)
-  //  //  println(coroutineContext[Job] is CoroutineScope)
-  //  //  println(CoroutineScopeContext.get())
-  //  //  println(Thread.currentThread().name)
-  //  //  CoroutineScopeContext.get().launchWithEnhanceContext {
-  //  //    println(coroutineContext)
-  //  //    println(coroutineContext[Job] is CoroutineScope)
-  //  //    println(CoroutineScopeContext.get())
-  //  //    println(Thread.currentThread().name)
-  //  //  }
-  //  //}.join()
-  //  delay(1000)
-  //  println(CoroutineLocal)
-  //}
+suspend fun main() {
+  testCustomContext()
+  println(testCoroutineLocal.get())
+  testInlineCustomContext()
 }

@@ -10,8 +10,13 @@ open class CoroutineLocal<T> {
   open suspend fun get(): T? {
     var attach: MutableMap<CoroutineLocal<*>, Any?>? = coroutineContext[CoroutineLocalContext]
     if (attach == null) {
-      val job = coroutineContext[Job] ?: return null
-      attach = attachMap[job]
+      if (injectCoroutineLocalContext()) {
+        attach = coroutineContext[CoroutineLocalContext]
+      }
+      if (attach == null) {
+        val job = coroutineContext[Job] ?: return null
+        attach = attachMap[job]
+      }
     }
     return attach?.get(this)?.cast()
   }
@@ -19,13 +24,18 @@ open class CoroutineLocal<T> {
   open suspend infix fun set(value: T): Boolean {
     var attach: MutableMap<CoroutineLocal<*>, Any?>? = coroutineContext[CoroutineLocalContext]
     if (attach == null) {
-      val job = coroutineContext[Job] ?: return false
-      attach = attachMap[job]
+      if (injectCoroutineLocalContext()) {
+        attach = coroutineContext[CoroutineLocalContext]
+      }
       if (attach == null) {
-        attach = HashMap()
-        attachMap[job] = attach
-        job.invokeOnCompletion {
-          attachMap.remove(job)
+        val job = coroutineContext[Job] ?: return false
+        attach = attachMap[job]
+        if (attach == null) {
+          attach = HashMap()
+          attachMap[job] = attach
+          job.invokeOnCompletion {
+            attachMap.remove(job)
+          }
         }
       }
     }
