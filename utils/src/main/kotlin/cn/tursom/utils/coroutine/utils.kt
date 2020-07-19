@@ -15,36 +15,36 @@ import kotlin.coroutines.coroutineContext
 fun CoroutineScope.launchWithCoroutineLocalContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> Unit
 ): Job {
-  return launch(context + CoroutineLocalContext(map), start, block)
+  return launch(context + CoroutineLocalContext(mapBuilder), start, block)
 }
 
 @Suppress("DeferredIsResult")
 fun <T> CoroutineScope.asyncWithCoroutineLocalContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): Deferred<T> {
-  return async(context + CoroutineLocalContext(map), start, block)
+  return async(context + CoroutineLocalContext(mapBuilder), start, block)
 }
 
 suspend fun <T> withCoroutineLocalContext(
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): T {
-  return withContext(CoroutineLocalContext(map), block)
+  return withContext(CoroutineLocalContext(mapBuilder), block)
 }
 
 @Throws(InterruptedException::class)
 fun <T> runBlockingWithCoroutineLocalContext(
   context: CoroutineContext = EmptyCoroutineContext,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): T {
-  return runBlocking(context + CoroutineLocalContext(map), block)
+  return runBlocking(context + CoroutineLocalContext(mapBuilder), block)
 }
 
 fun CoroutineScope.launchWithCoroutineScopeContext(
@@ -67,29 +67,29 @@ fun <T> CoroutineScope.asyncWithCoroutineScopeContext(
 fun CoroutineScope.launchWithCoroutineLocalAndCoroutineScopeContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> Unit
 ): Job {
-  return launch(context + CoroutineLocalContext(map) + CoroutineScopeContext(this), start, block)
+  return launch(context + CoroutineLocalContext(mapBuilder) + CoroutineScopeContext(this), start, block)
 }
 
 @Suppress("DeferredIsResult")
 fun <T> CoroutineScope.asyncWithCoroutineLocalAndCoroutineScopeContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): Deferred<T> {
-  return async(context + CoroutineLocalContext(map) + CoroutineScopeContext(this), start, block)
+  return async(context + CoroutineLocalContext(mapBuilder) + CoroutineScopeContext(this), start, block)
 }
 
 @Throws(InterruptedException::class)
 fun <T> runBlockingWithCoroutineLocalAndCoroutineScopeContext(
   context: CoroutineContext = EmptyCoroutineContext,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): T {
-  return runBlocking(context + CoroutineLocalContext(map) + CoroutineScopeContext()) {
+  return runBlocking(context + CoroutineLocalContext(mapBuilder) + CoroutineScopeContext()) {
     CoroutineScopeContext set this
     block()
   }
@@ -99,29 +99,29 @@ fun <T> runBlockingWithCoroutineLocalAndCoroutineScopeContext(
 fun CoroutineScope.launchWithEnhanceContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> Unit
 ): Job {
-  return launch(context + CoroutineLocalContext(map), start, block)
+  return launch(context + CoroutineLocalContext(mapBuilder), start, block)
 }
 
 @Suppress("DeferredIsResult")
 fun <T> CoroutineScope.asyncWithEnhanceContext(
   context: CoroutineContext = EmptyCoroutineContext,
   start: CoroutineStart = CoroutineStart.DEFAULT,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): Deferred<T> {
-  return async(context + CoroutineLocalContext(map), start, block)
+  return async(context + CoroutineLocalContext(mapBuilder), start, block)
 }
 
 @Throws(InterruptedException::class)
 fun <T> runBlockingWithEnhanceContext(
   context: CoroutineContext = EmptyCoroutineContext,
-  map: MutableMap<CoroutineLocal<*>, Any?> = HashMap(4),
+  mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
   block: suspend CoroutineScope.() -> T
 ): T {
-  return runBlocking(context + CoroutineLocalContext(map)) {
+  return runBlocking(context + CoroutineLocalContext(mapBuilder)) {
     block()
   }
 }
@@ -224,6 +224,6 @@ fun combinedContext(coroutineContext: CoroutineContext): Boolean {
 //  return launch(Dispatchers.Main, block = action)
 //}
 
-suspend fun <T> runOnUiThread(action: suspend CoroutineScope.() -> T): T {
-  return withContext(Dispatchers.Main, action)
+suspend fun <T> runOnUiThread(coroutineContext: CoroutineContext = EmptyCoroutineContext, action: suspend CoroutineScope.() -> T): T {
+  return withContext(coroutineContext + Dispatchers.Main, action)
 }

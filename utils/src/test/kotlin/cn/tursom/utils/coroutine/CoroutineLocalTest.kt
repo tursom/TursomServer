@@ -1,6 +1,7 @@
 package cn.tursom.utils.coroutine
 
 import kotlinx.coroutines.*
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.coroutineContext
 
 val testCoroutineLocal = CoroutineLocal<Int>()
@@ -33,13 +34,23 @@ class Test : CoroutineScope by MainScope() {
   }
 }
 
-suspend fun main() {
-  //MainDispatcher.init()
-  runOnUiThread {
-    Test().test()
-    println(testCoroutineLocal.get())
+object R : () -> R {
+  override fun invoke(): R = this
+}
+
+val threadLocal = ThreadLocal<String>()
+
+fun main() = runBlocking {
+  println(coroutineContext[ContinuationInterceptor])
+  MainDispatcher.init()
+  runOnUiThread(threadLocal.asContextElement()) {
+    threadLocal.set("hello")
+    //Test().test()
+    //println(testCoroutineLocal.get())
+    println(threadLocal.get())
     println(coroutineContext)
-    GlobalScope.launch(Dispatchers.Main) {
+    launch(Dispatchers.Main) {
+      println(threadLocal.get())
       println(coroutineContext)
     }
     //runOnUiThread {
