@@ -219,3 +219,11 @@ fun combinedContext(coroutineContext: CoroutineContext): Boolean {
   }
   return true
 }
+
+//fun CoroutineScope.runOnUiThread(action: suspend CoroutineScope.() -> Unit): Job {
+//  return launch(Dispatchers.Main, block = action)
+//}
+
+suspend fun <T> runOnUiThread(action: suspend CoroutineScope.() -> T): T {
+  return withContext(Dispatchers.Main, action)
+}

@@ -23,23 +23,29 @@ interface CoroutineLocalTest {
 }
 
 class Test : CoroutineScope by MainScope() {
-  suspend fun test(): Job {
-    println(this)
+  suspend fun test() {
+    testCoroutineLocal.set(1)
     println(coroutineContext)
-    return coroutineScope {
-      println(this)
+    coroutineScope {
       println(coroutineContext)
-      println(Thread.currentThread().name)
       delay(1)
-      return@coroutineScope launch {
-        println(Thread.currentThread().name)
-      }
     }
   }
 }
 
 suspend fun main() {
-  MainDispatcher.init()
-  Test().test().join()
+  //MainDispatcher.init()
+  runOnUiThread {
+    Test().test()
+    println(testCoroutineLocal.get())
+    println(coroutineContext)
+    GlobalScope.launch(Dispatchers.Main) {
+      println(coroutineContext)
+    }
+    //runOnUiThread {
+    //  println(coroutineContext)
+    //  println(testCoroutineLocal.get())
+    //}
+  }
   MainDispatcher.close()
 }

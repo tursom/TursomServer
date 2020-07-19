@@ -1,6 +1,7 @@
 package cn.tursom.utils.coroutine
 
 import cn.tursom.core.cast
+import cn.tursom.core.toHexString
 import kotlinx.coroutines.Job
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
@@ -42,6 +43,8 @@ open class CoroutineLocal<T> {
     attach[this] = value
     return true
   }
+
+  override fun toString(): String = "CoroutineLocal@${hashCode().toHexString(false)}"
 
   companion object {
     private val attachMap = ConcurrentHashMap<CoroutineContext, MutableMap<CoroutineLocal<*>, Any?>>()
