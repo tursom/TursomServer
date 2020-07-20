@@ -378,3 +378,31 @@ inline fun <reified T : Any?> Any.assert(action: T.() -> Unit): Boolean {
     false
   }
 }
+
+val Class<*>.allFields: List<Field>
+  get() {
+    var clazz = this
+    val list = ArrayList<Field>()
+    while (clazz != Any::class.java) {
+      list.addAll(clazz.declaredFields)
+      clazz = clazz.superclass
+    }
+    list.addAll(clazz.declaredFields)
+    return list
+  }
+
+fun Class<*>.forAllFields(action: (Field) -> Unit) {
+  var clazz = this
+  while (clazz != Any::class.java) {
+    clazz.declaredFields.forEach(action)
+    clazz = clazz.superclass
+  }
+  clazz.declaredFields.forEach(action)
+}
+
+fun <T, R> Iterable<T>.firstNotNull(selector: (T) -> R): R? {
+  forEach {
+    return selector(it) ?: return@forEach
+  }
+  return null
+}
