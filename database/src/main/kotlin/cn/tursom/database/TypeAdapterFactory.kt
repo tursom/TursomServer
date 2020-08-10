@@ -67,7 +67,3 @@ object TypeAdapterFactory {
 
   override fun toString() = adapterMap.toString()
 }
-
-fun main() {
-  println(TypeAdapterFactory)
-}
