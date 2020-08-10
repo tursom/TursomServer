@@ -2,8 +2,11 @@ package cn.tursom.database
 
 import cn.tursom.core.cast
 import cn.tursom.core.getClassByPackage
+import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Column
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ConcurrentSkipListMap
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.isSubclassOf
 
@@ -41,5 +44,18 @@ object TypeAdapterFactory {
     getAdapterQueue(adapter.level).add(adapter)
   }
 
-
+  fun register(
+    table: BaseTable<*>,
+    field: KProperty1<*, *>
+  ): Column<*>? {
+    adapterMap.forEach { (_, queue) ->
+      queue.forEach {
+        val column = it.register(table.cast(), field.cast())
+        if (column != null) {
+          return column
+        }
+      }
+    }
+    return null
+  }
 }
