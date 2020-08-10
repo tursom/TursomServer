@@ -16,4 +16,6 @@ object MonthDayAdapter : TypeAdapter<MonthDay> {
       null
     }
   }
+
+  override fun toString() = "MonthDayAdapter"
 }

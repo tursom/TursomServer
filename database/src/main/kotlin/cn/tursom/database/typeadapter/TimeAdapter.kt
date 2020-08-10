@@ -16,4 +16,6 @@ object TimeAdapter : TypeAdapter<Time> {
       null
     }
   }
+
+  override fun toString() = "TimeAdapter"
 }

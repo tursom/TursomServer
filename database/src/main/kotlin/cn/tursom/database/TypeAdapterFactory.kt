@@ -64,4 +64,10 @@ object TypeAdapterFactory {
     }
     return null
   }
+
+  override fun toString() = adapterMap.toString()
+}
+
+fun main() {
+  println(TypeAdapterFactory)
 }

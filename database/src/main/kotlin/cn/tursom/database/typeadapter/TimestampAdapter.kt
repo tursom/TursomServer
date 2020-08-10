@@ -16,4 +16,6 @@ object TimestampAdapter : TypeAdapter<Timestamp> {
       null
     }
   }
+
+  override fun toString() = "TimestampAdapter"
 }

@@ -15,4 +15,6 @@ object DoubleAdapter : TypeAdapter<Double> {
       null
     }
   }
+
+  override fun toString() = "DoubleAdapter"
 }

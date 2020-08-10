@@ -16,4 +16,6 @@ object LocalDateAdapter : TypeAdapter<LocalDate> {
       null
     }
   }
+
+  override fun toString() = "LocalDateAdapter"
 }

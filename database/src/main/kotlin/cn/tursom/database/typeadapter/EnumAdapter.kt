@@ -22,4 +22,6 @@ object EnumAdapter : TypeAdapter<EnumAdapter.EnumType> {
     }
   }
 
+  override fun toString() = "EnumAdapter"
+
 }

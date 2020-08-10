@@ -16,4 +16,6 @@ object UUIDAdapter : TypeAdapter<UUID> {
       null
     }
   }
+
+  override fun toString() = "UUIDAdapter"
 }

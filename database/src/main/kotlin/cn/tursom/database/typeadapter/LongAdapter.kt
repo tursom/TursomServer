@@ -15,4 +15,6 @@ object LongAdapter : TypeAdapter<Long> {
       null
     }
   }
+
+  override fun toString() = "LongAdapter"
 }

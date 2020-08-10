@@ -15,4 +15,6 @@ object BooleanAdapter : TypeAdapter<Boolean> {
       null
     }
   }
+
+  override fun toString() = "BooleanAdapter"
 }

@@ -15,4 +15,6 @@ object BytesAdapter : TypeAdapter<ByteArray> {
       null
     }
   }
+
+  override fun toString() = "BytesAdapter"
 }

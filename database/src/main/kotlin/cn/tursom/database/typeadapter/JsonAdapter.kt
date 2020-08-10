@@ -18,4 +18,6 @@ object JsonAdapter : TypeAdapter<Int> {
       null
     }
   }
+
+  override fun toString() = "JsonAdapter"
 }

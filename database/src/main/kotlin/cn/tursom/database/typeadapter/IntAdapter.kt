@@ -15,4 +15,6 @@ object IntAdapter : TypeAdapter<Int> {
       null
     }
   }
+
+  override fun toString() = "IntAdapter"
 }

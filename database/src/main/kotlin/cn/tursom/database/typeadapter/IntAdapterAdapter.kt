@@ -16,4 +16,6 @@ object IntAdapterAdapter : TypeAdapter<BigDecimal> {
       null
     }
   }
+
+  override fun toString() = "IntAdapterAdapter"
 }

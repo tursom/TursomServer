@@ -16,4 +16,6 @@ object InstantAdapter : TypeAdapter<Instant> {
       null
     }
   }
+
+  override fun toString() = "InstantAdapter"
 }

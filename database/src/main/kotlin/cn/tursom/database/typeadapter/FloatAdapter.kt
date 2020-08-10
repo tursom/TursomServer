@@ -15,4 +15,6 @@ object FloatAdapter : TypeAdapter<Float> {
       null
     }
   }
+
+  override fun toString() = "FloatAdapter"
 }
