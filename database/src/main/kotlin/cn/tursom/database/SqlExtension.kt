@@ -18,99 +18,104 @@ fun <C : Any, E : Any> BaseTable<E>.json(
   field: KProperty1<E, C?>,
   type: Int = Types.VARCHAR,
   gson: Gson = cn.tursom.utils.gson
-): BaseTable<E>.ColumnRegistration<C> {
+): Column<C> {
   val sqlType = JsonType<C>(field.returnType.javaType, type, gson)
-  return this.registerColumn(SqlUtils { field.name.sqlName }, sqlType)
+  return this.registerColumn(SqlUtils { field.tableField }, sqlType)
 }
 
 fun <E : Any> BaseTable<E>.boolean(
   field: KProperty1<E, Boolean?>
-) = boolean(SqlUtils { field.name.sqlName })
+) = boolean(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.int(
   field: KProperty1<E, Int?>
-) = int(SqlUtils { field.name.sqlName })
+) = int(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.long(
   field: KProperty1<E, Long?>
-) = long(SqlUtils { field.name.sqlName })
+) = long(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.float(
   field: KProperty1<E, Float?>
-) = float(SqlUtils { field.name.sqlName })
+) = float(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.double(
   field: KProperty1<E, Double?>
-) = double(SqlUtils { field.name.sqlName })
+) = double(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.decimal(
   field: KProperty1<E, BigDecimal?>
-) = decimal(SqlUtils { field.name.sqlName })
+) = decimal(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.varchar(
   field: KProperty1<E, String?>
-) = varchar(SqlUtils { field.name.sqlName })
+) = varchar(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.text(
   field: KProperty1<E, String?>
-) = text(SqlUtils { field.name.sqlName })
+) = text(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.blob(
   field: KProperty1<E, ByteArray?>
-) = blob(SqlUtils { field.name.sqlName })
+) = blob(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.bytes(
   field: KProperty1<E, ByteArray?>
-) = bytes(SqlUtils { field.name.sqlName })
+) = bytes(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.jdbcTimestamp(
   field: KProperty1<E, Timestamp?>
-) = jdbcTimestamp(SqlUtils { field.name.sqlName })
+) = jdbcTimestamp(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.jdbcDate(
   field: KProperty1<E, Date?>
-) = jdbcDate(SqlUtils { field.name.sqlName })
+) = jdbcDate(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.jdbcTime(
   field: KProperty1<E, Time?>
-) = jdbcTime(SqlUtils { field.name.sqlName })
+) = jdbcTime(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.timestamp(
   field: KProperty1<E, Instant?>
-) = timestamp(SqlUtils { field.name.sqlName })
+) = timestamp(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.datetime(
   field: KProperty1<E, LocalDateTime?>
-) = datetime(SqlUtils { field.name.sqlName })
+) = datetime(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.date(
   field: KProperty1<E, LocalDate?>
-) = date(SqlUtils { field.name.sqlName })
+) = date(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.time(
   field: KProperty1<E, LocalTime?>
-) = time(SqlUtils { field.name.sqlName })
+) = time(SqlUtils { field.tableField })
 
 fun <E : Any> BaseTable<E>.monthDay(
   field: KProperty1<E, MonthDay?>
-) = monthDay(SqlUtils { field.name.sqlName })
+) = monthDay(SqlUtils { field.tableField })
 
 
 fun <E : Any> BaseTable<E>.yearMonth(
   field: KProperty1<E, YearMonth?>
-) = yearMonth(SqlUtils { field.name.sqlName })
+) = yearMonth(SqlUtils { field.tableField })
 
 
 fun <E : Any> BaseTable<E>.year(
   field: KProperty1<E, Year?>
-) = year(SqlUtils { field.name.sqlName })
+) = year(SqlUtils { field.tableField })
+
+fun <E : Any> BaseTable<E>.uuid(
+  field: KProperty1<E, UUID?>
+) = uuid(SqlUtils { field.tableField })
 
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
   field: KProperty1<E, C?>,
   typeRef: TypeReference<C>
-) = enum(SqlUtils { field.name.sqlName }, typeRef)
+) = enum(SqlUtils { field.tableField }, typeRef)
 
-fun <E : Any> BaseTable<E>.uuid(
-  field: KProperty1<E, UUID?>
-) = uuid(SqlUtils { field.name.sqlName })
+fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
+  field: KProperty1<E, C?>,
+  type: Class<C>
+) = registerColumn(SqlUtils { field.tableField }, EnumSqlType(type))
 

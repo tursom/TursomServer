@@ -7,6 +7,7 @@ import cn.tursom.core.cast
 import cn.tursom.core.datastruct.ArrayMap
 import cn.tursom.core.datastruct.ReadWriteMap
 import cn.tursom.core.datastruct.SoftArrayMap
+import cn.tursom.core.final
 import cn.tursom.utils.datastruct.KPropertyValueMap
 import com.ddbes.kotlin.clone.Key
 import com.ddbes.kotlin.clone.NoPropertyClone
@@ -368,6 +369,7 @@ fun <T : Any> Any.inject(target: T, property: Property<T>) {
     else -> {
       val field = property.javaField ?: return
       field.isAccessible = true
+      field.final = false
       try {
         field.set(target, cast(this, field.type) ?: return)
       } catch (e: Exception) {
