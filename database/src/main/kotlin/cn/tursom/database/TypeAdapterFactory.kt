@@ -12,7 +12,6 @@ import kotlin.reflect.full.isSubclassOf
 
 object TypeAdapterFactory {
   private val adapterMap = ConcurrentSkipListMap<Int, ConcurrentLinkedQueue<TypeAdapter<*>>>()
-  private val adapterQueue = ConcurrentLinkedQueue<TypeAdapter<*>>()
 
   init {
     scanPackage("cn.tursom.database.typeadapter")
@@ -29,8 +28,11 @@ object TypeAdapterFactory {
     return queue!!
   }
 
-  fun scanPackage(pkg: String) {
-    getClassByPackage(pkg).forEach {
+  fun scanPackage(
+    pkg: String,
+    classLoader: ClassLoader = this.javaClass.classLoader
+  ) {
+    classLoader.getClassByPackage(pkg).forEach {
       try {
         val clazz = Class.forName(it).kotlin
         if (clazz.isSubclassOf(TypeAdapter::class)) {
