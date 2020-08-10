@@ -7,7 +7,7 @@ import me.liuwj.ktorm.schema.Column
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class DoubleAdapter : TypeAdapter<Double> {
+object DoubleAdapter : TypeAdapter<Double> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Double>): Column<Double>? {
     return if (field.returnType.jvmErasure == Double::class) {
       table.double(field)

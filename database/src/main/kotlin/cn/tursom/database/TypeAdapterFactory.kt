@@ -15,18 +15,7 @@ object TypeAdapterFactory {
   private val adapterQueue = ConcurrentLinkedQueue<TypeAdapter<*>>()
 
   init {
-    getClassByPackage("cn.tursom.database.typeadapter").forEach {
-      try {
-        val clazz = Class.forName(it).kotlin
-        if (clazz.isSubclassOf(TypeAdapter::class)) {
-          val adapter: TypeAdapter<*> = clazz.objectInstance?.cast() ?: run {
-            clazz.createInstance()
-          }.cast()
-          registerAdapter(adapter)
-        }
-      } catch (e: Error) {
-      }
-    }
+    scanPackage("cn.tursom.database.typeadapter")
   }
 
   private fun getAdapterQueue(level: Int): ConcurrentLinkedQueue<TypeAdapter<*>> {
@@ -38,6 +27,21 @@ object TypeAdapterFactory {
       }
     }
     return queue!!
+  }
+
+  fun scanPackage(pkg: String) {
+    getClassByPackage(pkg).forEach {
+      try {
+        val clazz = Class.forName(it).kotlin
+        if (clazz.isSubclassOf(TypeAdapter::class)) {
+          val adapter: TypeAdapter<*> = clazz.objectInstance?.cast() ?: run {
+            clazz.createInstance()
+          }.cast()
+          registerAdapter(adapter)
+        }
+      } catch (e: Error) {
+      }
+    }
   }
 
   fun registerAdapter(adapter: TypeAdapter<*>) {

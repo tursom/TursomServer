@@ -7,7 +7,7 @@ import me.liuwj.ktorm.schema.Column
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class IntAdapter : TypeAdapter<Int> {
+object IntAdapter : TypeAdapter<Int> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Int>): Column<Int>? {
     return if (field.returnType.jvmErasure == Int::class) {
       table.int(field)

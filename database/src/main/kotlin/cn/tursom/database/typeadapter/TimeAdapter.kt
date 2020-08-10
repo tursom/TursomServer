@@ -8,7 +8,7 @@ import java.sql.Time
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class TimeAdapter : TypeAdapter<Time> {
+object TimeAdapter : TypeAdapter<Time> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Time>): Column<Time>? {
     return if (field.returnType.jvmErasure == Time::class) {
       table.jdbcTime(field)

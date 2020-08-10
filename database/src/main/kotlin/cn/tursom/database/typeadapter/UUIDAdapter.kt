@@ -8,7 +8,7 @@ import java.util.*
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class UUIDAdapter : TypeAdapter<UUID> {
+object UUIDAdapter : TypeAdapter<UUID> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, UUID>): Column<UUID>? {
     return if (field.returnType.jvmErasure == UUID::class) {
       table.uuid(field)

@@ -7,7 +7,7 @@ import me.liuwj.ktorm.schema.Column
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class BooleanAdapter : TypeAdapter<Boolean> {
+object BooleanAdapter : TypeAdapter<Boolean> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Boolean>): Column<Boolean>? {
     return if (field.returnType.jvmErasure == Boolean::class) {
       table.boolean(field)

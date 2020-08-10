@@ -8,7 +8,7 @@ import java.time.LocalDate
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class LocalDateAdapter : TypeAdapter<LocalDate> {
+object LocalDateAdapter : TypeAdapter<LocalDate> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, LocalDate>): Column<LocalDate>? {
     return if (field.returnType.jvmErasure == LocalDate::class) {
       table.date(field)

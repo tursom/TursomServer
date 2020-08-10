@@ -8,7 +8,7 @@ import java.time.MonthDay
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class MonthDayAdapter : TypeAdapter<MonthDay> {
+object MonthDayAdapter : TypeAdapter<MonthDay> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, MonthDay>): Column<MonthDay>? {
     return if (field.returnType.jvmErasure == MonthDay::class) {
       table.monthDay(field)

@@ -8,7 +8,7 @@ import me.liuwj.ktorm.schema.Column
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 
-class JsonAdapter : TypeAdapter<Int> {
+object JsonAdapter : TypeAdapter<Int> {
   override val level: Int get() = -16
 
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Int>): Column<Int>? {

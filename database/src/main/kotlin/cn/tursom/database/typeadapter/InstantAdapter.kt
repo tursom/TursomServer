@@ -8,7 +8,7 @@ import java.time.Instant
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
-class InstantAdapter : TypeAdapter<Instant> {
+object InstantAdapter : TypeAdapter<Instant> {
   override fun register(table: BaseTable<Any>, field: KProperty1<Any, Instant>): Column<Instant>? {
     return if (field.returnType.jvmErasure == Instant::class) {
       table.timestamp(field)
