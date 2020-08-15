@@ -14,7 +14,7 @@ object TypeAdapterFactory {
   private val adapterMap = ConcurrentSkipListMap<Int, ConcurrentLinkedQueue<TypeAdapter<*>>>()
 
   init {
-    scanPackage("cn.tursom.database.typeadapter")
+    scanPackage(TypeAdapterFactory::class.java.`package`.name + ".typeadapter")
   }
 
   private fun getAdapterQueue(level: Int): ConcurrentLinkedQueue<TypeAdapter<*>> {

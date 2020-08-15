@@ -2,18 +2,20 @@ package cn.tursom.core
 
 import java.util.concurrent.atomic.AtomicReference
 
-class Disposable<T> {
+class Disposable<T>(
+  value: T? = null
+) {
   private var value = AtomicReference<T>()
+
+  init {
+    if (value != null) {
+      this.value.set(value)
+    }
+  }
+
   fun set(value: T) {
     this.value.set(value)
   }
 
-  fun get(): T? {
-    val value = value.get() ?: return null
-    return if (this.value.compareAndSet(value, null)) {
-      value
-    } else {
-      null
-    }
-  }
+  fun get(): T? = value.getAndSet(null)
 }
