@@ -6,6 +6,7 @@ import sun.misc.Unsafe
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.net.URLDecoder
@@ -405,4 +406,36 @@ fun <T, R> Iterable<T>.firstNotNull(selector: (T) -> R): R? {
     return selector(it) ?: return@forEach
   }
   return null
+}
+
+fun Class<*>.forAllMethods(action: (Method) -> Unit) {
+  var clazz = this
+  while (clazz != Any::class.java) {
+    clazz.declaredMethods.forEach(action)
+    clazz = clazz.superclass
+  }
+  clazz.declaredMethods.forEach(action)
+}
+
+private val BASE62_DIGITS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray()
+
+tailrec fun Long.base62(sBuilder: StringBuilder = StringBuilder()): String {
+  return if (this == 0L) {
+    sBuilder.reverse().toString()
+  } else {
+    val remainder = (this % 62).toInt()
+    sBuilder.append(BASE62_DIGITS[remainder])
+    (this / 62).base62(sBuilder)
+  }
+}
+
+fun String.base62Decode(): Long {
+  var sum: Long = 0
+  val len = length
+  var base = 62L
+  for (i in 0 until len) {
+    sum += BASE62_DIGITS.indexOf(this[len - i - 1]) * base
+    base *= 62
+  }
+  return sum
 }

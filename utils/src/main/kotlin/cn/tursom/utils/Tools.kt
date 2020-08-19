@@ -2,15 +2,12 @@ package cn.tursom.utils
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlin.reflect.jvm.javaMethod
 
 @Suppress("unused", "SpellCheckingInspection")
 val gson = GsonBuilder()
@@ -25,9 +22,10 @@ val prettyGson = GsonBuilder()
 
 fun Any.toJson(): String = gson.toJson(this)
 fun Any.toPrettyJson(): String = prettyGson.toJson(this)
-inline fun <reified T : Any> String.fromJson(): T = gson.fromJson(this, T::class.java)
+//inline fun <reified T : Any> String.fromJson(): T = gson.fromJson(this, T::class.java)
 
-inline fun <reified T : Any> Gson.fromJson(json: String) = this.fromJson(json, T::class.java)!!
+inline fun <reified T : Any> Gson.fromJson(json: String) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)
+inline fun <reified T : Any> String.fromJson(gson: Gson = cn.tursom.utils.gson) = gson.fromJson<T>(this, object : TypeToken<T>() {}.type)!!
 
 suspend fun <T> io(block: suspend CoroutineScope.() -> T): T {
   return withContext(Dispatchers.IO, block)
