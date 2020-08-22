@@ -1,4 +1,182 @@
+@file:Suppress("unused")
+
 package cn.tursom.core
+
+data class R2<R1, R2>(val r1: R1, val r2: R2)
+data class R3<R1, R2, R3>(val r1: R1, val r2: R2, val r3: R3)
+data class R4<R1, R2, R3, R4>(val r1: R1, val r2: R2, val r3: R3, val r4: R4)
+data class R5<R1, R2, R3, R4, R5>(val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5)
+data class R6<R1, R2, R3, R4, R5, R6>(val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5, val r6: R6)
+data class R7<R1, R2, R3, R4, R5, R6, R7>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7,
+)
+
+data class R8<R1, R2, R3, R4, R5, R6, R7, R8>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8,
+)
+
+data class R9<R1, R2, R3, R4, R5, R6, R7, R8, R9>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9,
+)
+
+data class R10<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+)
+
+data class R11<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11,
+)
+
+data class R12<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12,
+)
+
+data class R13<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13,
+)
+
+data class R14<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14,
+)
+
+data class R15<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+)
+
+data class R16<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16,
+)
+
+data class R17<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17,
+)
+
+data class R18<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18,
+)
+
+data class R19<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19,
+)
+
+data class R20<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+)
+
+data class R21<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21,
+)
+
+data class R22<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22,
+)
+
+data class R23<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23,
+)
+
+data class R24<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24,
+)
+
+data class R25<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+)
+
+data class R26<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+  val r26: R26,
+)
+
+data class R27<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26, R27>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+  val r26: R26, val r27: R27,
+)
+
+data class R28<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26, R27, R28>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+  val r26: R26, val r27: R27, val r28: R28,
+)
+
+data class R29<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26, R27, R28, R29>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+  val r26: R26, val r27: R27, val r28: R28, val r29: R29,
+)
+
+data class R30<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26, R27, R28, R29, R30>(
+  val r1: R1, val r2: R2, val r3: R3, val r4: R4, val r5: R5,
+  val r6: R6, val r7: R7, val r8: R8, val r9: R9, val r10: R10,
+  val r11: R11, val r12: R12, val r13: R13, val r14: R14, val r15: R15,
+  val r16: R16, val r17: R17, val r18: R18, val r19: R19, val r20: R20,
+  val r21: R21, val r22: R22, val r23: R23, val r24: R24, val r25: R25,
+  val r26: R26, val r27: R27, val r28: R28, val r29: R29, val r30: R30,
+)
+
 
 operator fun <T> Map<in Int, T>.component1() = this[0]
 operator fun <T> Map<in Int, T>.component2() = this[1]
