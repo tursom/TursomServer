@@ -321,7 +321,6 @@ fun ByteArray.ungz(): ByteArray {
 }
 
 fun ByteArray.undeflate(): ByteArray {
-  var len = 0
   val infl = Inflater()
   infl.setInput(this)
   val bos = ByteArrayOutputStream()
@@ -329,7 +328,7 @@ fun ByteArray.undeflate(): ByteArray {
   bos.use {
     while (!infl.finished()) {
       // 解压缩并将解压缩后的内容输出到字节输出流bos中
-      len = infl.inflate(outByte)
+      val len = infl.inflate(outByte)
       if (len == 0) {
         break
       }
@@ -342,7 +341,6 @@ fun ByteArray.undeflate(): ByteArray {
 
 
 fun ByteArray.deflate(): ByteArray {
-  var len = 0
   val defl = Deflater()
   defl.setInput(this)
   defl.finish()
@@ -351,7 +349,7 @@ fun ByteArray.deflate(): ByteArray {
   bos.use {
     while (!defl.finished()) {
       // 压缩并将压缩后的内容输出到字节输出流bos中
-      len = defl.deflate(outputByte)
+      val len = defl.deflate(outputByte)
       bos.write(outputByte, 0, len)
     }
     defl.end()

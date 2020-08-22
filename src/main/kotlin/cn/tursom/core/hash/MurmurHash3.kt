@@ -6,7 +6,7 @@ import cn.tursom.core.toUTF8String
 import java.io.File
 
 
-@Suppress("unused", "FunctionName")
+@Suppress("unused", "FunctionName", "NAME_SHADOWING")
 object MurmurHash3 {
   private fun fmix32(h: Int): Int {
     var h = h
@@ -89,9 +89,9 @@ object MurmurHash3 {
     var pos = offset
     val end = offset + len
     var k1 = 0
-    var k2 = 0
+    var k2: Int
     var shift = 0
-    var bits = 0
+    var bits: Int
     var nBytes = 0 // length in UTF8 bytes
     while (pos < end) {
       val code = data[pos++].toInt()
