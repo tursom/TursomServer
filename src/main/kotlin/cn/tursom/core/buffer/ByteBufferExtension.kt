@@ -7,7 +7,10 @@ package cn.tursom.core.buffer
 
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
-import java.nio.channels.*
+import java.nio.channels.GatheringByteChannel
+import java.nio.channels.ReadableByteChannel
+import java.nio.channels.ScatteringByteChannel
+import java.nio.channels.WritableByteChannel
 
 
 /**
@@ -99,7 +102,7 @@ fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
           it.finishWrite(bufferArray[index])
         }
       } else {
-        it.finishRead(bufferArray[index])
+        it.finishWrite(bufferArray[index])
       }
     }
     index++
