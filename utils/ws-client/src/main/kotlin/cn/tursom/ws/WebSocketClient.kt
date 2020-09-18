@@ -70,7 +70,7 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
           }
           p.addLast(
             HttpClientCodec(),
-            HttpObjectAggregator(8192),
+            HttpObjectAggregator(4096),
             WebSocketClientCompressionHandler.INSTANCE,
             handler
           )
