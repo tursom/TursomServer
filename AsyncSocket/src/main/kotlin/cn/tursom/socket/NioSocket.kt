@@ -2,6 +2,8 @@ package cn.tursom.socket
 
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferCode
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferLongCode
+import cn.tursom.channel.read
+import cn.tursom.channel.write
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
@@ -12,7 +14,18 @@ import java.nio.channels.SocketChannel
 /**
  * 异步协程套接字对象
  */
-class NioSocket(override val key: SelectionKey, override val nioThread: NioThread) : AsyncSocket {
+class NioSocket internal constructor(
+  override val key: SelectionKey,
+  override val nioThread: NioThread,
+) : AsyncSocket {
+  companion object {
+    suspend operator fun invoke(
+      host: String,
+      port: Int,
+      timeout: Long = 0,
+    ) = NioClient.connect(host, port, timeout)
+  }
+
   override val channel: SocketChannel = key.channel() as SocketChannel
   override val open: Boolean get() = channel.isOpen && key.isValid
 

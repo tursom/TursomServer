@@ -1,6 +1,4 @@
-package cn.tursom.buffer
-
-import cn.tursom.core.buffer.ByteBuffer
+package cn.tursom.core.buffer
 
 interface ProxyByteBuffer : ByteBuffer {
   val agent: ByteBuffer

@@ -22,29 +22,6 @@ interface AsyncNioChannel : AsyncChannel {
   val nioThread: NioThread
   val channel: SelectableChannel get() = key.channel()
 
-  private inline fun <T> operate(action: () -> T): T {
-    return try {
-      action()
-    } catch (e: Exception) {
-      waitMode()
-      throw e
-    }
-  }
-
-  suspend fun <T> write(timeout: Long, action: () -> T): T {
-    return operate {
-      waitWrite(timeout)
-      action()
-    }
-  }
-
-  suspend fun <T> read(timeout: Long, action: () -> T): T {
-    return operate {
-      waitRead(timeout)
-      action()
-    }
-  }
-
   override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long
   override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long
   override suspend fun write(buffer: ByteBuffer, timeout: Long): Int = write(arrayOf(buffer), timeout).toInt()
@@ -56,7 +33,7 @@ interface AsyncNioChannel : AsyncChannel {
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long
+    timeout: Long,
   ): Long = write(timeout) {
     file.transferTo(position, count, channel as WritableByteChannel)
   }
@@ -65,7 +42,7 @@ interface AsyncNioChannel : AsyncChannel {
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long
+    timeout: Long,
   ): Long = read(timeout) {
     file.transferFrom(channel as ReadableByteChannel, position, count)
   }
@@ -175,5 +152,28 @@ interface AsyncNioChannel : AsyncChannel {
   companion object {
     //val timer = StaticWheelTimer.timer
     val timer: Timer = WheelTimer.timer
+  }
+}
+
+inline fun <T> AsyncNioChannel.operate(action: () -> T): T {
+  return try {
+    action()
+  } catch (e: Exception) {
+    waitMode()
+    throw e
+  }
+}
+
+suspend fun <T> AsyncNioChannel.write(timeout: Long, action: () -> T): T {
+  return operate {
+    waitWrite(timeout)
+    action()
+  }
+}
+
+suspend fun <T> AsyncNioChannel.read(timeout: Long, action: () -> T): T {
+  return operate {
+    waitRead(timeout)
+    action()
   }
 }

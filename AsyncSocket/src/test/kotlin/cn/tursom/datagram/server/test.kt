@@ -5,14 +5,15 @@ import cn.tursom.core.log
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
 import cn.tursom.socket.NioClient
-import cn.tursom.socket.server.BuffedNioServer
+import cn.tursom.socket.NioSocket
+import cn.tursom.socket.server.BufferedNioServer
 import kotlinx.coroutines.runBlocking
 
 val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
   while (true) {
     val buffer = read()
     log("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
-    Throwable().printStackTrace()
+    //Throwable().printStackTrace()
     write(buffer)
   }
 }
@@ -20,7 +21,7 @@ val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
 fun main() {
   val port = 12345
   val pool = DirectMemoryPool(1024, 16)
-  val server = BuffedNioServer(port, pool, handler = echoHandler)
+  val server = BufferedAsyncDatagramServer(port, pool, handler = echoHandler)
   //val server = LoopDatagramServer(port, protocol = object : NioProtocol {
   //  override fun handleRead(key: SelectionKey, nioThread: NioThread) {
   //    val datagramChannel = key.channel() as DatagramChannel
@@ -37,7 +38,7 @@ fun main() {
 
   runBlocking {
     val input = System.`in`.bufferedReader()
-    var client = NioClient.connect("127.0.0.1", port).getBuffed(pool)
+    var client = AsyncDatagramClient.connect("127.0.0.1", port).getBuffed(pool)
     while (true) {
       try {
         print(">>>")

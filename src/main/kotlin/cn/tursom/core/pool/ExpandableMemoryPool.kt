@@ -8,7 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 可自动申请新内存空间的内存池
  * 线程安全
  */
-class ExpandableMemoryPool(val maxPoolCount: Int = -1, private val poolFactory: () -> MemoryPool) : MemoryPool {
+class ExpandableMemoryPool(
+  val maxPoolCount: Int = -1,
+  private val poolFactory: () -> MemoryPool,
+) : MemoryPool {
   private val poolList = ConcurrentLinkedQueue<MemoryPool>()
 
   @Volatile
@@ -30,7 +33,7 @@ class ExpandableMemoryPool(val maxPoolCount: Int = -1, private val poolFactory: 
     poolList.add(usingPool)
   }
 
-  override fun free(memory: ByteBuffer) = throw NotImplementedError("ExpandableMemoryPool won't allocate any memory")
+  override fun free(memory: ByteBuffer) = Unit
 
   override fun getMemory(): ByteBuffer {
     var buffer = usingPool.getMemoryOrNull()

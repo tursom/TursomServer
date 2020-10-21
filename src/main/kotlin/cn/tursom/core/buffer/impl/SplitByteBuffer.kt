@@ -1,7 +1,7 @@
 package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.buffer.ProxyByteBuffer
+import cn.tursom.core.buffer.ProxyByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 

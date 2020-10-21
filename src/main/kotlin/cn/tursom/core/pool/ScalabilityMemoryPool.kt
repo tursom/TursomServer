@@ -31,7 +31,7 @@ class ScalabilityMemoryPool(private val poolFactory: () -> MemoryPool) : MemoryP
     }
   }
 
-  override fun free(memory: ByteBuffer) = throw NotImplementedError("ExpandableMemoryPool won't allocate any memory")
+  override fun free(memory: ByteBuffer) = Unit
 
   override fun getMemory(): ByteBuffer {
     var buffer = usingPool.getMemoryOrNull()

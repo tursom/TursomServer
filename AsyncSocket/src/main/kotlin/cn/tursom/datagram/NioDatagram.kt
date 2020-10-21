@@ -14,10 +14,6 @@ open class NioDatagram(
   override val remoteAddress: SocketAddress get() = channel.remoteAddress
   override fun writeMode() {}
 
-  override suspend fun <T> write(timeout: Long, action: () -> T): T {
-    return action()
-  }
-
   override fun close() {
     if (channel.isOpen || key.isValid) {
       nioThread.execute {

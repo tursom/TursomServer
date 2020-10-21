@@ -2,6 +2,8 @@ package cn.tursom.socket
 
 import cn.tursom.channel.AsyncNioChannel
 import cn.tursom.channel.BufferedAsyncChannel
+import cn.tursom.channel.read
+import cn.tursom.channel.write
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write

@@ -9,9 +9,9 @@ import cn.tursom.core.buffer.impl.PooledByteBuffer
  * 无锁，固定容量的内存池
  */
 abstract class LongBitSetAbstractMemoryPool(
-    val blockSize: Int,
-    val emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = { HeapByteBuffer(blockSize) },
-    private val memoryPool: ByteBuffer
+  val blockSize: Int,
+  val emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = ::HeapByteBuffer,
+  private val memoryPool: ByteBuffer,
 ) : MemoryPool {
   private val bitMap = LongBitSet()
   val allocated: Int get() = bitMap.trueCount.toInt()
@@ -41,10 +41,13 @@ abstract class LongBitSetAbstractMemoryPool(
 
   override fun free(memory: ByteBuffer) {
     if (memory is PooledByteBuffer && memory.pool == this) {
-      val token = memory.token
-      @Suppress("ControlFlowWithEmptyBody")
-      if (token >= 0) while (!bitMap.down(token));
+      free(memory.token)
     }
+  }
+
+  override fun free(token: Int) {
+    @Suppress("ControlFlowWithEmptyBody")
+    if (token >= 0) while (!bitMap.down(token));
   }
 
   override fun getMemoryOrNull(): ByteBuffer? {
