@@ -12,6 +12,7 @@ abstract class LongBitSetAbstractMemoryPool(
   val blockSize: Int,
   val emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = ::HeapByteBuffer,
   private val memoryPool: ByteBuffer,
+  override var autoCollection: Boolean = false,
 ) : MemoryPool {
   private val bitMap = LongBitSet()
   val allocated: Int get() = bitMap.trueCount.toInt()
@@ -22,7 +23,7 @@ abstract class LongBitSetAbstractMemoryPool(
   }
 
   private fun getMemory(token: Int): ByteBuffer = synchronized(this) {
-    return PooledByteBuffer(memoryPool.slice(token * blockSize, blockSize), this, token)
+    return PooledByteBuffer(memoryPool.slice(token * blockSize, blockSize), this, token, autoCollection)
   }
 
   /**

@@ -7,6 +7,9 @@ import cn.tursom.core.buffer.ByteBuffer
  */
 interface MemoryPool {
   val staticSize: Boolean get() = true
+  var autoCollection: Boolean
+    get() = false
+    set(value) {}
 
   //  fun allocate(): Int
   fun free(memory: ByteBuffer)

@@ -3,12 +3,22 @@ package cn.tursom.socket
 import cn.tursom.core.pool.HeapMemoryPool
 import cn.tursom.socket.server.BufferedNioServer
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.ConcurrentHashMap
 
+private val sockets = ConcurrentHashMap<AsyncSocket, Unit>().keySet(Unit)
 val handler: suspend BufferedAsyncSocket.() -> Unit = {
-  while (open) {
-    val read = read()
-    println(read.toString(read.readable))
-    write(read)
+  sockets.add(this)
+  try {
+    while (open) {
+      val read = read(60 * 1000)
+      println(read.toString(read.readable))
+      sockets.forEach {
+        System.err.println(it)
+        it.write(read)
+      }
+    }
+  } finally {
+    sockets.remove(this)
   }
 }
 

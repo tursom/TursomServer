@@ -11,13 +11,14 @@ import kotlin.concurrent.thread
 
 @Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 class WheelTimer(
-    val tick: Long = 200,
-    val wheelSize: Int = 512,
-    val name: String = "wheelTimerLooper",
-    val taskQueueFactory: () -> TaskQueue = { NonLockTaskQueue() }
+  val tick: Long = 200,
+  val wheelSize: Int = 512,
+  val name: String = "wheelTimerLooper",
+  val taskQueueFactory: () -> TaskQueue = { NonLockTaskQueue() },
 ) : Timer {
   var closed = false
   val taskQueueArray = AtomicReferenceArray(Array(wheelSize) { taskQueueFactory() })
+
   @Volatile
   private var position = 0
 
@@ -52,7 +53,7 @@ class WheelTimer(
     //  runNow(outTimeQueue)
     //}
     thread(isDaemon = true, name = name) {
-      val startTime = CurrentTimeMillisClock.now
+      var startTime = CurrentTimeMillisClock.now
       while (!closed) {
         position %= wheelSize
 
@@ -74,8 +75,10 @@ class WheelTimer(
 
         runNow(outTimeQueue)
 
-        val nextSleep = startTime + tick * position - CurrentTimeMillisClock.now
+        startTime += tick
+        val nextSleep = startTime - CurrentTimeMillisClock.now
         if (nextSleep > 0) sleep(tick)
+        //else System.err.println("timer has no delay")
       }
     }
   }
@@ -84,10 +87,10 @@ class WheelTimer(
     val timer by lazy { WheelTimer(200, 1024) }
     val smoothTimer by lazy { WheelTimer(20, 128) }
     fun ScheduledThreadPoolExecutor.scheduleAtFixedRate(
-        var2: Long,
-        var4: Long,
-        var6: TimeUnit,
-        var1: () -> Unit
+      var2: Long,
+      var4: Long,
+      var6: TimeUnit,
+      var1: () -> Unit,
     ): ScheduledFuture<*> = scheduleAtFixedRate(var1, var2, var4, var6)
   }
 }

@@ -10,6 +10,7 @@ abstract class ThreadUnsafeAbstractMemoryPool(
   val blockCount: Int,
   val emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = ::HeapByteBuffer,
   private val memoryPool: ByteBuffer,
+  override var autoCollection: Boolean = false,
 ) : MemoryPool {
   private val bitMap = ArrayBitSet(blockCount.toLong())
   val allocated: Int get() = bitMap.trueCount.toInt()
@@ -29,7 +30,7 @@ abstract class ThreadUnsafeAbstractMemoryPool(
   }
 
   private fun unsafeGetMemory(token: Int): ByteBuffer {
-    return PooledByteBuffer(memoryPool.slice(token * blockSize, blockSize), this, token)
+    return PooledByteBuffer(memoryPool.slice(token * blockSize, blockSize), this, token,autoCollection)
   }
 
   /**

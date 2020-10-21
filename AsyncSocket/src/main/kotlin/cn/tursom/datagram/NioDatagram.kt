@@ -8,8 +8,13 @@ import java.nio.channels.SelectionKey
 open class NioDatagram(
   override val channel: DatagramChannel,
   override val key: SelectionKey,
-  override val nioThread: NioThread
+  override val nioThread: NioThread,
 ) : AsyncDatagram {
+  companion object {
+    suspend operator fun invoke(host: String, port: Int) = AsyncDatagramClient.connect(host, port)
+    suspend operator fun invoke(address: SocketAddress) = AsyncDatagramClient.connect(address)
+  }
+
   override val open: Boolean get() = channel.isOpen && key.isValid
   override val remoteAddress: SocketAddress get() = channel.remoteAddress
   override fun writeMode() {}

@@ -2,6 +2,7 @@ package cn.tursom.core
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.ScheduledThreadPoolExecutor
+import kotlin.concurrent.thread
 
 
 object CurrentTimeMillisClock {
@@ -11,11 +12,12 @@ object CurrentTimeMillisClock {
   val now get() = tick
 
   init {
-    ScheduledThreadPoolExecutor(1) { runnable ->
-      val thread = Thread(runnable, "current-time-millis")
-      thread.isDaemon = true
-      thread
-    }.scheduleAtFixedRate({ tick = System.currentTimeMillis() }, 1, 1, TimeUnit.MILLISECONDS)
+    thread(name = "current-time-millis", isDaemon = true) {
+      while (true) {
+        tick = System.currentTimeMillis()
+        Thread.sleep(1)
+      }
+    }
   }
 
   //val now get() = System.currentTimeMillis()
