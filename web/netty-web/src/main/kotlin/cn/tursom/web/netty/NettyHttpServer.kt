@@ -29,8 +29,8 @@ class NettyHttpServer(
   var webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
   var readTimeout: Int? = 60,
   var writeTimeout: Int? = null,
-  decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
-  backlog: Int = 1024
+  decodeType: NettyHttpDecodeType = if (webSocketPath.iterator().hasNext()) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
+  backlog: Int = 1024,
 ) : HttpServer {
   constructor(
     port: Int,
@@ -39,8 +39,8 @@ class NettyHttpServer(
     webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
     readTimeout: Int? = 60,
     writeTimeout: Int? = null,
-    decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
-    handler: (content: NettyHttpContent) -> Unit
+    decodeType: NettyHttpDecodeType = if (webSocketPath.iterator().hasNext()) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
+    handler: (content: NettyHttpContent) -> Unit,
   ) : this(
     port,
     object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
