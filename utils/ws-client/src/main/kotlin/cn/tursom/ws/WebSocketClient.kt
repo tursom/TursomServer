@@ -1,6 +1,7 @@
 package cn.tursom.ws
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.utils.WebSocketFrameWrapper
 import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
@@ -22,7 +23,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import java.net.URI
 
 
-class WebSocketClient(uri: String, val handler: WebSocketHandler) {
+class WebSocketClient(uri: String, val handler: WebSocketHandler, val autoWrap: Boolean = true) {
   private val uri: URI = URI.create(uri)
   internal var ch: Channel? = null
 
@@ -59,24 +60,27 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
         uri, WebSocketVersion.V13, null, false, DefaultHttpHeaders()
       ), this, handler
     )
-    val b = Bootstrap()
-    b.group(group)
+    val bootstrap = Bootstrap()
+    bootstrap.group(group)
       .channel(NioSocketChannel::class.java)
       .handler(object : ChannelInitializer<SocketChannel>() {
         override fun initChannel(ch: SocketChannel) {
-          val p = ch.pipeline()
+          val pipeline = ch.pipeline()
           if (sslCtx != null) {
-            p.addLast(sslCtx.newHandler(ch.alloc(), host, port))
+            pipeline.addLast(sslCtx.newHandler(ch.alloc(), host, port))
           }
-          p.addLast(
+          pipeline.addLast(
             HttpClientCodec(),
             HttpObjectAggregator(4096),
             WebSocketClientCompressionHandler.INSTANCE,
-            handler
+            handler,
           )
+          if (autoWrap) {
+            pipeline.addLast(WebSocketFrameWrapper)
+          }
         }
       })
-    b.connect(uri.host, port)
+    bootstrap.connect(uri.host, port)
     //handler.handshakeFuture().sync()
   }
 
