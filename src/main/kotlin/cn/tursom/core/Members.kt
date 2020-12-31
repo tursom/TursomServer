@@ -6,15 +6,23 @@ import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Modifier
 
-val fieldModifiers: Field = Field::class.java.getDeclaredField("modifiers").apply {
-  isAccessible = true
+private val fieldModifiersField: Field? = try {
+  Field::class.java.getDeclaredField("modifiers").apply {
+    isAccessible = true
+  }
+} catch (e: Throwable) {
+  null
+}
+
+var fieldModifiers: (Field, Int) -> Unit = { field, modifer ->
+  fieldModifiersField!!.set(field, modifer)
 }
 
 var Field.public: Boolean
   get() = Modifier.isPublic(this.modifiers)
   set(value) {
     val modifier = Modifier.PUBLIC
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -28,7 +36,7 @@ var Field.private: Boolean
   get() = Modifier.isPrivate(this.modifiers)
   set(value) {
     val modifier = Modifier.PRIVATE
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -42,7 +50,7 @@ var Field.protected: Boolean
   get() = Modifier.isProtected(this.modifiers)
   set(value) {
     val modifier = Modifier.PROTECTED
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -56,7 +64,7 @@ var Field.static: Boolean
   get() = Modifier.isStatic(this.modifiers)
   set(value) {
     val modifier = Modifier.STATIC
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -70,7 +78,7 @@ var Field.final: Boolean
   get() = Modifier.isFinal(this.modifiers)
   set(value) {
     val modifier = Modifier.FINAL
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -84,7 +92,7 @@ var Field.synchronized: Boolean
   get() = Modifier.isSynchronized(this.modifiers)
   set(value) {
     val modifier = Modifier.SYNCHRONIZED
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -98,7 +106,7 @@ var Field.volatile: Boolean
   get() = Modifier.isVolatile(this.modifiers)
   set(value) {
     val modifier = Modifier.VOLATILE
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -112,7 +120,7 @@ var Field.transient: Boolean
   get() = Modifier.isTransient(this.modifiers)
   set(value) {
     val modifier = Modifier.TRANSIENT
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -126,7 +134,7 @@ var Field.native: Boolean
   get() = Modifier.isNative(this.modifiers)
   set(value) {
     val modifier = Modifier.NATIVE
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -140,7 +148,7 @@ var Field.`interface`: Boolean
   get() = Modifier.isInterface(this.modifiers)
   set(value) {
     val modifier = Modifier.INTERFACE
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -154,7 +162,7 @@ var Field.abstract: Boolean
   get() = Modifier.isAbstract(this.modifiers)
   set(value) {
     val modifier = Modifier.ABSTRACT
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
@@ -168,7 +176,7 @@ var Field.strict: Boolean
   get() = Modifier.isStrict(this.modifiers)
   set(value) {
     val modifier = Modifier.STRICT
-    fieldModifiers.set(
+    fieldModifiers(
       this,
       if (value) {
         modifiers or modifier
