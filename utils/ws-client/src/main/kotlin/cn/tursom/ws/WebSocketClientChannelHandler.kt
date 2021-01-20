@@ -11,7 +11,7 @@ import io.netty.util.CharsetUtil
 
 class WebSocketClientChannelHandler(
   val client: WebSocketClient,
-  val handler: WebSocketHandler
+  val handler: WebSocketHandler,
 ) : SimpleChannelInboundHandler<WebSocketFrame>() {
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
@@ -26,6 +26,8 @@ class WebSocketClientChannelHandler(
     when (msg) {
       is TextWebSocketFrame -> handler.readMessage(client, msg)
       is BinaryWebSocketFrame -> handler.readMessage(client, msg)
+      is PingWebSocketFrame -> handler.readPing(client, msg)
+      is PongWebSocketFrame -> handler.readPong(client, msg)
       is CloseWebSocketFrame -> ch.close()
     }
   }

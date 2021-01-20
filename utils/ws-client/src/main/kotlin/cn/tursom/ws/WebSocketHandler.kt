@@ -6,6 +6,7 @@ import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import io.netty.buffer.ByteBuf
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 
 interface WebSocketHandler {
@@ -53,7 +54,7 @@ interface WebSocketHandler {
   fun readPing(client: WebSocketClient, msg: String) {
   }
 
-  fun readPong(client: WebSocketClient, msg: PingWebSocketFrame) {
+  fun readPong(client: WebSocketClient, msg: PongWebSocketFrame) {
     readPong(client, msg.content())
   }
 
