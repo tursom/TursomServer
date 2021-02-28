@@ -1,5 +1,6 @@
 package cn.tursom.core
 
+import cn.tursom.core.Unsafe.unsafe
 import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier

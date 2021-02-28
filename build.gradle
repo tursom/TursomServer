@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlinVersion = '1.4.0'
+    ext.kotlinVersion = '1.4.31'
 
     repositories {
         mavenLocal()
@@ -28,14 +28,18 @@ allprojects {
 
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+        api "com.google.code.gson:gson:2.8.2"
         testImplementation group: 'junit', name: 'junit', version: '4.12'
     }
 
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.useIR = true
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.useIR = true
     }
 
     //打包源代码
@@ -63,6 +67,13 @@ allprojects {
         publications {
             gpr(MavenPublication) {
                 from(components.java)
+            }
+        }
+    }
+    sourceSets {
+        all {
+            languageSettings {
+                useExperimentalAnnotation('-Xopt-in=kotlin.RequiresOptIn')
             }
         }
     }

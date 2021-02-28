@@ -1,7 +1,7 @@
 package cn.tursom.web.router.impl
 
 import cn.tursom.core.binarySearch
-import cn.tursom.web.router.*
+import cn.tursom.web.router.Router
 import cn.tursom.web.router.impl.colonnode.AnyColonNode
 import cn.tursom.web.router.impl.colonnode.ColonNode
 import cn.tursom.web.router.impl.colonnode.IColonNode
@@ -29,31 +29,31 @@ class ColonRouter<T> : Router<T> {
 			routeNode = when {
 				r.isEmpty() -> routeNode
 
-				r == "*" -> routeNode.wildSubRouter ?: {
+				r == "*" -> routeNode.wildSubRouter ?: run {
 					val node = AnyColonNode<T>(routeList, index)
 					routeNode.wildSubRouter = node
 					index = routeList.size - 1
 					node
-				}()
+				}
 
 				r[0] == ':' -> run {
 					val node = synchronized(routeNode.placeholderRouterList!!) {
 						val matchLength = PlaceholderColonNode.matchLength(routeList, index)
-						routeNode.placeholderRouterList!!.binarySearch { it.size - matchLength } ?: {
+						routeNode.placeholderRouterList!!.binarySearch { it.size - matchLength } ?: run {
 							routeNode.addNode(routeList, index, null)
 							routeNode.placeholderRouterList!!.binarySearch { it.size - matchLength }!!
-						}()
+						}
 					}
 					index += node.size - 1
 					node
 				}
 
 				else -> synchronized(routeNode.subRouterMap) {
-					routeNode.subRouterMap[r] ?: {
+					routeNode.subRouterMap[r] ?: run {
 						val node = ColonNode<T>(routeList, index)
 						routeNode.subRouterMap[r] = node
 						node
-					}()
+					}
 				}
 			}
 			index++

@@ -2,229 +2,229 @@
 
 package cn.tursom.core
 
-import sun.misc.Unsafe
-import java.io.ByteArrayInputStream
+import cn.tursom.core.datastruct.ReversedList
+import cn.tursom.core.datastruct.StepList
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import sun.reflect.Reflection
 import java.io.ByteArrayOutputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 import java.lang.reflect.Field
 import java.lang.reflect.Method
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
+import java.lang.reflect.Proxy
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
-import java.util.jar.JarFile
-import java.util.zip.Deflater
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
-import java.util.zip.Inflater
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlin.experimental.and
+import kotlin.jvm.internal.PropertyReference
+import kotlin.random.Random
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.superclasses
 
+object Utils {
+  const val dollar = '$'
+  val random = Random(System.currentTimeMillis())
 
-inline fun <reified T> Array<out T?>.excludeNull(): List<T> {
-  val list = ArrayList<T>()
-  forEach { if (it != null) list.add(it) }
-  return list
-}
-
-fun printNonDaemonThread() {
-  val currentGroup = Thread.currentThread().threadGroup
-  val noThreads = currentGroup.activeCount()
-  val lstThreads = arrayOfNulls<Thread>(noThreads)
-  currentGroup.enumerate(lstThreads)
-  lstThreads.excludeNull().forEach { t ->
-    if (!t.isDaemon) {
-      log(t.name)
-    }
+  @Suppress("unused", "SpellCheckingInspection")
+  val gson: Gson by lazy {
+    GsonBuilder()
+      .registerTypeAdapterFactory(GsonDataTypeAdaptor.FACTORY)
+      .registerTypeAdapterFactory(EnumTypeAdapterFactory)
+      .create()
   }
-  println()
-}
 
-fun log(log: String) = println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
-fun logE(log: String) =
-  System.err.println("${ThreadLocalSimpleDateFormat.standard.format(System.currentTimeMillis())}: $log")
-
-val String.urlDecode: String get() = URLDecoder.decode(this, "utf-8")
-val String.urlEncode: String get() = URLEncoder.encode(this, "utf-8")
-
-inline fun <T> usingTime(action: () -> T): Long {
-  val t1 = System.currentTimeMillis()
-  action()
-  val t2 = System.currentTimeMillis()
-  return t2 - t1
-}
-
-inline fun <T> usingNanoTime(action: () -> T): Long {
-  val t1 = System.nanoTime()
-  action()
-  val t2 = System.nanoTime()
-  return t2 - t1
-}
-
-inline fun <T> Collection<T>.toString(action: (T) -> Any): String {
-  val iterator = iterator()
-  if (!iterator.hasNext()) return "[]"
-  val sb = StringBuilder("[${action(iterator.next())}")
-  iterator.forEach {
-    sb.append(", ")
-    sb.append(action(it))
+  @Suppress("unused", "SpellCheckingInspection")
+  val prettyGson: Gson by lazy {
+    GsonBuilder()
+      .registerTypeAdapterFactory(GsonDataTypeAdaptor.FACTORY)
+      .registerTypeAdapterFactory(EnumTypeAdapterFactory)
+      .setPrettyPrinting()
+      .create()
   }
-  sb.append("]")
-  return sb.toString()
+
+  internal val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+  internal val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
+  val md5 by lazy { MessageDigest.getInstance("MD5")!! }
+  val sha256 by lazy { MessageDigest.getInstance("SHA-256")!! }
+  val sha by lazy { MessageDigest.getInstance("SHA")!! }
+  val sha1 by lazy { MessageDigest.getInstance("SHA-1")!! }
+  val sha384 by lazy { MessageDigest.getInstance("SHA-384")!! }
+  val sha512 by lazy { MessageDigest.getInstance("SHA-512")!! }
+
+  internal val DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
+
+  val receiverField: Field by lazy {
+    kotlin.jvm.internal.CallableReference::class.java.getDeclaredField("receiver").apply { isAccessible = true }
+  }
+  val ownerField: Field by lazy {
+    kotlin.jvm.internal.CallableReference::class.java.getDeclaredField("owner").apply { isAccessible = true }
+  }
 }
 
-val unsafe by lazy {
-  val field = Unsafe::class.java.getDeclaredField("theUnsafe")
-  field.isAccessible = true
-  field.get(null) as Unsafe
+fun String.hexStringToByteArray(): ByteArray {
+  val len = length
+  val data = ByteArray(len / 2)
+  var i = 0
+  while (i < len) {
+    data[i / 2] = (Character.digit(this[i], 16) shl 4 or Character.digit(this[i + 1], 16)).toByte()
+    i += 2
+  }
+  return data
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T> Class<T>.unsafeInstance() = unsafe.allocateInstance(this) as T
 
-val Class<*>.actualTypeArguments: Array<out Type>
-  get() = (genericSuperclass as ParameterizedType).actualTypeArguments
+fun ByteArray.toHexString(upper: Boolean = true): String = if (upper) toUpperHexString() else toLowerHexString()
+
+fun ByteArray.toUpperHexString(): String {
+  val hexChars = CharArray(size * 2)
+  for (i in indices) {
+    val b = this[i]
+    hexChars[i shl 1] = Utils.UPPER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = Utils.UPPER_HEX_ARRAY[(b and 0x0F).toInt()]
+  }
+  return String(hexChars)
+}
+
+fun ByteArray.toLowerHexString(): String {
+  val hexChars = CharArray(size * 2)
+  for (i in indices) {
+    val b = this[i]
+    hexChars[i shl 1] = Utils.LOWER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
+    hexChars[(i shl 1) + 1] = Utils.LOWER_HEX_ARRAY[(b and 0x0F).toInt()]
+  }
+  return String(hexChars)
+}
+
+
+inline fun <T, R : Any> Iterable<T>.toSetNotNull(transform: (T) -> R?): Set<R> {
+  return HashSet<R>().apply { this@toSetNotNull.forEach { add(transform(it) ?: return@forEach) } }
+}
+
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+inline fun <T> Any?.cast() = this as T
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+inline fun <reified T> Any?.castOrNull() = if (this is T) this else null
+
+inline fun <T> T?.checkNull(ifNull: () -> Exception): T {
+  if (this == null) {
+    throw ifNull()
+  } else {
+    return this
+  }
+}
+
+fun String.emptyToNull() = if (isEmpty()) null else this
+
+inline fun <reified T> getClazz() = T::class.java
 
 fun Class<*>.isInheritanceFrom(parent: Class<*>) = parent.isAssignableFrom(this)
 
-fun getClassName(jarPath: String): List<String> {
-  val myClassName = ArrayList<String>()
-  for (entry in JarFile(jarPath).entries()) {
-    val entryName = entry.name
-    if (entryName.endsWith(".class")) {
-      myClassName.add(entryName.replace("/", ".").substring(0, entryName.lastIndexOf(".")))
-    }
-  }
-  return myClassName
+operator fun <T> (() -> T).unaryPlus() = object : () -> T {
+  override operator fun invoke() = this@unaryPlus()
+  override fun toString(): String = this@unaryPlus().toString()
 }
 
-fun <T> List<T>.binarySearch(comparison: (T) -> Int): T? {
-  val index = binarySearch(0, size, comparison)
-  return if (index < 0) null
-  else get(index)
+fun String.toLowerCase(vararg indexes: Int): String {
+  val charArray = toCharArray()
+  indexes.forEach { index ->
+    charArray[index] = charArray[index].toLowerCase()
+  }
+  return String(charArray)
 }
 
-val cpuNumber = Runtime.getRuntime().availableProcessors()
-
-fun String.simplifyPath(): String {
-  if (isEmpty()) {
-    return "."
+fun String.toUpperCase(vararg indexes: Int): String {
+  val charArray = toCharArray()
+  indexes.forEach { index ->
+    charArray[index] = charArray[index].toUpperCase()
   }
-  val pathList = split(java.io.File.separator).dropLastWhile { it.isEmpty() }
-  val list = LinkedList<String>()
-  for (path in pathList) {
-    if (path.isEmpty() || "." == path) {
-      continue
-    }
-    if (".." == path) {
-      list.pollLast()
-      continue
-    }
-    list.addLast(path)
-  }
-  var result = ""
-  while (list.size > 0) {
-    result += java.io.File.separator + list.pollFirst()!!
-  }
-  return if (result.isNotEmpty()) result else "."
+  return String(charArray)
 }
 
-//获取md5加密对象
-val md5 by lazy { MessageDigest.getInstance("MD5")!! }
+fun String.toLowerCase(indexes: IntRange): String {
+  val charArray = toCharArray()
+  indexes.forEach { index ->
+    charArray[index] = charArray[index].toLowerCase()
+  }
+  return String(charArray)
+}
+
+fun String.toUpperCase(indexes: IntRange): String {
+  val charArray = toCharArray()
+  indexes.forEach { index ->
+    charArray[index] = charArray[index].toUpperCase()
+  }
+  return String(charArray)
+}
 
 fun ByteArray.md5(): ByteArray {
-  //加密，返回字节数组
-  return md5.digest(this)
+  return Utils.md5.digest(this)
 }
 
 fun String.md5(): String = toByteArray().md5().toHexString()
 
 
-//获取md5加密对象
-val sha256 by lazy { MessageDigest.getInstance("SHA-256")!! }
-
 fun ByteArray.sha256(): ByteArray {
-  //加密，返回字节数组
-  return sha256.digest(this)
+  return Utils.sha256.digest(this)
 }
 
 fun String.sha256(): String = toByteArray().sha256().toHexString()
 
-//获取sha加密对象
-val sha by lazy { MessageDigest.getInstance("SHA")!! }
 
-fun ByteArray.sha(): ByteArray = sha.digest(this)
+fun ByteArray.sha(): ByteArray = Utils.sha.digest(this)
 
 fun String.sha(): String = toByteArray().sha().toHexString()
 
-//获取sha1加密对象
-val sha1 by lazy { MessageDigest.getInstance("SHA-1")!! }
 
-fun ByteArray.sha1(): ByteArray = sha1.digest(this)
+fun ByteArray.sha1(): ByteArray = Utils.sha1.digest(this)
 
 fun String.sha1(): String = toByteArray().sha1().toHexString()
 
-//获取sha384加密对象
-val sha384 by lazy { MessageDigest.getInstance("SHA-384")!! }
 
-fun ByteArray.sha384(): ByteArray = sha384.digest(this)
+fun ByteArray.sha384(): ByteArray = Utils.sha384.digest(this)
 
 fun String.sha384(): String = toByteArray().sha384().toHexString()
 
-//获取 sha-512 加密对象
-val sha512 by lazy { MessageDigest.getInstance("SHA-512")!! }
-
-fun ByteArray.sha512(): ByteArray = sha512.digest(this)
+fun ByteArray.sha512(): ByteArray = Utils.sha512.digest(this)
 
 fun String.sha512(): String = toByteArray().sha512().toHexString()
-
-
-fun ByteArray.toHexString(upper: Boolean = true): String = if (upper) toUpperHexString() else toLowerHexString()
-
-private val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
-fun ByteArray.toUpperHexString(): String {
-  val hexChars = CharArray(size * 2)
-  for (i in indices) {
-    val b = this[i]
-    hexChars[i shl 1] = UPPER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
-    hexChars[(i shl 1) + 1] = UPPER_HEX_ARRAY[(b and 0x0F).toInt()]
-  }
-  return String(hexChars)
-}
-
-private val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
-fun ByteArray.toLowerHexString(): String {
-  val hexChars = CharArray(size * 2)
-  for (i in indices) {
-    val b = this[i]
-    hexChars[i shl 1] = LOWER_HEX_ARRAY[b.toInt() ushr 4 and 0x0F]
-    hexChars[(i shl 1) + 1] = LOWER_HEX_ARRAY[(b and 0x0F).toInt()]
-  }
-  return String(hexChars)
-}
 
 fun String.fromHexString(): ByteArray {
   val source = toLowerCase()
   val data = ByteArray(length / 2)
   for (i in 0 until length / 2) {
-    data[i] = ((LOWER_HEX_ARRAY.indexOf(source[i * 2]) shl 4) + LOWER_HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
+    data[i] =
+      ((Utils.UPPER_HEX_ARRAY.indexOf(source[i * 2]) shl 4) + Utils.UPPER_HEX_ARRAY.indexOf(source[i * 2 + 1])).toByte()
   }
   return data
 }
 
 fun ByteArray.toUTF8String() = String(this, Charsets.UTF_8)
 
-fun String.base64(): String = this.toByteArray().base64().toUTF8String()
+fun String.base64() = this.toByteArray().base64().toUTF8String()
 fun ByteArray.base64(): ByteArray = Base64.getEncoder().encode(this)
 fun String.base64Url(): String = this.toByteArray().base64Url().toUTF8String()
 fun ByteArray.base64Url(): ByteArray = Base64.getUrlEncoder().encode(this)
 fun String.base64Mime(): String = this.toByteArray().base64Mime().toUTF8String()
 fun ByteArray.base64Mime(): ByteArray = Base64.getMimeEncoder().encode(this)
 
-fun String.base64decode(): String = Base64.getDecoder().decode(this).toUTF8String()
+fun String.base64decode() = Base64.getDecoder().decode(this).toUTF8String()
 fun ByteArray.base64decode(): ByteArray = Base64.getDecoder().decode(this)
 fun String.base64UrlDecode(): String = Base64.getUrlDecoder().decode(this).toUTF8String()
 fun ByteArray.base64UrlDecode(): ByteArray = Base64.getUrlDecoder().decode(this)
@@ -234,163 +234,56 @@ fun ByteArray.base64MimeDecode(): ByteArray = Base64.getMimeDecoder().decode(thi
 fun String.digest(type: String) = toByteArray().digest(type)?.toHexString()
 
 fun ByteArray.digest(type: String) = try {
-  //获取加密对象
   val instance = MessageDigest.getInstance(type)
-  //加密，返回字节数组
   instance.digest(this)
 } catch (e: NoSuchAlgorithmException) {
   e.printStackTrace()
   null
 }
 
-val random = Random()
-fun randomInt() = random.nextInt()
-fun randomInt(min: Int, max: Int): Int =
-  if (min > max) randomInt(max, min) else (random.nextInt() and Int.MAX_VALUE) % (max - min + 1) + min
-
-fun randomLong() = random.nextLong()
-fun randomLong(min: Long, max: Long) = (random.nextLong() and Long.MAX_VALUE) % (max - min + 1) + min
-fun randomBoolean() = random.nextBoolean()
-fun randomFloat() = random.nextFloat()
-fun randomDouble() = random.nextDouble()
-fun randomGaussian() = random.nextGaussian()
-fun randomBytes(bytes: ByteArray) = random.nextBytes(bytes)
-
-fun getTAG(cls: Class<*>): String {
-  return cls.name.split(".").last().dropLast(10)
-}
-
-operator fun <T> (() -> T).unaryPlus() = object : () -> T {
-  override fun invoke(): T = this@unaryPlus()
-  override fun toString() = this@unaryPlus().toString()
-}
-
-operator fun Executor.invoke(action: () -> Unit) {
-  execute(action)
-}
-
-operator fun Executor.invoke(action: Runnable) = this(action::run)
-
-inline fun <reified T : Annotation> Field.getAnnotation(): T? = getAnnotation(T::class.java)
-
-inline fun <reified T : Annotation> Class<*>.getAnnotation(): T? = getAnnotation(T::class.java)
-
-fun process(size: Int, vararg actions: () -> Unit) {
-  actions.forEachIndexed { index, function ->
-    if (actions.size - index <= size) function()
-  }
-}
-
-fun <T> process(value: T, vararg actions: Pair<T, () -> Unit>) {
-  var checked = false
-  actions.forEach { (v, function) ->
-    if (checked || value == v) {
-      checked = true
-      function()
-    }
-  }
-}
-
-fun <T> T.println(): T {
-  println(this)
-  return this
-}
-
-@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T> Any?.cast(): T = this as T
-
-inline fun loop(`continue`: () -> Boolean = { true }, action: () -> Unit) {
-  while (`continue`()) action()
-}
-
-inline fun <reified T> getClazz() = T::class.java
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun <R, T : Function<R>> lambda(lambda: T) = lambda
-
-fun ByteArray.gz(): ByteArray {
-  val os = ByteArrayOutputStream()
-  GZIPOutputStream(os).use {
-    it.write(this)
-  }
-  return os.toByteArray()
-}
-
-fun ByteArray.ungz(): ByteArray {
-  return GZIPInputStream(ByteArrayInputStream(this)).readBytes()
-}
-
-fun ByteArray.undeflate(): ByteArray {
-  val infl = Inflater()
-  infl.setInput(this)
-  val bos = ByteArrayOutputStream()
-  val outByte = ByteArray(1024)
-  bos.use {
-    while (!infl.finished()) {
-      // 解压缩并将解压缩后的内容输出到字节输出流bos中
-      val len = infl.inflate(outByte)
-      if (len == 0) {
-        break
-      }
-      bos.write(outByte, 0, len)
-    }
-    infl.end()
-  }
-  return bos.toByteArray()
-}
-
-
-fun ByteArray.deflate(): ByteArray {
-  val defl = Deflater()
-  defl.setInput(this)
-  defl.finish()
-  val bos = ByteArrayOutputStream()
-  val outputByte = ByteArray(1024)
-  bos.use {
-    while (!defl.finished()) {
-      // 压缩并将压缩后的内容输出到字节输出流bos中
-      val len = defl.deflate(outputByte)
-      bos.write(outputByte, 0, len)
-    }
-    defl.end()
-  }
-  return bos.toByteArray()
-}
-
-//fun ByteArray.deflate(): ByteArray {
-//  val os = ByteArrayOutputStream()
-//  DeflaterOutputStream(os).use {
-//    it.write(this)
-//  }
-//  return os.toByteArray()
-//}
-//
-//fun ByteArray.undeflate(): ByteArray {
-//  return DeflaterInputStream(ByteArrayInputStream(this)).readBytes()
-//}
-
-inline fun <reified T : Any?> Any.assert(action: T.() -> Unit): Boolean {
-  return if (this is T) {
-    action()
+fun <A : Annotation, V : Any> A.changeAnnotationValue(field: KProperty1<A, V>, value: V): Boolean {
+  return try {
+    val h = Proxy.getInvocationHandler(this)
+    val memberValuesField = h.javaClass.getDeclaredField("memberValues")
+    memberValuesField.isAccessible = true
+    val memberValues = memberValuesField[h].cast<MutableMap<String, Any>>()
+    memberValues[field.name] = value
     true
-  } else {
+  } catch (e: Exception) {
     false
   }
 }
 
-val Class<*>.allFields: List<Field>
-  get() {
-    var clazz = this
-    val list = ArrayList<Field>()
-    while (clazz != Any::class.java) {
-      list.addAll(clazz.declaredFields)
-      clazz = clazz.superclass
+/**
+ * 向数据库提交一项任务并获取返回值
+ */
+suspend fun <T> Executor.runWith(action: () -> T): T = suspendCoroutine { cont ->
+  execute {
+    try {
+      cont.resume(action())
+    } catch (e: Exception) {
+      cont.resumeWithException(e)
     }
-    list.addAll(clazz.declaredFields)
-    return list
   }
+}
 
-fun Class<*>.forAllFields(action: (Field) -> Unit) {
+inline fun <reified T : Any> Gson.fromJson(json: String): T = fromJson(json, T::class.java)
+
+inline fun usingTime(action: () -> Unit): Long {
+  val t1 = System.currentTimeMillis()
+  action()
+  val t2 = System.currentTimeMillis()
+  return t2 - t1
+}
+
+inline fun usingNanoTime(action: () -> Unit): Long {
+  val t1 = System.nanoTime()
+  action()
+  val t2 = System.nanoTime()
+  return t2 - t1
+}
+
+inline fun Class<*>.forAllFields(action: (Field) -> Unit) {
   var clazz = this
   while (clazz != Any::class.java) {
     clazz.declaredFields.forEach(action)
@@ -399,14 +292,21 @@ fun Class<*>.forAllFields(action: (Field) -> Unit) {
   clazz.declaredFields.forEach(action)
 }
 
-fun <T, R> Iterable<T>.firstNotNull(selector: (T) -> R): R? {
-  forEach {
-    return selector(it) ?: return@forEach
+val Class<*>.allFields: List<Field>
+  get() {
+    val fieldList = ArrayList<Field>()
+    forAllFields(fieldList::add)
+    return fieldList
+  }
+
+fun Class<*>.getFieldForAll(name: String): Field? {
+  forAllFields {
+    if (it.name == name) return it
   }
   return null
 }
 
-fun Class<*>.forAllMethods(action: (Method) -> Unit) {
+inline fun Class<*>.forAllMethods(action: (Method) -> Unit) {
   var clazz = this
   while (clazz != Any::class.java) {
     clazz.declaredMethods.forEach(action)
@@ -415,14 +315,51 @@ fun Class<*>.forAllMethods(action: (Method) -> Unit) {
   clazz.declaredMethods.forEach(action)
 }
 
-private val BASE62_DIGITS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray()
+fun Class<*>.getMethodForAll(name: String, vararg parameterTypes: Class<*>?): Method? {
+  forAllMethods {
+    if (it.name == name && parameterTypes.contentEquals(it.parameterTypes)) return it
+  }
+  return null
+}
+
+val Class<*>.allMethods: List<Method>
+  get() {
+    val fieldList = ArrayList<Method>()
+    forAllMethods(fieldList::add)
+    return fieldList
+  }
+
+/**
+ * 获取一个 KProperty<*> 对应的对象
+ */
+val KProperty<*>.receiver: Any?
+  get() = if (this is PropertyReference) {
+    boundReceiver
+  } else try {
+    Utils.receiverField.get(this)
+  } catch (e: Exception) {
+    null
+  } ?: javaClass.getFieldForAll("receiver")?.let {
+    it.isAccessible = true
+    it.get(this)
+  }
+
+val KProperty<*>.owner: Class<*>?
+  get() = try {
+    Utils.ownerField.get(this)?.cast<Class<*>>()
+  } catch (e: Exception) {
+    null
+  } ?: javaClass.getFieldForAll("owner")?.let {
+    it.isAccessible = true
+    it.get(this)?.castOrNull()
+  }
 
 tailrec fun Long.base62(sBuilder: StringBuilder = StringBuilder()): String {
   return if (this == 0L) {
     sBuilder.reverse().toString()
   } else {
     val remainder = (this % 62).toInt()
-    sBuilder.append(BASE62_DIGITS[remainder])
+    sBuilder.append(Utils.DIGITS[remainder])
     (this / 62).base62(sBuilder)
   }
 }
@@ -430,10 +367,208 @@ tailrec fun Long.base62(sBuilder: StringBuilder = StringBuilder()): String {
 fun String.base62Decode(): Long {
   var sum: Long = 0
   val len = length
-  var base = 62L
+  var base = 1L
   for (i in 0 until len) {
-    sum += BASE62_DIGITS.indexOf(this[len - i - 1]) * base
+    sum += Utils.DIGITS.indexOf(this[len - i - 1]) * base
     base *= 62
   }
   return sum
+}
+
+fun Any.toJson(): String = Utils.gson.toJson(this)
+fun Any.toPrettyJson(): String = Utils.prettyGson.toJson(this)
+
+inline fun <reified T : Any> String.fromJson(): T = Utils.gson.fromJson(this, T::class.java)
+
+fun Any.serialize(): ByteArray {
+  val outputStream = ByteArrayOutputStream()
+  ObjectOutputStream(outputStream).writeObject(this)
+  return outputStream.toByteArray()
+}
+
+operator fun <E> List<E>.get(startIndex: Int = 0, endIndex: Int = size, step: Int = 1): List<E> {
+  if (step <= 0) throw IllegalArgumentException("step($step) is negative or zero")
+  val fromIndex = when {
+    startIndex < 0 -> size + startIndex
+    startIndex >= size -> size
+    else -> startIndex
+  }
+  val toIndex = when {
+    endIndex < 0 -> size + endIndex + 1
+    endIndex >= size -> size
+    else -> endIndex
+  }
+  var targetList = if (fromIndex > toIndex) ReversedList(subList(toIndex, fromIndex)) else subList(fromIndex, toIndex)
+  if (step != 1) targetList = targetList step step
+  return targetList
+}
+
+operator fun <E> List<E>.get(intProgression: IntProgression): List<E> {
+  val first = intProgression.first
+  val last = intProgression.last
+  val step = intProgression.step
+  return when {
+    step == 0 -> get(first, last + if (last < 0) 0 else 1, 1)
+    step < 0 -> get(first + if (last > 0 && first >= 0) 1 else 0, last, -step)
+    else -> get(first, last + if (last < 0) 0 else 1, step)
+  }
+}
+
+infix fun <E> List<E>.step(step: Int): List<E> = StepList(this, step)
+
+inline infix fun String.ifEmpty(ifEmpty: () -> String) = if (isNotEmpty()) this else ifEmpty()
+inline infix fun String.ifBlank(ifBlank: () -> String) = if (isNotBlank()) this else ifBlank()
+
+@JvmName("ifEmptyNullable")
+inline fun String.ifEmpty(ifEmpty: () -> String?) = if (isNotEmpty()) this else ifEmpty()
+
+@JvmName("ifBlankNullable")
+inline fun String.ifBlank(ifBlank: () -> String?) = if (isNotBlank()) this else ifBlank()
+
+/**
+ * 使用 condition 做条件判断，如果返回 true 则使用 then 生成结果，否则范湖自身
+ */
+inline fun <T> T.ifThen(condition: T.() -> Boolean, then: () -> T) = if (condition()) then() else this
+
+@JvmName("ifThenNullable")
+inline fun <T> T.ifThen(condition: T.() -> Boolean, then: () -> T?) = if (condition()) then() else this
+
+inline fun <T> Any.wait(action: () -> T) = synchronized(this) {
+  val t = action()
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).wait()
+  t
+}
+
+inline fun <T> Any.notify(action: () -> T) = synchronized(this) {
+  val t = action()
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).notify()
+  t
+}
+
+inline fun <T> Any.notifyAll(action: () -> T) = synchronized(this) {
+  val t = action()
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).notifyAll()
+  t
+}
+
+inline val KClass<*>.companionObjectInstanceOrNull: Any?
+  get() = try {
+    companionObjectInstance
+  } catch (e: Exception) {
+    null
+  }
+
+inline val <K : Any, V> Map<K?, V>.notNullKey get() = cast<Map<K, V>>()
+inline val <K, V : Any> Map<K, V?>.notNullValue get() = cast<Map<K, V>>()
+inline val <K : Any, V : Any> Map<K?, V?>.notNullEntry get() = cast<Map<K, V>>()
+
+inline val <K : Any, V> Map<K?, V>.filterNullKey get() = filter { it.key != null }.notNullKey
+inline val <K, V : Any> Map<K, V?>.filterNullValue get() = filter { it.value != null }.notNullValue
+
+val <T : Any> KClass<T>.allMemberProperties: List<KProperty1<T, *>>
+  get() {
+    val propertiesList = memberProperties.toMutableList()
+    var superClass = superclasses.firstOrNull {
+      !it.java.isInterface
+    }
+    while (superClass != null) {
+      propertiesList.addAll(superClass.memberProperties.cast())
+      superClass = superClass.superclasses.firstOrNull {
+        !it.java.isInterface
+      }
+    }
+    return propertiesList
+  }
+
+fun String.toStartWith(prefix: String) = if (startsWith(prefix)) this else prefix + this
+fun String.toStartWith(prefix: Char) = if (startsWith(prefix)) this else prefix + this
+
+
+fun mongoLegal(value: Any?) = when {
+  value == null -> true
+  value is Number -> true
+  value is Boolean -> true
+  value is Char -> true
+  value is String -> true
+  value is Serializable -> true
+  value.javaClass.kotlin.isData -> true
+  value.javaClass.name.endsWith("DTO") -> true
+  value.javaClass.name.endsWith("VO") -> true
+  else -> false
+}
+
+fun getCallerClass(thisClassName: List<String>): Class<*>? {
+  var clazz: Class<*>?
+  var callStackDepth = 1
+  do {
+    clazz = getCallerClass(callStackDepth++)
+    if (clazz?.name !in thisClassName) {
+      break
+    }
+  } while (clazz != null)
+  return clazz
+}
+
+fun getCallerClassName(thisClassName: List<String>): String? {
+  return getCallerClass(thisClassName)?.name
+}
+
+fun getCallerClass(callStackDepth: Int): Class<*>? {
+  @Suppress("DEPRECATION")
+  return Reflection.getCallerClass(callStackDepth)
+}
+
+fun getCallerClassName(callStackDepth: Int): String? {
+  return getCallerClass(callStackDepth)?.name
+}
+
+@OptIn(ExperimentalContracts::class)
+fun CharSequence?.isNotNullOrEmpty(): Boolean {
+  contract {
+    returns(true) implies (this@isNotNullOrEmpty != null)
+  }
+
+  return this != null && this.isNotEmpty()
+}
+
+@OptIn(ExperimentalContracts::class)
+fun Collection<*>?.isNotNullOrEmpty(): Boolean {
+  contract {
+    returns(true) implies (this@isNotNullOrEmpty != null)
+  }
+
+  return this != null && this.isNotEmpty()
+}
+
+//@OptIn(ExperimentalContracts::class)
+//fun main() {
+//    val s: String? = ""
+//    if (s.isNotNullAndEmpty()) {
+//        println(s.length)
+//    }
+//}
+
+
+inline fun <reified T> Any?.assert(ifMatch: T.() -> Unit) = if (this is T) {
+  ifMatch()
+  true
+} else {
+  false
+}
+
+val cpuNumber get() = Runtime.getRuntime().availableProcessors()
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <R, T : Function<R>> lambda(lambda: T) = lambda
+
+val String.urlDecode: String get() = URLDecoder.decode(this, "utf-8")
+val String.urlEncode: String get() = URLEncoder.encode(this, "utf-8")
+
+fun <T> List<T>.binarySearch(comparison: (T) -> Int): T? {
+  val index = binarySearch(0, size, comparison)
+  return if (index < 0) null
+  else get(index)
 }

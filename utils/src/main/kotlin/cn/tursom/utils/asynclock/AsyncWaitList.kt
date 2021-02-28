@@ -1,6 +1,6 @@
 package cn.tursom.utils.asynclock
 
-import cn.tursom.core.unsafe
+import cn.tursom.core.Unsafe.unsafe
 import java.io.Closeable
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume

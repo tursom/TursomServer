@@ -1,8 +1,8 @@
 package cn.tursom.core.encrypt
 
+import cn.tursom.core.Utils
 import cn.tursom.core.datastruct.concurrent.BlockingArrayList
 import cn.tursom.core.pool.Pool
-import cn.tursom.core.randomInt
 
 open class EncryptPool<T : Encrypt>(
   initSize: Int = 0,
@@ -20,5 +20,5 @@ open class EncryptPool<T : Encrypt>(
     return aesPool.add(cache)
   }
 
-  override fun get(): T = aesPool[randomInt(0, aesPool.size - 1)]
+  override fun get(): T = aesPool[Utils.random.nextInt(0, aesPool.size - 1)]
 }

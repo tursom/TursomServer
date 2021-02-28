@@ -1,0 +1,4 @@
+dependencies {
+    compile project(":")
+    compile project(":utils:delegation")
+}

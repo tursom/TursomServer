@@ -1,17 +1,19 @@
 package cn.tursom.datagram.server
 
 import cn.tursom.channel.BufferedAsyncChannel
-import cn.tursom.core.log
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
+import cn.tursom.log.impl.Slf4jImpl
 import cn.tursom.socket.NioClient
 import cn.tursom.socket.server.BuffedNioServer
 import kotlinx.coroutines.runBlocking
 
+val logger = Slf4jImpl.getLogger()
+
 val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
   while (true) {
     val buffer = read()
-    log("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
+    logger.debug("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
     Throwable().printStackTrace()
     write(buffer)
   }
@@ -52,7 +54,7 @@ fun main() {
           client.write(line)
           client.read(3000)
         }
-        log("recv from server: ${read.getString()}")
+        logger.debug("recv from server: ${read.getString()}")
         read.close()
       } catch (e: Exception) {
         Exception(e).printStackTrace()

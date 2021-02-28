@@ -1,7 +1,5 @@
 package cn.tursom.socket.server
 
-import cn.tursom.core.log
-import cn.tursom.core.logE
 import cn.tursom.socket.INioProtocol
 import cn.tursom.socket.niothread.INioThread
 import cn.tursom.socket.niothread.WorkerLoopNioThread

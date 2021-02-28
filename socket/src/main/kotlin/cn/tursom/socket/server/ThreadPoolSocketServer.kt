@@ -1,6 +1,6 @@
 package cn.tursom.socket.server
 
-import cn.tursom.core.getTAG
+import cn.tursom.log.impl.Slf4jImpl
 import cn.tursom.socket.BaseSocket
 import java.io.IOException
 import java.net.ServerSocket
@@ -41,22 +41,22 @@ class ThreadPoolSocketServer
  * @param timeUnit timeout的单位，默认毫秒
  * @param handler 对套接字处理的业务逻辑
  */(
-    override val port: Int,
-    threads: Int = 1,
-    queueSize: Int = 1,
-    keepAliveTime: Long = 60_000L,
-    timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
-    override val handler: BaseSocket.() -> Unit
+  override val port: Int,
+  threads: Int = 1,
+  queueSize: Int = 1,
+  keepAliveTime: Long = 60_000L,
+  timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
+  override val handler: BaseSocket.() -> Unit
 ) : ISimpleSocketServer {
 
   constructor(
-      port: Int,
-      handler: BaseSocket.() -> Unit
+    port: Int,
+    handler: BaseSocket.() -> Unit
   ) : this(port, 1, 1, 60_000L, TimeUnit.MILLISECONDS, handler)
 
   var socket = Socket()
   private val pool: ThreadPoolExecutor =
-      ThreadPoolExecutor(threads, threads, keepAliveTime, timeUnit, LinkedBlockingQueue(queueSize))
+    ThreadPoolExecutor(threads, threads, keepAliveTime, timeUnit, LinkedBlockingQueue(queueSize))
   private var serverSocket: ServerSocket = ServerSocket(port)
 
   /**
@@ -70,7 +70,7 @@ class ThreadPoolSocketServer
     while (!serverSocket.isClosed) {
       try {
         socket = serverSocket.accept()
-        println("$TAG: run(): get connect: $socket")
+        debug("run(): get connect: {}", socket)
         pool.execute {
           socket.use {
             BaseSocket(it).handler()
@@ -128,8 +128,7 @@ class ThreadPoolSocketServer
     closeServer()
   }
 
-  companion object {
-    val TAG = getTAG(this::class.java)
+  companion object : Slf4jImpl() {
     /**
      * 线程池满时返回给客户端的信息
      */

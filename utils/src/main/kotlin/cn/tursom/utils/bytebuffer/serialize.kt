@@ -9,9 +9,9 @@ package cn.tursom.utils.bytebuffer
  * will support
  */
 
+import cn.tursom.core.Unsafe.unsafe
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.isStatic
-import cn.tursom.core.unsafe
 
 class UnsupportedException : Exception()
 
