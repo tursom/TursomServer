@@ -5,7 +5,7 @@ import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
 import cn.tursom.log.impl.Slf4jImpl
 import cn.tursom.socket.NioClient
-import cn.tursom.socket.server.BuffedNioServer
+import cn.tursom.socket.server.BufferedNioServer
 import kotlinx.coroutines.runBlocking
 
 val logger = Slf4jImpl.getLogger()
@@ -22,7 +22,7 @@ val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
 fun main() {
   val port = 12345
   val pool = DirectMemoryPool(1024, 16)
-  val server = BuffedNioServer(port, pool, handler = echoHandler)
+  val server = BufferedNioServer(port, pool, handler = echoHandler)
   //val server = LoopDatagramServer(port, protocol = object : NioProtocol {
   //  override fun handleRead(key: SelectionKey, nioThread: NioThread) {
   //    val datagramChannel = key.channel() as DatagramChannel

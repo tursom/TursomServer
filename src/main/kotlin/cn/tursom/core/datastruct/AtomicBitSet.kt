@@ -1,10 +1,7 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.randomInt
-import cn.tursom.core.usingTime
 import java.io.Serializable
 import java.lang.reflect.Field
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLongArray
 import kotlin.random.Random
 
@@ -228,27 +225,4 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
       }
     }
   }
-}
-
-//val scand = AtomicInteger(0)
-
-fun main() {
-  val size = 1000000
-  val bitSet = AtomicBitSet(size.toLong())
-  println(usingTime {
-    repeat(1000) {
-      bitSet.downAll()
-      repeat(size) {
-        val index = bitSet.getDownIndex()
-        bitSet.up(index)
-        repeat(randomInt(0, 3) / 2) {
-          val randomUpIndex = bitSet.randomUpIndex()
-          if (randomUpIndex >= 0) {
-            bitSet.down(randomUpIndex)
-          }
-        }
-      }
-    }
-  })
-  //println(scand.get() / 100)
 }
