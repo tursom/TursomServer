@@ -1,5 +1,6 @@
 package cn.tursom.web.netty
 
+import cn.tursom.utils.WebSocketFrameWrapper
 import cn.tursom.web.HttpHandler
 import cn.tursom.web.HttpServer
 import cn.tursom.web.WebSocketHandler
@@ -29,8 +30,9 @@ class NettyHttpServer(
   var webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
   var readTimeout: Int? = 60,
   var writeTimeout: Int? = null,
-  decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
-  backlog: Int = 1024
+  decodeType: NettyHttpDecodeType = if (webSocketPath.iterator().hasNext()) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
+  backlog: Int = 1024,
+  val wrapWebSocketFrame: Boolean = false,
 ) : HttpServer {
   constructor(
     port: Int,
@@ -39,14 +41,16 @@ class NettyHttpServer(
     webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
     readTimeout: Int? = 60,
     writeTimeout: Int? = null,
-    decodeType: NettyHttpDecodeType = NettyHttpDecodeType.MULTI_PART,
-    handler: (content: NettyHttpContent) -> Unit
+    decodeType: NettyHttpDecodeType = if (webSocketPath.iterator().hasNext()) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
+    backlog: Int = 1024,
+    wrapWebSocketFrame: Boolean = false,
+    handler: (content: NettyHttpContent) -> Unit,
   ) : this(
     port,
     object : HttpHandler<NettyHttpContent, NettyExceptionContent> {
       override fun handle(content: NettyHttpContent) = handler(content)
     },
-    bodySize, autoRun, webSocketPath, readTimeout, writeTimeout, decodeType
+    bodySize, autoRun, webSocketPath, readTimeout, writeTimeout, decodeType, backlog, wrapWebSocketFrame
   )
 
   var decodeType: NettyHttpDecodeType = decodeType
@@ -83,6 +87,9 @@ class NettyHttpServer(
         this@NettyHttpServer.webSocketPath.forEach { (webSocketPath, handler) ->
           pipeline.addLast("ws-$webSocketPath", WebSocketServerProtocolHandler(webSocketPath))
           pipeline.addLast("wsHandler-$webSocketPath", NettyWebSocketHandler(ch, handler))
+        }
+        if (wrapWebSocketFrame && webSocketPath.iterator().hasNext()) {
+          pipeline.addLast(WebSocketFrameWrapper)
         }
         pipeline.addLast("handle", httpHandler)
       }

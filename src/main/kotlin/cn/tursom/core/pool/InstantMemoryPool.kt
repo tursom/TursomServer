@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class InstantMemoryPool(
   val blockSize: Int,
-  val newMemory: (blockSize: Int) -> ByteBuffer = { HeapByteBuffer(blockSize) }
+  val newMemory: (blockSize: Int) -> ByteBuffer = ::HeapByteBuffer
 ) : MemoryPool {
   private val memoryList = ConcurrentLinkedQueue<SoftReference<InstantByteBuffer>>()
 

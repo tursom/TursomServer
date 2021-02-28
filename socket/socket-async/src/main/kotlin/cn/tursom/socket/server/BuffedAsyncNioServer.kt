@@ -3,6 +3,7 @@ package cn.tursom.socket.server
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.core.pool.MemoryPool
+import cn.tursom.core.pool.invoke
 import cn.tursom.socket.AsyncNioSocket
 
 /**
@@ -11,20 +12,20 @@ import cn.tursom.socket.AsyncNioSocket
  * 当内存池用完之后会换为 ByteArrayByteBuffer。
  */
 class BuffedAsyncNioServer(
-    port: Int,
-    memoryPool: MemoryPool,
-    backlog: Int = 50,
-    handler: suspend AsyncNioSocket.(buffer: ByteBuffer) -> Unit
+  port: Int,
+  memoryPool: MemoryPool,
+  backlog: Int = 50,
+  handler: suspend AsyncNioSocket.(buffer: ByteBuffer) -> Unit,
 ) : IAsyncNioServer by AsyncNioServer(port, backlog, {
   memoryPool {
     handler(it)
   }
 }) {
   constructor(
-      port: Int,
-      blockSize: Int = 1024,
-      blockCount: Int = 128,
-      backlog: Int = 50,
-      handler: suspend AsyncNioSocket.(buffer: ByteBuffer) -> Unit
+    port: Int,
+    blockSize: Int = 1024,
+    blockCount: Int = 128,
+    backlog: Int = 50,
+    handler: suspend AsyncNioSocket.(buffer: ByteBuffer) -> Unit,
   ) : this(port, DirectMemoryPool(blockSize, blockCount), backlog, handler)
 }

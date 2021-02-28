@@ -4,7 +4,7 @@ dependencies {
     api project(":utils:xml")
 
     // kotlin 协程
-    //implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
     // kotlin 反射
     //implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     // OkHttp

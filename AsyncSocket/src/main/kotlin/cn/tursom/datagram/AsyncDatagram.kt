@@ -1,6 +1,8 @@
 package cn.tursom.datagram
 
 import cn.tursom.channel.AsyncNioChannel
+import cn.tursom.channel.read
+import cn.tursom.channel.write
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.buffer.write
@@ -12,8 +14,7 @@ interface AsyncDatagram : AsyncNioChannel {
   override val channel: DatagramChannel
   override fun getBuffed(pool: MemoryPool): BufferedAsyncDatagram = BufferedNioDatagram(pool, this)
 
-  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long =
-    write(timeout) { channel.write(buffer) }
+  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long = channel.write(buffer)
 
   override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long =
     read(timeout) { channel.read(buffer) }

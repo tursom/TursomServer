@@ -2,7 +2,9 @@ package cn.tursom.core.pool
 
 import cn.tursom.core.buffer.ByteBuffer
 
-class ThreadLocalMemoryPool(private val poolFactory: () -> MemoryPool) : MemoryPool {
+class ThreadLocalMemoryPool(
+  private val poolFactory: () -> MemoryPool
+) : MemoryPool {
   private val threadLocal = ThreadLocal<MemoryPool>()
 
   override fun free(memory: ByteBuffer) = throw NotImplementedError("ThreadLocalMemoryPool won't allocate any memory")

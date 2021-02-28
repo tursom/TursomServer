@@ -3,7 +3,6 @@ dependencies {
     compile project(":log")
 
     // kotlin 协程
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9'
-    compile project(":log")
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
     testRuntime group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-debug', version: '1.3.9'
 }

@@ -1,6 +1,6 @@
 dependencies {
     compile project(":")
     api project(":log")
-    api project(":utils")
+    implementation project(":utils")
     compile group: "io.netty", name: "netty-all", version: "4.1.43.Final"
 }

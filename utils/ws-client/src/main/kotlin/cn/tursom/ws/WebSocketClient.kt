@@ -1,6 +1,7 @@
 package cn.tursom.ws
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.utils.WebSocketFrameWrapper
 import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
@@ -17,13 +18,24 @@ import io.netty.handler.codec.http.HttpClientCodec
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.websocketx.*
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
+import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import java.net.URI
 
 
-class WebSocketClient(uri: String, val handler: WebSocketHandler) {
-  private val uri: URI = URI.create(uri)
+@Suppress("unused")
+class WebSocketClient(
+  url: String,
+  val handler: WebSocketHandler,
+  val autoWrap: Boolean = true,
+  val log: Boolean = false,
+  val compressed: Boolean = true,
+  val maxContextLength: Int = 4096,
+  private val headers: Map<String, String>? = null,
+  private val handshakerUri: URI? = null,
+) {
+  private val uri: URI = URI.create(url)
   internal var ch: Channel? = null
 
   fun open() {
@@ -53,35 +65,52 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
     } else {
       null
     }
-
-    val handler = WebSocketClientChannelHandler(
-      WebSocketClientHandshakerFactory.newHandshaker(
-        uri, WebSocketVersion.V13, null, false, DefaultHttpHeaders()
-      ), this, handler
-    )
-    val b = Bootstrap()
-    b.group(group)
+    val httpHeaders = DefaultHttpHeaders()
+    headers?.forEach { (k, v) ->
+      httpHeaders[k] = v
+    }
+    val handshakerAdapter = WebSocketClientHandshakerAdapter(WebSocketClientHandshakerFactory.newHandshaker(
+      handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
+    ), this, handler)
+    val handler = WebSocketClientChannelHandler(this, handler)
+    val bootstrap = Bootstrap()
+    bootstrap.group(group)
       .channel(NioSocketChannel::class.java)
       .handler(object : ChannelInitializer<SocketChannel>() {
         override fun initChannel(ch: SocketChannel) {
-          val p = ch.pipeline()
-          if (sslCtx != null) {
-            p.addLast(sslCtx.newHandler(ch.alloc(), host, port))
+          ch.pipeline().apply {
+            if (log) {
+              addLast(LoggingHandler())
+            }
+            if (sslCtx != null) {
+              addLast(sslCtx.newHandler(ch.alloc(), host, port))
+            }
+            addLast(HttpClientCodec())
+            addLast(HttpObjectAggregator(maxContextLength))
+            if (compressed) {
+              addLast(WebSocketClientCompressionHandler.INSTANCE)
+            }
+            addLast(handshakerAdapter)
+            //if (log) {
+            //  addLast(LoggingHandler())
+            //}
+            addLast(handler)
+            if (autoWrap) {
+              addLast(WebSocketFrameWrapper)
+            }
           }
-          p.addLast(
-            HttpClientCodec(),
-            HttpObjectAggregator(8192),
-            WebSocketClientCompressionHandler.INSTANCE,
-            handler
-          )
         }
       })
-    b.connect(uri.host, port)
+    bootstrap.connect(uri.host, port)
     //handler.handshakeFuture().sync()
   }
 
-  fun close() {
-    ch?.writeAndFlush(CloseWebSocketFrame())
+  fun close(reasonText: String? = null) {
+    if (reasonText == null) {
+      ch?.writeAndFlush(CloseWebSocketFrame())
+    } else {
+      ch?.writeAndFlush(CloseWebSocketFrame(WebSocketCloseStatus.NORMAL_CLOSURE, reasonText))
+    }
     ch?.closeFuture()?.sync()
   }
 
@@ -121,6 +150,44 @@ class WebSocketClient(uri: String, val handler: WebSocketHandler) {
 
   fun writeText(data: ByteBuf): ChannelFuture {
     return ch!!.writeAndFlush(TextWebSocketFrame(data))
+  }
+
+  fun ping(data: ByteArray): ChannelFuture {
+    return ch!!.writeAndFlush(PingWebSocketFrame(Unpooled.wrappedBuffer(data)))
+  }
+
+  fun ping(data: ByteBuffer): ChannelFuture {
+    return ch!!.writeAndFlush(
+      PingWebSocketFrame(
+        when (data) {
+          is NettyByteBuffer -> data.byteBuf
+          else -> Unpooled.wrappedBuffer(data.getBytes())
+        }
+      )
+    )
+  }
+
+  fun ping(data: ByteBuf): ChannelFuture {
+    return ch!!.writeAndFlush(PingWebSocketFrame(data))
+  }
+
+  fun pong(data: ByteArray): ChannelFuture {
+    return ch!!.writeAndFlush(PongWebSocketFrame(Unpooled.wrappedBuffer(data)))
+  }
+
+  fun pong(data: ByteBuffer): ChannelFuture {
+    return ch!!.writeAndFlush(
+      PongWebSocketFrame(
+        when (data) {
+          is NettyByteBuffer -> data.byteBuf
+          else -> Unpooled.wrappedBuffer(data.getBytes())
+        }
+      )
+    )
+  }
+
+  fun pong(data: ByteBuf): ChannelFuture {
+    return ch!!.writeAndFlush(PongWebSocketFrame(data))
   }
 
   companion object {

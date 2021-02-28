@@ -8,7 +8,7 @@ import cn.tursom.core.buffer.impl.HeapByteBuffer
 class ThreadUnsafeDirectMemoryPool(
   blockSize: Int = 1024,
   blockCount: Int = 16,
-  emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = { HeapByteBuffer(it) }
+  emptyPoolBuffer: (blockSize: Int) -> ByteBuffer = ::HeapByteBuffer,
 ) : ThreadUnsafeAbstractMemoryPool(
   blockSize,
   blockCount,

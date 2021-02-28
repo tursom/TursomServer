@@ -1,8 +1,12 @@
 package cn.tursom.core.datastruct
 
+import cn.tursom.core.randomInt
+import cn.tursom.core.usingTime
 import java.io.Serializable
 import java.lang.reflect.Field
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLongArray
+import kotlin.random.Random
 
 class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : Serializable {
   @Volatile
@@ -25,6 +29,7 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
       bitSet.array.forEach { count += it.bitCount }
       return count
     }
+  val upCount get() = trueCount
 
   init {
     val default = if (defaultState) -1L else 0L
@@ -37,17 +42,19 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
     return bitSet[(index shr 6).toInt()] and getArr[index.toInt() and 63] != 0L
   }
 
-  fun up(index: Long): Boolean {
+  fun up(index: Long, fromDownToUp: Boolean = true): Boolean {
     val arrayIndex = (index shr 6).toInt()
     //bitSet[arrayIndex] = bitSet[arrayIndex] or getArr[index.toInt() and 63]
-    val expect = bitSet[arrayIndex]
+    var expect = bitSet[arrayIndex]
+    if (fromDownToUp) expect = expect and setArr[index.toInt() and 63]
     return bitSet.compareAndSet(arrayIndex, expect, expect or getArr[index.toInt() and 63])
   }
 
-  fun down(index: Long): Boolean {
+  fun down(index: Long, fromUpToDown: Boolean = true): Boolean {
     val arrayIndex = (index shr 6).toInt()
     //bitSet[arrayIndex] = bitSet[arrayIndex] and setArr[index.toInt() and 63]
-    val expect = bitSet[arrayIndex]
+    var expect = bitSet[arrayIndex]
+    if (fromUpToDown) expect = expect and getArr[index.toInt() and 63]
     return bitSet.compareAndSet(arrayIndex, expect, expect and setArr[index.toInt() and 63])
   }
 
@@ -80,7 +87,33 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
   }
 
   fun firstUp(): Long {
-    bitSet.forEachIndexed { index, l ->
+    return scanUp(0, bitSet.length())
+  }
+
+  fun randomUpIndex(): Long {
+    val startIndex = Random.nextInt(bitSet.length())
+    var scan = scanUp(startIndex, bitSet.length() - startIndex)
+    if (scan >= 0) return scan
+    scan = scanUp(startIndex - 1, startIndex, false)
+    if (scan >= 0) return scan
+    return -1
+  }
+
+  fun firstDown(): Long {
+    return scanDown(0, bitSet.length())
+  }
+
+  fun getDownIndex(): Long {
+    val startIndex = Random.nextInt(bitSet.length())
+    var scan = scanDown(startIndex, bitSet.length() - startIndex)
+    if (scan >= 0) return scan
+    scan = scanDown(startIndex - 1, startIndex, false)
+    if (scan >= 0) return scan
+    return -1
+  }
+
+  private fun scanUp(fromIndex: Int, length: Int, asc: Boolean = true): Long {
+    bitSet.forEachIndexed(fromIndex, length, asc) { index, l ->
       if (l != 0L) {
         for (i in 0 until 8) {
           if (l and scanArray[i] != 0L) {
@@ -95,8 +128,8 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
     return -1
   }
 
-  fun firstDown(): Long {
-    bitSet.forEachIndexed { index, l ->
+  private fun scanDown(fromIndex: Int, length: Int, asc: Boolean = true): Long {
+    bitSet.forEachIndexed(fromIndex, length, asc) { index, l ->
       if (l != -1L) {
         for (i in 0 until 8) {
           if (l.inv() and scanArray[i] != 0L) {
@@ -164,9 +197,9 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
 
     private val Long.bitCount
       get() = bitCountArray[toInt().and(0xff)] + bitCountArray[shr(8).toInt().and(0xff)] +
-          bitCountArray[shr(16).toInt().and(0xff)] + bitCountArray[shr(24).toInt().and(0xff)] +
-          bitCountArray[shr(32).toInt().and(0xff)] + bitCountArray[shr(40).toInt().and(0xff)] +
-          bitCountArray[shr(48).toInt().and(0xff)] + bitCountArray[shr(56).toInt().and(0xff)]
+        bitCountArray[shr(16).toInt().and(0xff)] + bitCountArray[shr(24).toInt().and(0xff)] +
+        bitCountArray[shr(32).toInt().and(0xff)] + bitCountArray[shr(40).toInt().and(0xff)] +
+        bitCountArray[shr(48).toInt().and(0xff)] + bitCountArray[shr(56).toInt().and(0xff)]
 
     private val AtomicLongArray.size get() = length()
 
@@ -177,10 +210,45 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
       array.isAccessible = true
     }
 
-    inline fun AtomicLongArray.forEachIndexed(action: (index: Int, Long) -> Unit) {
+    private inline fun AtomicLongArray.forEachIndexed(action: (index: Int, Long) -> Unit) {
       repeat(length()) {
         action(it, get(it))
       }
     }
+
+    private inline fun AtomicLongArray.forEachIndexed(startIndex: Int, length: Int = length(), asc: Boolean = true, action: (index: Int, Long) -> Unit) {
+      repeat(length) {
+        val index = if (asc) {
+          startIndex + it
+        } else {
+          startIndex - it
+        }
+        //scand.incrementAndGet()
+        action(index, get(index))
+      }
+    }
   }
+}
+
+//val scand = AtomicInteger(0)
+
+fun main() {
+  val size = 1000000
+  val bitSet = AtomicBitSet(size.toLong())
+  println(usingTime {
+    repeat(1000) {
+      bitSet.downAll()
+      repeat(size) {
+        val index = bitSet.getDownIndex()
+        bitSet.up(index)
+        repeat(randomInt(0, 3) / 2) {
+          val randomUpIndex = bitSet.randomUpIndex()
+          if (randomUpIndex >= 0) {
+            bitSet.down(randomUpIndex)
+          }
+        }
+      }
+    }
+  })
+  //println(scand.get() / 100)
 }

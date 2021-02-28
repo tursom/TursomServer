@@ -19,12 +19,13 @@ interface ResponseHeaderAdapter {
     mustRevalidate: Boolean = false
   ) = setResponseHeader(
     "Cache-Control", "$cacheControl${
-  if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""}${
-  if (mustRevalidate) ", must-revalidate" else ""
+    if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""
+  }${
+    if (mustRevalidate) ", must-revalidate" else ""
   }"
   )
 
-  fun addCookie(cookie: Cookie) = addCookie(cookie.name, cookie.value, cookie.maxAge, cookie.domain, cookie.path, cookie.sameSite)
+  fun addCookie(cookie: Cookie) = addResponseHeader("Set-Cookie", cookie)
   fun addCookie(
     name: String,
     value: Any,
@@ -32,15 +33,7 @@ interface ResponseHeaderAdapter {
     domain: String? = null,
     path: String? = null,
     sameSite: SameSite? = null
-  ) = addResponseHeader(
-    "Set-Cookie",
-    "$name=$value${
-    if (maxAge > 0) "; Max-Age=$maxAge" else ""}${
-    if (domain != null) "; Domain=$domain" else ""}${
-    if (path != null) "; Path=$path" else ""}${
-    if (sameSite != null) ": SameSite=$sameSite" else ""
-    }"
-  )
+  ) = addCookie(Cookie(name, value.toString(), maxAge = maxAge, domain = domain, path = path, sameSite = sameSite))
 
   fun setLanguage(language: String) {
     setResponseHeader("Content-Language", language)
