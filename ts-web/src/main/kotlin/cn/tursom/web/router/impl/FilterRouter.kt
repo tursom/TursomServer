@@ -14,7 +14,7 @@ class FilterRouter<T>(
   }
 
   private val flower =
-    Regex("\\\\${matchPair.first}[^\\\\${matchPair.first}\\\\${matchPair.second}]*\\\\${matchPair.second}")
+    Regex("\\${matchPair.first}[^\\${matchPair.first}\\${matchPair.second}]*\\${matchPair.second}")
   private val lock = ReentrantReadWriteLock()
   private val routeList = ArrayList<RouteContext<T>>()
 
