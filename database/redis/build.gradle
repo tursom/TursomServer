@@ -1,8 +1,0 @@
-
-dependencies {
-    compile project(":")
-    // https://mvnrepository.com/artifact/redis.clients/jedis
-    compile group: 'redis.clients', name: 'jedis', version: '3.2.0'
-    //// 数据库与序列化部分可选
-    //api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
-}

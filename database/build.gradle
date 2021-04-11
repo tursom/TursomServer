@@ -1,7 +1,0 @@
-dependencies {
-    compile project(":")
-    api project(":utils")
-    api group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlinVersion
-    // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
-    compile group: 'me.liuwj.ktorm', name: 'ktorm-core', version: '3.0.0'
-}

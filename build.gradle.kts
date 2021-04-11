@@ -18,6 +18,7 @@ ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
 
 plugins {
     kotlin("jvm") version "1.4.31"
+    `maven-publish`
 }
 
 allprojects {
@@ -55,4 +56,24 @@ dependencies {
 
     val commonVersion = "1.0.RELEASE"
     api("com.ddbes", "common-kotlin", commonVersion)
+}
+
+tasks.register("install") {
+    finalizedBy(tasks["publishToMavenLocal"])
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+
+            from(components["java"])
+            try {
+                artifact(tasks["sourcesJar"])
+            } catch (e: Exception) {
+            }
+        }
+    }
 }

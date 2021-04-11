@@ -1,7 +1,12 @@
 rootProject.name = "TursomServer"
-include("ts-core", "ts-core:ts-buffer", "ts-core:ts-encrypt", "ts-core:ts-datastruct")
+include("ts-core")
+include("ts-core:ts-encrypt")
+include("ts-core:ts-buffer")
+include("ts-core:ts-datastruct")
 include("ts-core:ts-pool")
 include("ts-core:ts-hash")
+include("ts-core:ts-log")
+include("ts-socket")
 //include("web", "aop", "database", "utils", "utils:xml", "utils:async-http", "web:netty-web")
 //include("socket", "socket:socket-async")
 //include("AsyncSocket")
