@@ -1,4 +1,4 @@
-package com.ddbes.kotlin.clone
+package cn.tursom.core.clone
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FIELD)

@@ -79,4 +79,8 @@ class HeapByteBuffer(
     readPosition = 0
     array.fill(byte, arrayOffset, arrayOffset + capacity)
   }
+
+  companion object {
+    fun ByteArray.toByteBuffer() = HeapByteBuffer(this, 0, size)
+  }
 }

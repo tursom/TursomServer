@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
   api(project(":ts-core"))
+  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

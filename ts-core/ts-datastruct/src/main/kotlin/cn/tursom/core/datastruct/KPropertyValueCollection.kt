@@ -1,6 +1,5 @@
-package cn.tursom.utils.datastruct
+package cn.tursom.core.datastruct
 
-import cn.tursom.core.datastruct.KPropertyValueCollectionIterator
 import kotlin.reflect.KProperty1
 
 class KPropertyValueCollection(val target: Any, private val propertyMap: Map<String, KProperty1<Any, *>> = KPropertyValueMap[target]) : Collection<Any?> {

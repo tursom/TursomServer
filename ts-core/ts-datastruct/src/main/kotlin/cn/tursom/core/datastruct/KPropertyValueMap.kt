@@ -1,8 +1,6 @@
-package cn.tursom.utils.datastruct
+package cn.tursom.core.datastruct
 
 import cn.tursom.core.cast
-import cn.tursom.core.datastruct.ReadWriteMap
-import cn.tursom.core.datastruct.SoftArrayMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties

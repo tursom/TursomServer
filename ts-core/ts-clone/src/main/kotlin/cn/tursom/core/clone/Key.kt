@@ -1,4 +1,4 @@
-package com.ddbes.kotlin.clone
+package cn.tursom.core.clone
 
 import kotlin.reflect.KClass
 

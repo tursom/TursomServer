@@ -1,18 +1,14 @@
 @file:Suppress("unused")
 
-package cn.tursom.utils.clone
+package cn.tursom.core.clone
 
 import cn.tursom.core.Unsafe
 import cn.tursom.core.cast
 import cn.tursom.core.datastruct.ArrayMap
+import cn.tursom.core.datastruct.KPropertyValueMap
 import cn.tursom.core.datastruct.ReadWriteMap
 import cn.tursom.core.datastruct.SoftArrayMap
 import cn.tursom.core.final
-import cn.tursom.utils.datastruct.KPropertyValueMap
-import com.ddbes.kotlin.clone.Key
-import com.ddbes.kotlin.clone.NoPropertyClone
-import com.ddbes.kotlin.clone.Relation
-import com.ddbes.kotlin.clone.Relations
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -161,7 +157,6 @@ fun <T : Any> List<Any?>.clone(
 
 /**
  * 新建并拷贝
- * @author 王景阔
  * 创建类型 T 的实例
  * 并将对象两个的所有同名字段拷贝进新建的实例中
  * @return 新建的实例
@@ -392,7 +387,8 @@ fun cast(source: Any, target: Class<*>): Any? = if (target.isInstance(source)) {
   Boolean::class.java -> if (source is Number) source != 0 else source.toString().toBoolean()
 
   java.lang.Byte::class.java -> if (source is Number) source.toByte() else source.toString().toByteOrNull()
-  java.lang.Character::class.java -> if (source is Number) source.toChar() else source.toString().toIntOrNull()?.toChar()
+  java.lang.Character::class.java -> if (source is Number) source.toChar() else source.toString().toIntOrNull()
+    ?.toChar()
   java.lang.Short::class.java -> if (source is Number) source.toShort() else source.toString().toShortOrNull()
   java.lang.Integer::class.java -> if (source is Number) source.toInt() else source.toString().toIntOrNull()
   java.lang.Long::class.java -> if (source is Number) source.toLong() else source.toString().toLongOrNull()

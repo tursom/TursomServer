@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
   api(project(":ts-core"))
+  api(project(":ts-core:ts-datastruct"))
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

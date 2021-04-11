@@ -1,4 +1,4 @@
-package cn.tursom.utils.datastruct
+package cn.tursom.core.datastruct
 
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
