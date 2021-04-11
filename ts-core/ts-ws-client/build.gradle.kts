@@ -5,7 +5,9 @@ plugins {
 
 dependencies {
   api(project(":ts-core"))
-  compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
+  api(project(":ts-core:ts-buffer"))
+  api(project(":ts-core:ts-log"))
+  api(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

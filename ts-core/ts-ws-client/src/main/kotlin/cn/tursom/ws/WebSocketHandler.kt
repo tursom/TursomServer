@@ -1,8 +1,8 @@
 package cn.tursom.ws
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.impl.NettyByteBuffer
 import cn.tursom.core.toUTF8String
-import cn.tursom.utils.bytebuffer.NettyByteBuffer
 import io.netty.buffer.ByteBuf
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame

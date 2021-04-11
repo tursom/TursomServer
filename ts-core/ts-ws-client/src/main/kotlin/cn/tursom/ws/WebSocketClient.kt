@@ -1,8 +1,7 @@
 package cn.tursom.ws
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.utils.WebSocketFrameWrapper
-import cn.tursom.utils.bytebuffer.NettyByteBuffer
+import cn.tursom.core.buffer.impl.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled

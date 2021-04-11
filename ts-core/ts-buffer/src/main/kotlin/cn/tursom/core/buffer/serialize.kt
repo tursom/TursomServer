@@ -1,4 +1,4 @@
-package cn.tursom.utils.bytebuffer
+package cn.tursom.core.buffer
 
 /**
  * support type:
@@ -10,7 +10,6 @@ package cn.tursom.utils.bytebuffer
  */
 
 import cn.tursom.core.Unsafe.unsafe
-import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.isStatic
 
 class UnsupportedException : Exception()
