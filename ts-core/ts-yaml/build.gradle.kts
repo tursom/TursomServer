@@ -4,9 +4,9 @@ plugins {
 }
 
 dependencies {
-    api(project(":ts-core"))
+    implementation(project(":ts-core"))
     // 解析YAML
-    api(group = "org.yaml", name = "snakeyaml", version = "1.28")
+    implementation(group = "org.yaml", name = "snakeyaml", version = "1.28")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  api(project(":ts-core"))
+  implementation(project(":ts-core"))
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 }
 

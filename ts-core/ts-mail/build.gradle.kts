@@ -4,11 +4,8 @@ plugins {
 }
 
 dependencies {
-  compile(project(":"))
-  // https://mvnrepository.com/artifact/javax.mail/mail
-  //compile group: "javax.mail", name: "mail", version: "1.4"
-  // https://mvnrepository.com/artifact/com.sun.mail/javax.mail
-  compile(group = "com.sun.mail", name = "javax.mail", version = "1.5.1")
+  implementation(project(":"))
+  implementation(group = "com.sun.mail", name = "javax.mail", version = "1.5.1")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

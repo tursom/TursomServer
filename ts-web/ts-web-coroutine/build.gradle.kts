@@ -4,10 +4,12 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":ts-core"))
+  implementation(project(":"))
+  implementation(project(":ts-web"))
   implementation(project(":ts-core:ts-buffer"))
-  implementation(project(":ts-core:ts-log"))
-  implementation(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
+  implementation(project(":ts-core:ts-json"))
+  implementation(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

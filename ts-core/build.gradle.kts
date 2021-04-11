@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  api(project(":"))
+  implementation(project(":"))
   compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
   compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }

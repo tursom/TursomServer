@@ -4,11 +4,12 @@ plugins {
 }
 
 dependencies {
-  api(project(":ts-core"))
-  api(project(":ts-core:ts-encrypt"))
-  api(project(":ts-core:ts-buffer"))
-  api(project(":ts-core:ts-pool"))
-  api(project(":ts-core:ts-log"))
+  implementation(project(":ts-core"))
+  implementation(project(":ts-core:ts-encrypt"))
+  implementation(project(":ts-core:ts-buffer"))
+  implementation(project(":ts-core:ts-pool"))
+  implementation(project(":ts-core:ts-log"))
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

@@ -4,8 +4,10 @@ plugins {
 }
 
 dependencies {
-    api(project(":ts-core:ts-buffer"))
-    api(project(":ts-core:ts-hash"))
+    implementation(project(":"))
+    implementation(project(":ts-core"))
+    implementation(project(":ts-core:ts-buffer"))
+    implementation(project(":ts-core:ts-hash"))
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
