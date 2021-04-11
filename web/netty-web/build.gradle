@@ -1,7 +1,0 @@
-dependencies {
-    //compile project(":")
-    compile project(":web")
-    implementation project(":utils")
-    api project(":log")
-    compile group: "io.netty", name: "netty-all", version: "4.1.43.Final"
-}

@@ -4,9 +4,11 @@ plugins {
 }
 
 dependencies {
-  api(project(":"))
-  compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
-  compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
+  api(project(":ts-core"))
+  api(project(":ts-core:ts-buffer"))
+  api(project(":ts-core:ts-datastruct"))
+  compileOnly(project(":ts-core:ts-json"))
+  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

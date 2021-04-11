@@ -4,9 +4,10 @@ plugins {
 }
 
 dependencies {
-  api(project(":"))
-  compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
-  compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
+  api(project(":ts-core"))
+  api(project(":ts-core:ts-log"))
+  api(project(":ts-web"))
+  api(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
