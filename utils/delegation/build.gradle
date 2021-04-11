@@ -1,4 +1,0 @@
-dependencies {
-    compile project(":")
-    api "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-}

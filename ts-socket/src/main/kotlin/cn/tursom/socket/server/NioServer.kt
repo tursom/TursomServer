@@ -1,9 +1,9 @@
 package cn.tursom.socket.server
 
 import cn.tursom.channel.AsyncProtocol
+import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.NioThread
 import cn.tursom.socket.AsyncSocket
-import cn.tursom.niothread.NioProtocol
 import cn.tursom.socket.NioSocket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope

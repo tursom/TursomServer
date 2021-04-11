@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     api(project(":ts-core"))
-    api(project(":ts-core:ts-buffer"))
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
