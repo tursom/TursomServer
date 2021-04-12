@@ -112,8 +112,17 @@ inline fun <T, R : Any> Iterable<T>.toSetNotNull(transform: (T) -> R?): Set<R> {
 }
 
 
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Retention(AnnotationRetention.BINARY)
+//@Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+annotation class UncheckedCast
+
+@UncheckedCast
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 inline fun <T> Any?.cast() = this as T
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+inline fun <T> Any?.uncheckedCast() = this as T
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 inline fun <reified T> Any?.castOrNull() = if (this is T) this else null
@@ -280,12 +289,7 @@ inline fun usingNanoTime(action: () -> Unit): Long {
 }
 
 inline fun Class<*>.forAllFields(action: (Field) -> Unit) {
-  var clazz = this
-  while (clazz != Any::class.java) {
-    clazz.declaredFields.forEach(action)
-    clazz = clazz.superclass
-  }
-  clazz.declaredFields.forEach(action)
+  allFieldsSequence.forEach(action)
 }
 
 val Class<*>.allFields: List<Field>
@@ -293,6 +297,17 @@ val Class<*>.allFields: List<Field>
     val fieldList = ArrayList<Field>()
     forAllFields(fieldList::add)
     return fieldList
+  }
+
+val Class<*>.allFieldsSequence: Sequence<Field>
+  get() = sequence {
+    var clazz = this@allFieldsSequence
+    while (clazz != Any::class.java) {
+      clazz.declaredFields.forEach { field ->
+        yield(field)
+      }
+      clazz = clazz.superclass
+    }
   }
 
 fun Class<*>.getFieldForAll(name: String): Field? {
@@ -303,12 +318,7 @@ fun Class<*>.getFieldForAll(name: String): Field? {
 }
 
 inline fun Class<*>.forAllMethods(action: (Method) -> Unit) {
-  var clazz = this
-  while (clazz != Any::class.java) {
-    clazz.declaredMethods.forEach(action)
-    clazz = clazz.superclass
-  }
-  clazz.declaredMethods.forEach(action)
+  allMethodsSequence.forEach(action)
 }
 
 fun Class<*>.getMethodForAll(name: String, vararg parameterTypes: Class<*>?): Method? {
@@ -323,6 +333,20 @@ val Class<*>.allMethods: List<Method>
     val fieldList = ArrayList<Method>()
     forAllMethods(fieldList::add)
     return fieldList
+  }
+
+val Class<*>.allMethodsSequence: Sequence<Method>
+  get() = sequence {
+    var clazz = this@allMethodsSequence
+    while (clazz != Any::class.java) {
+      clazz.declaredMethods.forEach {
+        yield(it)
+      }
+      clazz = clazz.superclass
+    }
+    clazz.declaredMethods.forEach {
+      yield(it)
+    }
   }
 
 /**

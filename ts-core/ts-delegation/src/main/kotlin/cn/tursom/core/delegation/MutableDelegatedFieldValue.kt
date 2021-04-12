@@ -3,7 +3,7 @@ package cn.tursom.core.delegation
 import kotlin.reflect.KProperty
 
 open class MutableDelegatedFieldValue<in T, V>(
-  private var initValue: V
+  private var initValue: V,
 ) : MutableDelegatedField<T, V> {
   override fun getValue(): V = initValue
   override fun getValue(thisRef: T, property: KProperty<*>): V = initValue

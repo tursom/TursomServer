@@ -4,8 +4,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ThreadLocalSimpleDateFormat(
-  val format: String = "YYYY-MM-dd'T'HH:mm:ssZZ"
-) : SimpThreadLocal<SimpleDateFormat>({
+  val format: String = "YYYY-MM-dd'T'HH:mm:ssZZ",
+) : SimpThreadLocal<SimpleDateFormat>(null, {
   SimpleDateFormat(format)
 }) {
   fun format(date: Any) = get().format(date)

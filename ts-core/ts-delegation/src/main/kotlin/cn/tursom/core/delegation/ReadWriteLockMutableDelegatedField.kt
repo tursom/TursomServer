@@ -7,9 +7,9 @@ import kotlin.concurrent.write
 import kotlin.reflect.KProperty
 
 class ReadWriteLockMutableDelegatedField<in T, V>(
-  override val mutableDelegatedField: MutableDelegatedField<T, V>,
+  override val delegatedField: MutableDelegatedField<T, V>,
   private val readWriteLock: ReadWriteLock = ReentrantReadWriteLock(),
-) : MutableDelegatedField<T, V> by mutableDelegatedField, DecoratorMutableDelegatedField<T, V> {
+) : MutableDelegatedField<T, V> by delegatedField, DecoratorMutableDelegatedField<T, V> {
   constructor(
     initValue: V,
     readWriteLock: ReadWriteLock = ReentrantReadWriteLock(),
@@ -19,7 +19,7 @@ class ReadWriteLockMutableDelegatedField<in T, V>(
     val rl = readWriteLock.readLock()
     rl.lock()
     try {
-      return mutableDelegatedField.getValue(thisRef, property)
+      return delegatedField.getValue(thisRef, property)
     } finally {
       rl.unlock()
     }
@@ -27,17 +27,17 @@ class ReadWriteLockMutableDelegatedField<in T, V>(
 
   override fun setValue(thisRef: T, property: KProperty<*>, value: V) {
     if (readWriteLock is ReentrantReadWriteLock) readWriteLock.write {
-      mutableDelegatedField.setValue(thisRef, property, value)
+      delegatedField.setValue(thisRef, property, value)
     } else readWriteLock.writeLock().withLock {
-      mutableDelegatedField.setValue(thisRef, property, value)
+      delegatedField.setValue(thisRef, property, value)
     }
   }
 
   override fun valueOnSet(thisRef: T, property: KProperty<*>, value: V, oldValue: V) {
     if (readWriteLock is ReentrantReadWriteLock) readWriteLock.write {
-      mutableDelegatedField.valueOnSet(thisRef, property, value, oldValue)
+      delegatedField.valueOnSet(thisRef, property, value, oldValue)
     } else readWriteLock.writeLock().withLock {
-      mutableDelegatedField.setValue(thisRef, property, value)
+      delegatedField.setValue(thisRef, property, value)
     }
   }
 }

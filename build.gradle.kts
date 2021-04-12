@@ -53,9 +53,6 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
     api(kotlin("reflect"))
     testImplementation(group = "junit", name = "junit", version = "4.12")
-
-    val commonVersion = "1.0.RELEASE"
-    api("com.ddbes", "common-kotlin", commonVersion)
 }
 
 tasks.register("install") {
