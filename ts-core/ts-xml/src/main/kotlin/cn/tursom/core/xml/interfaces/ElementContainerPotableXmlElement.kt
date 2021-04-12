@@ -1,4 +1,4 @@
-package cn.tursom.utils.xml.interfaces
+package cn.tursom.core.xml.interfaces
 
 interface ElementContainerPotableXmlElement : ElementContainerXmlElement, PotableXmlElement {
 	val size: Int

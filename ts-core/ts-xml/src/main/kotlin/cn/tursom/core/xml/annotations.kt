@@ -1,4 +1,4 @@
-package cn.tursom.utils.xml
+package cn.tursom.core.xml
 
 enum class ElementTarget {
 	Attribute, ElementText, SubElement

@@ -1,4 +1,4 @@
-package cn.tursom.utils.xml
+package cn.tursom.core.xml
 
 import org.dom4j.Document
 import org.dom4j.Element

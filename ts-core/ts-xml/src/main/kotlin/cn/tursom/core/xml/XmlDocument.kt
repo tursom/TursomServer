@@ -1,6 +1,6 @@
-package cn.tursom.utils.xml
+package cn.tursom.core.xml
 
-import cn.tursom.utils.xml.interfaces.*
+import cn.tursom.core.xml.interfaces.*
 
 object XmlDocument {
 	fun tag(name: String? = null, action: (TextPotableXmlElement.() -> Unit)? = null): TextXmlElement {
