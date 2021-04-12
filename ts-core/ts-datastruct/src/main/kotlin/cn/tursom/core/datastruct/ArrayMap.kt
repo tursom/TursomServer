@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.cast
+import cn.tursom.core.uncheckedCast
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class ArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
@@ -149,7 +149,7 @@ open class ArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     override fun setValue(newValue: V): V = value.also { value = newValue }
     override fun compareTo(other: K): Int {
       return if (key is Comparable<*>) {
-        key.cast<Comparable<K>>().compareTo(other)
+        key.uncheckedCast<Comparable<K>>().compareTo(other)
       } else {
         -1
       }

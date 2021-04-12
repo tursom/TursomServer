@@ -53,8 +53,12 @@ object Utils {
       .create()
   }
 
+  @Suppress("SpellCheckingInspection")
   internal val UPPER_HEX_ARRAY = "0123456789ABCDEF".toCharArray()
+
+  @Suppress("SpellCheckingInspection")
   internal val LOWER_HEX_ARRAY = "0123456789abcdef".toCharArray()
+
   val md5 by lazy { MessageDigest.getInstance("MD5")!! }
   val sha256 by lazy { MessageDigest.getInstance("SHA-256")!! }
   val sha by lazy { MessageDigest.getInstance("SHA")!! }
@@ -62,6 +66,7 @@ object Utils {
   val sha384 by lazy { MessageDigest.getInstance("SHA-384")!! }
   val sha512 by lazy { MessageDigest.getInstance("SHA-512")!! }
 
+  @Suppress("SpellCheckingInspection")
   internal val DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
 
   val receiverField: Field by lazy {
@@ -135,7 +140,7 @@ inline fun <T> T?.checkNull(ifNull: () -> Exception): T {
   }
 }
 
-fun String.emptyToNull() = if (isEmpty()) null else this
+fun String.emptyToNull() = ifEmpty { null }
 
 inline fun <reified T> getClazz() = T::class.java
 
@@ -251,7 +256,7 @@ fun <A : Annotation, V : Any> A.changeAnnotationValue(field: KProperty1<A, V>, v
     val h = Proxy.getInvocationHandler(this)
     val memberValuesField = h.javaClass.getDeclaredField("memberValues")
     memberValuesField.isAccessible = true
-    val memberValues = memberValuesField[h].cast<MutableMap<String, Any>>()
+    val memberValues = memberValuesField[h].uncheckedCast<MutableMap<String, Any>>()
     memberValues[field.name] = value
     true
   } catch (e: Exception) {
@@ -366,7 +371,7 @@ val KProperty<*>.receiver: Any?
 
 val KProperty<*>.owner: Class<*>?
   get() = try {
-    Utils.ownerField.get(this)?.cast<Class<*>>()
+    Utils.ownerField.get(this)?.uncheckedCast<Class<*>>()
   } catch (e: Exception) {
     null
   } ?: javaClass.getFieldForAll("owner")?.let {
@@ -406,16 +411,6 @@ fun Any.serialize(): ByteArray {
   return outputStream.toByteArray()
 }
 
-
-inline infix fun String.ifEmpty(ifEmpty: () -> String) = if (isNotEmpty()) this else ifEmpty()
-inline infix fun String.ifBlank(ifBlank: () -> String) = if (isNotBlank()) this else ifBlank()
-
-@JvmName("ifEmptyNullable")
-inline fun String.ifEmpty(ifEmpty: () -> String?) = if (isNotEmpty()) this else ifEmpty()
-
-@JvmName("ifBlankNullable")
-inline fun String.ifBlank(ifBlank: () -> String?) = if (isNotBlank()) this else ifBlank()
-
 /**
  * 使用 condition 做条件判断，如果返回 true 则使用 then 生成结果，否则范湖自身
  */
@@ -452,9 +447,9 @@ inline val KClass<*>.companionObjectInstanceOrNull: Any?
     null
   }
 
-inline val <K : Any, V> Map<K?, V>.notNullKey get() = cast<Map<K, V>>()
-inline val <K, V : Any> Map<K, V?>.notNullValue get() = cast<Map<K, V>>()
-inline val <K : Any, V : Any> Map<K?, V?>.notNullEntry get() = cast<Map<K, V>>()
+inline val <K : Any, V> Map<K?, V>.notNullKey get() = uncheckedCast<Map<K, V>>()
+inline val <K, V : Any> Map<K, V?>.notNullValue get() = uncheckedCast<Map<K, V>>()
+inline val <K : Any, V : Any> Map<K?, V?>.notNullEntry get() = uncheckedCast<Map<K, V>>()
 
 inline val <K : Any, V> Map<K?, V>.filterNullKey get() = filter { it.key != null }.notNullKey
 inline val <K, V : Any> Map<K, V?>.filterNullValue get() = filter { it.value != null }.notNullValue
@@ -466,7 +461,7 @@ val <T : Any> KClass<T>.allMemberProperties: List<KProperty1<T, *>>
       !it.java.isInterface
     }
     while (superClass != null) {
-      propertiesList.addAll(superClass.memberProperties.cast())
+      propertiesList.addAll(superClass.memberProperties.uncheckedCast())
       superClass = superClass.superclasses.firstOrNull {
         !it.java.isInterface
       }

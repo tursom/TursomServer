@@ -1,4 +1,4 @@
-package cn.tursom.core.delegation
+package cn.tursom.core.delegation.observer
 
 /**
  * 标识一个属性可以被指定的 FieldChangeListener 监听

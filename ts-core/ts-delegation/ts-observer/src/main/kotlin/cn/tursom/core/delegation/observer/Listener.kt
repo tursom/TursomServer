@@ -1,4 +1,4 @@
-package cn.tursom.core.delegation
+package cn.tursom.core.delegation.observer
 
 interface Listener<out T, V> {
     fun cancel(): Boolean

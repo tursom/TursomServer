@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.cast
+import cn.tursom.core.uncheckedCast
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -23,7 +23,7 @@ class KPropertyValueMap(val target: Any) : Map<String, Any?> {
         operator fun get(clazz: KClass<*>): SoftArrayMap<String, KProperty1<Any, *>> {
             var map = propertiesMapCache[clazz]
             if (map == null) {
-                map = clazz.memberProperties.cast<Collection<KProperty1<Any, *>>>().let { properties ->
+                map = clazz.memberProperties.uncheckedCast<Collection<KProperty1<Any, *>>>().let { properties ->
                     val valueMap = SoftArrayMap<String, KProperty1<Any, *>>(properties.size)
                     properties.forEach {
                         it.isAccessible = true

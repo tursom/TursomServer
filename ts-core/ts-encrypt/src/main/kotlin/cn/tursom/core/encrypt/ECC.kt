@@ -1,7 +1,7 @@
 package cn.tursom.core.encrypt
 
 import cn.tursom.core.Unsafe
-import cn.tursom.core.cast
+import cn.tursom.core.uncheckedCast
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -72,7 +72,7 @@ class ECC(
     val standardCurveLineSet by lazy {
       try {
         Unsafe {
-          Class.forName("sun.security.ec.CurveDB")["nameMap"].cast<Map<String, Any>>().keys
+          Class.forName("sun.security.ec.CurveDB")["nameMap"].uncheckedCast<Map<String, Any>>().keys
         }
       } catch (e: Exception) {
         emptySet()

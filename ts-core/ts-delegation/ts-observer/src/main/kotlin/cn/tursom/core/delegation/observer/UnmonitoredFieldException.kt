@@ -1,4 +1,4 @@
-package cn.tursom.core.delegation
+package cn.tursom.core.delegation.observer
 
 class UnmonitoredFieldException : Exception {
     constructor() : super()

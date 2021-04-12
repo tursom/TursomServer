@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.cast
+import cn.tursom.core.uncheckedCast
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
@@ -17,8 +17,8 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
 
   @Suppress("LeakingThis")
   override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = EntrySet(this)
-  override val keys: MutableSet<K> get() = arrValue.asList().subList(0, end).toMutableSet().cast()
-  override val values: MutableCollection<V> get() = arrValue.asList().cast<MutableList<V>>().subList(0, end)
+  override val keys: MutableSet<K> get() = arrValue.asList().subList(0, end).toMutableSet().uncheckedCast()
+  override val values: MutableCollection<V> get() = arrValue.asList().uncheckedCast<MutableList<V>>().subList(0, end)
 
   /**
    * @param key 查找的键
@@ -59,7 +59,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
   fun setByIndex(index: Int, value: V): V? {
     val oldValue = arrValue[end]
     arrValue[index] = value
-    return oldValue.cast()
+    return oldValue.uncheckedCast()
   }
 
   override fun delete(key: K): V? {
@@ -72,7 +72,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     System.arraycopy(arr, index + 1, arr, index, end - index - 1)
     System.arraycopy(arrValue, index + 1, arrValue, index, end - index - 1)
     end--
-    return oldValue.cast()
+    return oldValue.uncheckedCast()
   }
 
   override fun clear() {
@@ -83,7 +83,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     return if (end <= 0) {
       null
     } else {
-      arrValue[0].cast()
+      arrValue[0].uncheckedCast()
     }
   }
 
@@ -109,7 +109,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     return if (index < 0 || index >= end) {
       null
     } else {
-      arr[index].cast()
+      arr[index].uncheckedCast()
     }
   }
 
@@ -117,7 +117,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     return if (index < 0 || index >= end) {
       null
     } else {
-      arrValue[index].cast()
+      arrValue[index].uncheckedCast()
     }
   }
 
@@ -194,10 +194,10 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
     val map: ParallelArrayMap<K, V>,
     val index: Int
   ) : MutableMap.MutableEntry<K, V> {
-    override val key: K get() = map.getKeyByIndex(index).cast()
-    override val value: V get() = map.getByIndex(index).cast()
+    override val key: K get() = map.getKeyByIndex(index).uncheckedCast()
+    override val value: V get() = map.getByIndex(index).uncheckedCast()
     override fun setValue(newValue: V): V {
-      return map.setByIndex(index, newValue).cast()
+      return map.setByIndex(index, newValue).uncheckedCast()
     }
   }
 }
