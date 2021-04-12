@@ -1,12 +1,10 @@
 package cn.tursom.database
 
+import cn.tursom.core.clone.Property
+import cn.tursom.core.clone.inject
+import cn.tursom.core.clone.instance
+import cn.tursom.core.uncheckedCast
 import com.baomidou.mybatisplus.annotation.TableField
-import com.ddbes.kotlin.clone.Property
-import com.ddbes.kotlin.clone.inject
-import com.ddbes.kotlin.clone.instance
-import com.ddbes.kotlin.jdbc.simpTableField
-import com.ddbes.kotlin.jdbc.tableName
-import com.ddbes.kotlin.uncheckedCast
 import me.liuwj.ktorm.dsl.QueryRowSet
 import me.liuwj.ktorm.schema.BaseTable
 import me.liuwj.ktorm.schema.Column
