@@ -9,13 +9,13 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
 object LocalDateAdapter : TypeAdapter<LocalDate> {
-    override fun register(table: BaseTable<Any>, field: KProperty1<Any, LocalDate>): Column<LocalDate>? {
-        return if (field.returnType.jvmErasure == LocalDate::class) {
-            table.date(field)
-        } else {
-            null
-        }
+  override fun register(table: BaseTable<Any>, field: KProperty1<Any, LocalDate>): Column<LocalDate>? {
+    return if (field.returnType.jvmErasure == LocalDate::class) {
+      table.date(field)
+    } else {
+      null
     }
+  }
 
-    override fun toString() = "LocalDateAdapter"
+  override fun toString() = "LocalDateAdapter"
 }

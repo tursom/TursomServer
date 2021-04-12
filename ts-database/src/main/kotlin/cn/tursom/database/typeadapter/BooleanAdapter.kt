@@ -8,13 +8,13 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
 object BooleanAdapter : TypeAdapter<Boolean> {
-    override fun register(table: BaseTable<Any>, field: KProperty1<Any, Boolean>): Column<Boolean>? {
-        return if (field.returnType.jvmErasure == Boolean::class) {
-            table.boolean(field)
-        } else {
-            null
-        }
+  override fun register(table: BaseTable<Any>, field: KProperty1<Any, Boolean>): Column<Boolean>? {
+    return if (field.returnType.jvmErasure == Boolean::class) {
+      table.boolean(field)
+    } else {
+      null
     }
+  }
 
-    override fun toString() = "BooleanAdapter"
+  override fun toString() = "BooleanAdapter"
 }

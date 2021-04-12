@@ -2,9 +2,8 @@
 
 package cn.tursom.database
 
-import com.ddbes.kotlin.Utils
-import com.ddbes.kotlin.jdbc.simpTableField
-import com.ddbes.kotlin.uncheckedCast
+import cn.tursom.core.Utils
+import cn.tursom.core.uncheckedCast
 import com.google.gson.Gson
 import me.liuwj.ktorm.dsl.Query
 import me.liuwj.ktorm.dsl.QueryRowSet
@@ -45,107 +44,107 @@ inline fun <reified T : Any> Query.getOne(): T? = if (rowSet.next()) {
 }
 
 fun <C : Any, E : Any> BaseTable<E>.json(
-    field: KProperty1<E, C?>,
-    type: Int = Types.VARCHAR,
-    gson: Gson = Utils.gson,
+  field: KProperty1<E, C?>,
+  type: Int = Types.VARCHAR,
+  gson: Gson = Utils.gson,
 ): Column<C> {
   val sqlType = JsonType<C>(field.returnType.javaType, type, gson)
   return this.registerColumn(field.simpTableField, sqlType)
 }
 
 fun <E : Any> BaseTable<E>.boolean(
-    field: KProperty1<E, Boolean?>,
+  field: KProperty1<E, Boolean?>,
 ) = boolean(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.int(
-    field: KProperty1<E, Int?>,
+  field: KProperty1<E, Int?>,
 ) = int(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.long(
-    field: KProperty1<E, Long?>,
+  field: KProperty1<E, Long?>,
 ) = long(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.float(
-    field: KProperty1<E, Float?>,
+  field: KProperty1<E, Float?>,
 ) = float(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.double(
-    field: KProperty1<E, Double?>,
+  field: KProperty1<E, Double?>,
 ) = double(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.decimal(
-    field: KProperty1<E, BigDecimal?>,
+  field: KProperty1<E, BigDecimal?>,
 ) = decimal(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.varchar(
-    field: KProperty1<E, String?>,
+  field: KProperty1<E, String?>,
 ) = varchar(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.text(
-    field: KProperty1<E, String?>,
+  field: KProperty1<E, String?>,
 ) = text(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.blob(
-    field: KProperty1<E, ByteArray?>,
+  field: KProperty1<E, ByteArray?>,
 ) = blob(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.bytes(
-    field: KProperty1<E, ByteArray?>,
+  field: KProperty1<E, ByteArray?>,
 ) = bytes(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.jdbcTimestamp(
-    field: KProperty1<E, Timestamp?>,
+  field: KProperty1<E, Timestamp?>,
 ) = jdbcTimestamp(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.jdbcDate(
-    field: KProperty1<E, Date?>,
+  field: KProperty1<E, Date?>,
 ) = jdbcDate(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.jdbcTime(
-    field: KProperty1<E, Time?>,
+  field: KProperty1<E, Time?>,
 ) = jdbcTime(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.timestamp(
-    field: KProperty1<E, Instant?>,
+  field: KProperty1<E, Instant?>,
 ) = timestamp(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.datetime(
-    field: KProperty1<E, LocalDateTime?>,
+  field: KProperty1<E, LocalDateTime?>,
 ) = datetime(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.date(
-    field: KProperty1<E, LocalDate?>,
+  field: KProperty1<E, LocalDate?>,
 ) = date(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.time(
-    field: KProperty1<E, LocalTime?>,
+  field: KProperty1<E, LocalTime?>,
 ) = time(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.monthDay(
-    field: KProperty1<E, MonthDay?>,
+  field: KProperty1<E, MonthDay?>,
 ) = monthDay(field.simpTableField)
 
 
 fun <E : Any> BaseTable<E>.yearMonth(
-    field: KProperty1<E, YearMonth?>,
+  field: KProperty1<E, YearMonth?>,
 ) = yearMonth(field.simpTableField)
 
 
 fun <E : Any> BaseTable<E>.year(
-    field: KProperty1<E, Year?>,
+  field: KProperty1<E, Year?>,
 ) = year(field.simpTableField)
 
 fun <E : Any> BaseTable<E>.uuid(
-    field: KProperty1<E, UUID?>,
+  field: KProperty1<E, UUID?>,
 ) = uuid(field.simpTableField)
 
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
-    field: KProperty1<E, C?>,
-    typeRef: TypeReference<C>,
+  field: KProperty1<E, C?>,
+  typeRef: TypeReference<C>,
 ) = enum(field.simpTableField, typeRef)
 
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
-    field: KProperty1<E, C?>,
-    type: Class<C>,
+  field: KProperty1<E, C?>,
+  type: Class<C>,
 ) = registerColumn(field.simpTableField, EnumSqlType(type))
 

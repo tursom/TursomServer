@@ -5,5 +5,5 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
 annotation class NoPropertyClone(
-    vararg val classList: KClass<*>
+  vararg val classList: KClass<*>,
 )

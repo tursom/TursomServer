@@ -9,13 +9,13 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
 object MonthDayAdapter : TypeAdapter<MonthDay> {
-    override fun register(table: BaseTable<Any>, field: KProperty1<Any, MonthDay>): Column<MonthDay>? {
-        return if (field.returnType.jvmErasure == MonthDay::class) {
-            table.monthDay(field)
-        } else {
-            null
-        }
+  override fun register(table: BaseTable<Any>, field: KProperty1<Any, MonthDay>): Column<MonthDay>? {
+    return if (field.returnType.jvmErasure == MonthDay::class) {
+      table.monthDay(field)
+    } else {
+      null
     }
+  }
 
-    override fun toString() = "MonthDayAdapter"
+  override fun toString() = "MonthDayAdapter"
 }

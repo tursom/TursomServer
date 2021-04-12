@@ -8,13 +8,13 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure
 
 object StringAdapter : TypeAdapter<String> {
-    override fun register(table: BaseTable<Any>, field: KProperty1<Any, String>): Column<String>? {
-        return if (field.returnType.jvmErasure == String::class) {
-            table.varchar(field)
-        } else {
-            null
-        }
+  override fun register(table: BaseTable<Any>, field: KProperty1<Any, String>): Column<String>? {
+    return if (field.returnType.jvmErasure == String::class) {
+      table.varchar(field)
+    } else {
+      null
     }
+  }
 
-    override fun toString() = "StringAdapter"
+  override fun toString() = "StringAdapter"
 }
