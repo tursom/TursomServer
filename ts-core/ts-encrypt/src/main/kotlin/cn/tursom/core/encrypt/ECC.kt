@@ -2,7 +2,6 @@ package cn.tursom.core.encrypt
 
 import cn.tursom.core.Unsafe
 import cn.tursom.core.cast
-import sun.security.ec.CurveDB
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -17,7 +16,7 @@ import java.security.spec.X509EncodedKeySpec
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ECC(
   publicKey: ECPublicKey,
-  privateKey: ECPrivateKey? = null
+  privateKey: ECPrivateKey? = null,
 ) : AbstractPublicKeyEncrypt("EC", publicKey, privateKey) {
 
   override val decryptMaxLen = Int.MAX_VALUE
@@ -41,7 +40,7 @@ class ECC(
 
   constructor(
     keySize: Int = 256,
-    standardCurveLine: String = StandardCurveLine.secp256k1.name.replace('_', ' ')
+    standardCurveLine: String = StandardCurveLine.secp256k1.name.replace('_', ' '),
   ) : this(
     keySize,
     ECGenParameterSpec(standardCurveLine)
@@ -71,8 +70,12 @@ class ECC(
 
   companion object {
     val standardCurveLineSet by lazy {
-      Unsafe {
-        CurveDB::class.java["nameMap"].cast<Map<String, Any>>().keys
+      try {
+        Unsafe {
+          Class.forName("sun.security.ec.CurveDB")["nameMap"].cast<Map<String, Any>>().keys
+        }
+      } catch (e: Exception) {
+        emptySet()
       }
     }
   }

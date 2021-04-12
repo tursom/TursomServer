@@ -4,8 +4,10 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":ts-core"))
-  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+  api(project(":"))
+  api(group = "me.liuwj.ktorm", name = "ktorm-core", version = "3.1.0")
+  compileOnly(group = "com.baomidou", name = "mybatis-plus", version = "3.4.2")
+  compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
