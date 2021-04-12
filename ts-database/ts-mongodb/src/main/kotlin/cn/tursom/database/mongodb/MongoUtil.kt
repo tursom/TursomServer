@@ -79,7 +79,7 @@ object MongoUtil {
 
   private fun Map<*, *>.convert(): Document {
     val doc = Document()
-    forEach { any, u ->
+    forEach { (any, u) ->
       any ?: return@forEach
       doc[any.toString()] = u.convert() ?: return@forEach
     }

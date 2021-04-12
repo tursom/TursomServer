@@ -4,10 +4,10 @@ plugins {
 }
 
 dependencies {
+  api(project(":"))
   implementation(project(":ts-core"))
-  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
-  api(group = "ch.qos.logback", name = "logback-core", version = "1.2.3")
-  api(group = "ch.qos.logback", name = "logback-classic", version = "1.2.3")
+  implementation(project(":ts-core:ts-log"))
+  api(group = "redis.clients", name = "jedis", version = "3.3.0")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
