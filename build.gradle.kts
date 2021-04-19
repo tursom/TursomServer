@@ -44,6 +44,12 @@ allprojects {
             }
         }
     }
+
+    tasks.withType<KotlinCompile>().configureEach {
+        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        //kotlinOptions.useIR = true
+    }
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
@@ -53,6 +59,10 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
     api(kotlin("reflect"))
     testImplementation(group = "junit", name = "junit", version = "4.12")
+}
+
+artifacts {
+    archives(tasks["kotlinSourcesJar"])
 }
 
 tasks.register("install") {
@@ -68,7 +78,7 @@ publishing {
 
             from(components["java"])
             try {
-                artifact(tasks["sourcesJar"])
+                artifact(tasks["kotlinSourcesJar"])
             } catch (e: Exception) {
             }
         }

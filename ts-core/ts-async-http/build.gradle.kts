@@ -27,6 +27,10 @@ tasks.register("install") {
   finalizedBy(tasks["publishToMavenLocal"])
 }
 
+artifacts {
+  archives(tasks["kotlinSourcesJar"])
+}
+
 publishing {
   publications {
     create<MavenPublication>("maven") {
@@ -36,7 +40,7 @@ publishing {
 
       from(components["java"])
       try {
-        artifact(tasks["sourcesJar"])
+        artifact(tasks["kotlinSourcesJar"])
       } catch (e: Exception) {
       }
     }

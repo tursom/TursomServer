@@ -27,8 +27,8 @@ class WebSocketClientHandshakerAdapter(
     if (!handshaker.isHandshakeComplete) {
       handshaker.finishHandshake(ctx.channel(), msg)
       handshakeFuture!!.setSuccess()
-      msg.retain()
-      ctx.fireChannelRead(msg)
+      //msg.retain()
+      //ctx.fireChannelRead(msg)
       handler.onOpen(client)
       return
     } else {

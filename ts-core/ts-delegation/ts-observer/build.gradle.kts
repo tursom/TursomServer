@@ -24,7 +24,7 @@ publishing {
 
             from(components["java"])
             try {
-                artifact(tasks["sourcesJar"])
+                artifact(tasks["kotlinSourcesJar"])
             } catch (e: Exception) {
             }
         }
