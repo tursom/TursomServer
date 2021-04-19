@@ -8,7 +8,8 @@ import io.netty.handler.codec.http.websocketx.*
 class WebSocketClientChannelHandler(
   val client: WebSocketClient,
   val handler: WebSocketHandler,
-) : SimpleChannelInboundHandler<WebSocketFrame>() {
+  autoRelease: Boolean = true,
+) : SimpleChannelInboundHandler<WebSocketFrame>(autoRelease) {
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
     handler.onClose(client)

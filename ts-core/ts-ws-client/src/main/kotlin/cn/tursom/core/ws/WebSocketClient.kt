@@ -33,6 +33,8 @@ class WebSocketClient(
   val maxContextLength: Int = 4096,
   private val headers: Map<String, String>? = null,
   private val handshakerUri: URI? = null,
+  val autoRelease: Boolean = true,
+  var initChannel: ((ch: SocketChannel) -> Unit)? = null
 ) {
   private val uri: URI = URI.create(url)
   internal var ch: Channel? = null
@@ -68,10 +70,12 @@ class WebSocketClient(
     headers?.forEach { (k, v) ->
       httpHeaders[k] = v
     }
-    val handshakerAdapter = WebSocketClientHandshakerAdapter(WebSocketClientHandshakerFactory.newHandshaker(
-      handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
-    ), this, handler)
-    val handler = WebSocketClientChannelHandler(this, handler)
+    val handshakerAdapter = WebSocketClientHandshakerAdapter(
+      WebSocketClientHandshakerFactory.newHandshaker(
+        handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
+      ), this, handler
+    )
+    val handler = WebSocketClientChannelHandler(this, handler, autoRelease)
     val bootstrap = Bootstrap()
     bootstrap.group(group)
       .channel(NioSocketChannel::class.java)
@@ -90,14 +94,12 @@ class WebSocketClient(
               addLast(WebSocketClientCompressionHandler.INSTANCE)
             }
             addLast(handshakerAdapter)
-            //if (log) {
-            //  addLast(LoggingHandler())
-            //}
             addLast(handler)
             if (autoWrap) {
               addLast(WebSocketFrameWrapper)
             }
           }
+          initChannel?.invoke(ch)
         }
       })
     bootstrap.connect(uri.host, port)

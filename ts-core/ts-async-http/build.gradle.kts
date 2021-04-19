@@ -6,6 +6,7 @@ plugins {
 dependencies {
   api(project(":"))
   api(project(":ts-core"))
+  api(project(":ts-core:ts-buffer"))
   implementation(project(":ts-core:ts-xml"))
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
   api(group = "com.squareup.retrofit2", name = "converter-gson", version = "2.9.0")
@@ -14,6 +15,9 @@ dependencies {
 
   // https://mvnrepository.com/artifact/org.jsoup/jsoup
   api(group = "org.jsoup", name = "jsoup", version = "1.13.1")
+
+
+  testImplementation(project(":ts-core:ts-coroutine"))
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
