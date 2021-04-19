@@ -1,7 +1,7 @@
 package cn.tursom.http
 
 import cn.tursom.core.isInheritanceFrom
-import cn.tursom.utils.xml.Xml
+import cn.tursom.core.xml.Xml
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
