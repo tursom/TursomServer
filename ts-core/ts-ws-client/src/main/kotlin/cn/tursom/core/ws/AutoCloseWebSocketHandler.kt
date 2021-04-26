@@ -1,6 +1,6 @@
 package cn.tursom.core.ws
 
-import io.netty.buffer.ByteBuf
+import cn.tursom.core.buffer.ByteBuffer
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 
 interface AutoCloseWebSocketHandler : WebSocketHandler {
@@ -9,18 +9,18 @@ interface AutoCloseWebSocketHandler : WebSocketHandler {
     msg.release()
   }
 
-  override fun readMessage(client: WebSocketClient, msg: ByteBuf) {
+  override fun readMessage(client: WebSocketClient, msg: ByteBuffer) {
     super.readMessage(client, msg)
-    msg.release()
+    msg.close()
   }
 
-  override fun readPing(client: WebSocketClient, msg: ByteBuf) {
+  override fun readPing(client: WebSocketClient, msg: ByteBuffer) {
     super.readPing(client, msg)
-    msg.release()
+    msg.close()
   }
 
-  override fun readPong(client: WebSocketClient, msg: ByteBuf) {
+  override fun readPong(client: WebSocketClient, msg: ByteBuffer) {
     super.readPong(client, msg)
-    msg.release()
+    msg.close()
   }
 }
