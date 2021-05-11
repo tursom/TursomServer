@@ -106,13 +106,15 @@ class WebSocketClient(
     //handler.handshakeFuture().sync()
   }
 
-  fun close(reasonText: String? = null) {
+  fun close(reasonText: String? = null): ChannelFuture? {
     if (reasonText == null) {
       ch?.writeAndFlush(CloseWebSocketFrame())
     } else {
       ch?.writeAndFlush(CloseWebSocketFrame(WebSocketCloseStatus.NORMAL_CLOSURE, reasonText))
     }
-    ch?.closeFuture()?.sync()
+    ch?.close()
+    return ch?.closeFuture()
+    //ch?.closeFuture()?.sync()
   }
 
   fun write(text: String): ChannelFuture {

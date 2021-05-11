@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class RoutedHttpHandler(
-  target: Any? = null,
+  vararg target: Any,
   val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() }
 ) : HttpHandler<HttpContent, ExceptionContent> {
   protected val router: Router<Pair<Any?, (HttpContent) -> Any?>> = routerMaker()
@@ -52,7 +52,11 @@ open class RoutedHttpHandler(
 
   init {
     @Suppress("LeakingThis")
-    addRouter(target ?: this)
+    if ((target.isEmpty())) {
+      addRouter(this)
+    } else {
+      target.forEach(::addRouter)
+    }
   }
 
   override fun handle(content: HttpContent) {
@@ -150,30 +154,30 @@ open class RoutedHttpHandler(
       Unit::class.java -> lambda { content: HttpContent -> method(obj, content) }
       else -> when {
         method.getAnnotation(Html::class.java) != null -> lambda { content: HttpContent ->
-          method(obj, content)?.let { result -> finishHtml(result, content, doLog) }
+          finishHtml(method(obj, content), content, doLog)
         }
         method.getAnnotation(Text::class.java) != null -> lambda { content: HttpContent ->
-          method(obj, content)?.let { result -> finishText(result, content, doLog) }
+          finishText(method(obj, content), content, doLog)
         }
         method.getAnnotation(Json::class.java) != null -> lambda { content: HttpContent ->
-          method(obj, content)?.let { result -> finishJson(result, content, doLog) }
+          finishJson(method(obj, content), content, doLog)
         }
         else -> lambda { content: HttpContent ->
-          method(obj, content)?.let { result -> autoReturn(method, result, content, doLog) }
+          autoReturn(method, method(obj, content), content, doLog)
         }
       }
     } else when {
       method.getAnnotation(Html::class.java) != null -> lambda { content: HttpContent ->
-        method(obj)?.let { result -> finishHtml(result, content, doLog) }
+        finishHtml(method(obj), content, doLog)
       }
       method.getAnnotation(Text::class.java) != null -> lambda { content: HttpContent ->
-        method(obj)?.let { result -> finishText(result, content, doLog) }
+        finishText(method(obj), content, doLog)
       }
       method.getAnnotation(Json::class.java) != null -> lambda { content: HttpContent ->
-        method(obj)?.let { result -> finishJson(result, content, doLog) }
+        finishJson(method(obj), content, doLog)
       }
       else -> lambda { content: HttpContent ->
-        method(obj)?.let { result -> autoReturn(method, result, content, doLog) }
+        autoReturn(method, method(obj), content, doLog)
       }
     }).let {
       if (method.getAnnotation(BlockHandler::class.java) != null) lambda { content ->
@@ -282,6 +286,7 @@ open class RoutedHttpHandler(
     }.repeatUntil({ it.contains("//") }) { it.replace(slashRegex, "/") }
 
     fun autoReturn(method: Method, result: Any?, content: HttpContent, doLog: Boolean? = null) {
+      if (content.finished || result is Unit) return
       method.getAnnotation(ContextType::class.java)?.let {
         content.setContextType(it.type.value)
         log?.debug("{}: autoReturn context type auto set to {}({})", content.remoteAddress, it.type.key, it.type.value)
@@ -290,6 +295,7 @@ open class RoutedHttpHandler(
     }
 
     fun autoReturn(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (content.finished || result is Unit) return
       if (doLog) log?.debug("{}: autoReturn: {}", content.remoteAddress, result)
       result ?: return
       when (result) {
@@ -312,6 +318,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishHtml(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishHtml {}", content.remoteAddress, result)
       result ?: return
       when (result) {
@@ -330,6 +337,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishText(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishText {}", content.remoteAddress, result)
       result ?: return
       when (result) {
@@ -348,6 +356,7 @@ open class RoutedHttpHandler(
     }
 
     fun finishJson(result: Any?, content: HttpContent, doLog: Boolean = true) {
+      if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishJson {}", content.remoteAddress, result)
       result ?: return
       when (result) {

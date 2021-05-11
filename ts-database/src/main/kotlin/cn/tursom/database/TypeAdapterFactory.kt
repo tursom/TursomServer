@@ -1,6 +1,6 @@
 package cn.tursom.database
 
-import cn.tursom.core.clone.InstantAllocator
+import cn.tursom.core.InstantAllocator
 import cn.tursom.core.getClassByPackage
 import cn.tursom.core.uncheckedCast
 import me.liuwj.ktorm.schema.BaseTable

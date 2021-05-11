@@ -66,11 +66,8 @@ object Parser {
 
         else -> {
           if (yaml !is Map<*, *>) return null
-          val instance = try {
-            clazz.newInstance()
-          } catch (e: Exception) {
-            unsafe.allocateInstance(clazz)
-          }
+
+          val instance = InstantAllocator[clazz]
           val fields = clazz.declaredFields
           fields.forEach {
             if ((it.modifiers and (Modifier.STATIC or Modifier.TRANSIENT)) != 0) return@forEach
