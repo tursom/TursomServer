@@ -30,8 +30,8 @@ class NettyHttpServer(
   var bodySize: Int = 512 * 1024,
   autoRun: Boolean = false,
   var webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
-  var readTimeout: Int? = 60,
-  var writeTimeout: Int? = null,
+  var readTimeout: Int = 60,
+  var writeTimeout: Int = 0,
   decodeType: NettyHttpDecodeType = if (webSocketPath.iterator()
       .hasNext()
   ) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
@@ -44,8 +44,8 @@ class NettyHttpServer(
     bodySize: Int = 512 * 1024,
     autoRun: Boolean = false,
     webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
-    readTimeout: Int? = 60,
-    writeTimeout: Int? = null,
+    readTimeout: Int = 60,
+    writeTimeout: Int = 0,
     decodeType: NettyHttpDecodeType = if (webSocketPath.iterator()
         .hasNext()
     ) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
@@ -95,11 +95,11 @@ class NettyHttpServer(
           pipeline.addLast(sslHandler)
         }
 
-        readTimeout?.let {
-          pipeline.addLast(ReadTimeoutHandler(it))
+        if (readTimeout > 0) {
+          pipeline.addLast(ReadTimeoutHandler(readTimeout))
         }
-        writeTimeout?.let {
-          pipeline.addLast(WriteTimeoutHandler(it))
+        if (writeTimeout > 0) {
+          pipeline.addLast(WriteTimeoutHandler(writeTimeout))
         }
         pipeline.addLast("codec", HttpServerCodec())
         if (this@NettyHttpServer.decodeType == NettyHttpDecodeType.FULL_HTTP) {
