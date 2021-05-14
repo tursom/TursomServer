@@ -5,10 +5,7 @@ import cn.tursom.core.buffer.impl.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.Channel
-import io.netty.channel.ChannelFuture
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.EventLoopGroup
+import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -37,7 +34,8 @@ class WebSocketClient(
   var initChannel: ((ch: SocketChannel) -> Unit)? = null
 ) {
   private val uri: URI = URI.create(url)
-  internal var ch: Channel? = null
+  var ch: Channel? = null
+    internal set
 
   fun open() {
     close()
@@ -111,10 +109,8 @@ class WebSocketClient(
       ch?.writeAndFlush(CloseWebSocketFrame())
     } else {
       ch?.writeAndFlush(CloseWebSocketFrame(WebSocketCloseStatus.NORMAL_CLOSURE, reasonText))
-    }
-    ch?.close()
+    }?.addListener(ChannelFutureListener.CLOSE)
     return ch?.closeFuture()
-    //ch?.closeFuture()?.sync()
   }
 
   fun write(text: String): ChannelFuture {
@@ -194,6 +190,6 @@ class WebSocketClient(
   }
 
   companion object {
-    private val group: EventLoopGroup = NioEventLoopGroup()
+    val group: EventLoopGroup = NioEventLoopGroup()
   }
 }
