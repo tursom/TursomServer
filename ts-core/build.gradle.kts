@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":"))
+  api(project(":"))
   compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
   compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }
@@ -25,7 +25,7 @@ publishing {
 
       from(components["java"])
       try {
-        artifact(tasks["sourcesJar"])
+        artifact(tasks["kotlinSourcesJar"])
       } catch (e: Exception) {
       }
     }

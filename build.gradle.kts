@@ -17,7 +17,7 @@ ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
 
 
 plugins {
-    kotlin("jvm") version "1.4.31"
+    kotlin("jvm") version "1.4.32"
     `maven-publish`
 }
 
@@ -44,6 +44,12 @@ allprojects {
             }
         }
     }
+
+    tasks.withType<KotlinCompile>().configureEach {
+        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        //kotlinOptions.useIR = true
+    }
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
@@ -53,9 +59,10 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
     api(kotlin("reflect"))
     testImplementation(group = "junit", name = "junit", version = "4.12")
+}
 
-    val commonVersion = "1.0.RELEASE"
-    api("com.ddbes", "common-kotlin", commonVersion)
+artifacts {
+    archives(tasks["kotlinSourcesJar"])
 }
 
 tasks.register("install") {
@@ -71,7 +78,7 @@ publishing {
 
             from(components["java"])
             try {
-                artifact(tasks["sourcesJar"])
+                artifact(tasks["kotlinSourcesJar"])
             } catch (e: Exception) {
             }
         }

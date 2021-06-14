@@ -5,10 +5,7 @@ import cn.tursom.core.buffer.impl.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.Channel
-import io.netty.channel.ChannelFuture
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.EventLoopGroup
+import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -33,9 +30,12 @@ class WebSocketClient(
   val maxContextLength: Int = 4096,
   private val headers: Map<String, String>? = null,
   private val handshakerUri: URI? = null,
+  val autoRelease: Boolean = true,
+  var initChannel: ((ch: SocketChannel) -> Unit)? = null
 ) {
   private val uri: URI = URI.create(url)
-  internal var ch: Channel? = null
+  var ch: Channel? = null
+    internal set
 
   fun open() {
     close()
@@ -68,10 +68,12 @@ class WebSocketClient(
     headers?.forEach { (k, v) ->
       httpHeaders[k] = v
     }
-    val handshakerAdapter = WebSocketClientHandshakerAdapter(WebSocketClientHandshakerFactory.newHandshaker(
-      handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
-    ), this, handler)
-    val handler = WebSocketClientChannelHandler(this, handler)
+    val handshakerAdapter = WebSocketClientHandshakerAdapter(
+      WebSocketClientHandshakerFactory.newHandshaker(
+        handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
+      ), this, handler
+    )
+    val handler = WebSocketClientChannelHandler(this, handler, autoRelease)
     val bootstrap = Bootstrap()
     bootstrap.group(group)
       .channel(NioSocketChannel::class.java)
@@ -90,27 +92,25 @@ class WebSocketClient(
               addLast(WebSocketClientCompressionHandler.INSTANCE)
             }
             addLast(handshakerAdapter)
-            //if (log) {
-            //  addLast(LoggingHandler())
-            //}
             addLast(handler)
             if (autoWrap) {
               addLast(WebSocketFrameWrapper)
             }
           }
+          initChannel?.invoke(ch)
         }
       })
     bootstrap.connect(uri.host, port)
     //handler.handshakeFuture().sync()
   }
 
-  fun close(reasonText: String? = null) {
+  fun close(reasonText: String? = null): ChannelFuture? {
     if (reasonText == null) {
       ch?.writeAndFlush(CloseWebSocketFrame())
     } else {
       ch?.writeAndFlush(CloseWebSocketFrame(WebSocketCloseStatus.NORMAL_CLOSURE, reasonText))
-    }
-    ch?.closeFuture()?.sync()
+    }?.addListener(ChannelFutureListener.CLOSE)
+    return ch?.closeFuture()
   }
 
   fun write(text: String): ChannelFuture {
@@ -190,6 +190,6 @@ class WebSocketClient(
   }
 
   companion object {
-    private val group: EventLoopGroup = NioEventLoopGroup()
+    val group: EventLoopGroup = NioEventLoopGroup()
   }
 }

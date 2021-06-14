@@ -8,7 +8,8 @@ import io.netty.handler.codec.http.websocketx.*
 class WebSocketClientChannelHandler(
   val client: WebSocketClient,
   val handler: WebSocketHandler,
-) : SimpleChannelInboundHandler<WebSocketFrame>() {
+  private val autoRelease: Boolean = true,
+) : SimpleChannelInboundHandler<WebSocketFrame>(autoRelease) {
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
     handler.onClose(client)
@@ -24,7 +25,11 @@ class WebSocketClientChannelHandler(
       is BinaryWebSocketFrame -> handler.readMessage(client, msg)
       is PingWebSocketFrame -> handler.readPing(client, msg)
       is PongWebSocketFrame -> handler.readPong(client, msg)
-      is CloseWebSocketFrame -> ch.close()
+      is CloseWebSocketFrame -> {
+        if (!autoRelease) while (msg.refCnt() != 0) msg.release()
+        ch.close()
+      }
+      else -> if (!autoRelease) while (msg.refCnt() != 0) msg.release()
     }
   }
 }

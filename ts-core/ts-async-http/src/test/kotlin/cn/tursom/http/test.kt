@@ -1,7 +1,7 @@
 package cn.tursom.http
 
-import cn.tursom.utils.coroutine.MainDispatcher
-import cn.tursom.utils.gson
+import cn.tursom.core.Utils.gson
+import cn.tursom.core.coroutine.MainDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

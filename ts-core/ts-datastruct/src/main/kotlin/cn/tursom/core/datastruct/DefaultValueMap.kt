@@ -1,11 +1,11 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.cast
+import cn.tursom.core.uncheckedCast
 
 class DefaultValueMap<K, V>(
   private val map: Map<K, V?>,
-  private val defaultValue: (K) -> V
-) : Map<K, V> by map.cast() {
+  private val defaultValue: (K) -> V,
+) : Map<K, V> by map.uncheckedCast() {
   override val entries: Set<Map.Entry<K, V>> get() = Entry()
   override val values: Collection<V> get() = Values()
 
@@ -21,8 +21,8 @@ class DefaultValueMap<K, V>(
   }
 
   inner class Entry(
-    private val entries: Set<Map.Entry<K, V?>> = map.entries
-  ) : Set<Map.Entry<K, V>> by entries.cast() {
+    private val entries: Set<Map.Entry<K, V?>> = map.entries,
+  ) : Set<Map.Entry<K, V>> by entries.uncheckedCast() {
     override val size: Int get() = entries.count { it.value != null }
     override fun isEmpty(): Boolean = entries.firstOrNull { it.value != null } == null
     override fun iterator(): Iterator<Map.Entry<K, V>> = EntryIterator()
@@ -32,7 +32,7 @@ class DefaultValueMap<K, V>(
       private var next: Map.Entry<K, V>? = null
       override fun hasNext(): Boolean {
         while (iterator.hasNext()) {
-          next = iterator.next().cast()
+          next = iterator.next().uncheckedCast()
           if (next?.value != null) {
             return true
           }
@@ -44,13 +44,13 @@ class DefaultValueMap<K, V>(
         next != null -> next
         hasNext() -> next
         else -> throw NoSuchElementException()
-      }.cast()
+      }.uncheckedCast()
     }
   }
 
   inner class Values(
-    private val values: Collection<V?> = map.values
-  ) : Collection<V> by values.cast() {
+    private val values: Collection<V?> = map.values,
+  ) : Collection<V> by values.uncheckedCast() {
     override val size: Int get() = values.count { it != null }
     override fun isEmpty(): Boolean = values.first { it != null } == null
     override fun iterator(): Iterator<V> = ValuesIterator()
@@ -61,7 +61,7 @@ class DefaultValueMap<K, V>(
 
       override fun hasNext(): Boolean {
         while (iterator.hasNext()) {
-          next = iterator.next().cast()
+          next = iterator.next().uncheckedCast()
           if (next != null) {
             return true
           }
@@ -73,7 +73,7 @@ class DefaultValueMap<K, V>(
         next != null -> next
         hasNext() -> next
         else -> throw NoSuchElementException()
-      }.cast()
+      }.uncheckedCast()
     }
   }
 }

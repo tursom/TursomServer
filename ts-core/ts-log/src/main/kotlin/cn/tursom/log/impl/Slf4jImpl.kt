@@ -1,13 +1,14 @@
 package cn.tursom.log.impl
 
+import cn.tursom.core.getCallerClassName
 import cn.tursom.log.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import sun.reflect.Reflection
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
 
-open class Slf4jImpl(
+open class Slf4jImpl constructor(
+  @field:Transient
   override val log: Logger,
 ) : Slf4j, Logger by log {
   constructor(name: String? = null) : this(LoggerFactory.getLogger(name ?: loggerName))
@@ -27,20 +28,8 @@ open class Slf4jImpl(
   companion object {
     private val thisClassName = listOf(this::class.java.name.dropLast(10), this::class.java.name)
     private val loggerName: String
-      get() = getCallerClassName() ?: throw UnsupportedOperationException()
-
-    private fun getCallerClassName(): String? {
-      var clazz: Class<*>?
-      var callStackDepth = 1
-      do {
-        @Suppress("DEPRECATION")
-        clazz = Reflection.getCallerClass(callStackDepth++)
-        if (clazz?.name !in thisClassName) {
-          break
-        }
-      } while (clazz != null)
-      return clazz?.name
-    }
+      get() = getCallerClassName(thisClassName)?.substringBefore('$')
+        ?: throw UnsupportedOperationException()
 
     inline fun getLogger(name: String): Logger = LoggerFactory.getLogger(name)
 

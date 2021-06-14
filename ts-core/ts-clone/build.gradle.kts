@@ -6,6 +6,7 @@ plugins {
 dependencies {
   implementation(project(":"))
   implementation(project(":ts-core"))
+  implementation(project(":ts-core:ts-log"))
   implementation(project(":ts-core:ts-datastruct"))
 }
 
@@ -25,7 +26,7 @@ publishing {
 
       from(components["java"])
       try {
-        artifact(tasks["sourcesJar"])
+        artifact(tasks["kotlinSourcesJar"])
       } catch (e: Exception) {
       }
     }

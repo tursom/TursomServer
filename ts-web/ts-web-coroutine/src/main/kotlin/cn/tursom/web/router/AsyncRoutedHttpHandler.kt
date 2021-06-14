@@ -17,7 +17,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 @Suppress("ProtectedInFinal", "unused", "MemberVisibilityCanBePrivate")
 open class AsyncRoutedHttpHandler(
-  target: Any? = null,
+  vararg target: Any,
   routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() },
   val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() }
 ) : RoutedHttpHandler(target, routerMaker) {
@@ -60,7 +60,10 @@ open class AsyncRoutedHttpHandler(
     }
   }
 
-  fun getAsyncHandler(method: String, route: String): Pair<Pair<Any?, suspend (HttpContent) -> Unit>?, List<Pair<String, String>>> {
+  fun getAsyncHandler(
+    method: String,
+    route: String
+  ): Pair<Pair<Any?, suspend (HttpContent) -> Unit>?, List<Pair<String, String>>> {
     val safeRoute = safeRoute(route)
     val router = getAsyncRouter(method)[safeRoute]
     return if (router.first != null) router else this.asyncRouter[safeRoute]
@@ -110,21 +113,26 @@ open class AsyncRoutedHttpHandler(
   }
 
   @Suppress("UNCHECKED_CAST")
-  fun addRouter(obj: Any, method: KCallable<*>, route: String, router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>) {
+  fun addRouter(
+    obj: Any,
+    method: KCallable<*>,
+    route: String,
+    router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>
+  ) {
     val doLog = method.doLog
     router[safeRoute(route)] = if (method.parameters.size == 1) {
       obj to when {
         method.findAnnotation<Html>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishHtml(result, content, doLog) }
+          finishHtml((method as suspend Any.() -> Any?)(obj), content, doLog)
         }
         method.findAnnotation<Text>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishText(result, content, doLog) }
+          finishText((method as suspend Any.() -> Any?)(obj), content, doLog)
         }
         method.findAnnotation<Json>() != null -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> finishJson(result, content, doLog) }
+          finishJson((method as suspend Any.() -> Any?)(obj), content, doLog)
         }
         else -> { content ->
-          (method as suspend Any.() -> Any?)(obj)?.let { result -> autoReturn(method, result, content, doLog) }
+          autoReturn(method, (method as suspend Any.() -> Any?)(obj), content, doLog)
         }
       }
     } else obj to when (method.returnType.jvmErasure.java) {
@@ -133,16 +141,16 @@ open class AsyncRoutedHttpHandler(
       Unit::class.java -> { content -> (method as suspend Any.(HttpContent) -> Unit)(obj, content) }
       else -> when {
         method.findAnnotation<Html>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishHtml(result, content, doLog) }
+          finishHtml((method as suspend Any.(HttpContent) -> Any?)(obj, content), content, doLog)
         }
         method.findAnnotation<Text>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishText(result, content, doLog) }
+          finishText((method as suspend Any.(HttpContent) -> Any?)(obj, content), content, doLog)
         }
         method.findAnnotation<Json>() != null -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> finishJson(result, content, doLog) }
+          finishJson((method as suspend Any.(HttpContent) -> Any?)(obj, content), content, doLog)
         }
         else -> { content ->
-          (method as suspend Any.(HttpContent) -> Any?)(obj, content)?.let { result -> autoReturn(method, result, content, doLog) }
+          autoReturn(method, (method as suspend Any.(HttpContent) -> Any?)(obj, content), content, doLog)
         }
       }
     }
