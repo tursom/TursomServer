@@ -5,9 +5,9 @@ package cn.tursom.database
 import cn.tursom.core.Utils
 import cn.tursom.core.uncheckedCast
 import com.google.gson.Gson
-import me.liuwj.ktorm.dsl.Query
-import me.liuwj.ktorm.dsl.QueryRowSet
-import me.liuwj.ktorm.schema.*
+import org.ktorm.dsl.Query
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.schema.*
 import java.math.BigDecimal
 import java.sql.Date
 import java.sql.Time
@@ -141,7 +141,7 @@ fun <E : Any> BaseTable<E>.uuid(
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
   field: KProperty1<E, C?>,
   typeRef: TypeReference<C>,
-) = enum(field.simpTableField, typeRef)
+) = registerColumn(field.simpTableField, EnumSqlType(typeRef.referencedType.uncheckedCast<Class<C>>()))
 
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
   field: KProperty1<E, C?>,

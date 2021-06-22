@@ -95,7 +95,7 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
   }
 
   override fun close() = forEach(ByteBuffer::close)
-  override fun slice(offset: Int, size: Int): MultipleByteBuffer = ListByteBuffer(subList(offset, offset + size))
+  override fun slice(position: Int, size: Int): MultipleByteBuffer = ListByteBuffer(subList(position, position + size))
   override fun fill(byte: Byte) = forEach { it.fill(byte) }
   override fun clear() = forEach(ByteBuffer::clear)
   override fun reset() = forEach(ByteBuffer::reset)

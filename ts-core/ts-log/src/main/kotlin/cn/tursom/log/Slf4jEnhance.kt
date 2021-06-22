@@ -14,6 +14,7 @@ import ch.qos.logback.core.util.FileSize
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
+import java.util.*
 
 inline fun <reified T> T.slf4jLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
@@ -22,7 +23,8 @@ fun setLogLevel(level: Level, pkg: String = Logger.ROOT_LOGGER_NAME) {
   root.level = ch.qos.logback.classic.Level.toLevel(level.toString())
 }
 
-fun setLogLevel(level: String, pkg: String = Logger.ROOT_LOGGER_NAME) = setLogLevel(Level.valueOf(level.toUpperCase()), pkg)
+fun setLogLevel(level: String, pkg: String = Logger.ROOT_LOGGER_NAME) =
+  setLogLevel(Level.valueOf(level.uppercase(Locale.getDefault())), pkg)
 
 
 /**

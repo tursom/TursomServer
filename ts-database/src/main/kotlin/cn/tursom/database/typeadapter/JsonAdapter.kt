@@ -3,8 +3,8 @@ package cn.tursom.database.typeadapter
 import cn.tursom.database.TypeAdapter
 import cn.tursom.database.annotations.Json
 import cn.tursom.database.json
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.Column
+import org.ktorm.schema.BaseTable
+import org.ktorm.schema.Column
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 

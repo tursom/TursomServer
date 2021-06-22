@@ -2,8 +2,8 @@ package cn.tursom.database.typeadapter
 
 import cn.tursom.database.TypeAdapter
 import cn.tursom.database.jdbcDate
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.Column
+import org.ktorm.schema.BaseTable
+import org.ktorm.schema.Column
 import java.sql.Date
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.jvmErasure

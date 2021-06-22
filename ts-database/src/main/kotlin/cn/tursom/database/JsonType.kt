@@ -2,7 +2,7 @@ package cn.tursom.database
 
 import cn.tursom.core.Utils
 import com.google.gson.Gson
-import me.liuwj.ktorm.schema.SqlType
+import org.ktorm.schema.SqlType
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
 import java.sql.ResultSet

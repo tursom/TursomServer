@@ -82,11 +82,11 @@ val String.sqlName: String
   get() {
     val sb = StringBuilder()
     val iterator = iterator()
-    sb.append(iterator.nextChar().toLowerCase())
+    sb.append(iterator.nextChar().lowercaseChar())
     iterator.forEach {
       if (it.isUpperCase()) {
         sb.append('_')
-        sb.append(it.toLowerCase())
+        sb.append(it.lowercaseChar())
       } else {
         sb.append(it)
       }

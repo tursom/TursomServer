@@ -3,8 +3,8 @@ package cn.tursom.database
 import cn.tursom.core.InstantAllocator
 import cn.tursom.core.getClassByPackage
 import cn.tursom.core.uncheckedCast
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.Column
+import org.ktorm.schema.BaseTable
+import org.ktorm.schema.Column
 import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.reflect.KProperty1

@@ -3,9 +3,9 @@ package cn.tursom.database.typeadapter
 import cn.tursom.core.uncheckedCast
 import cn.tursom.database.TypeAdapter
 import cn.tursom.database.simpTableField
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.Column
-import me.liuwj.ktorm.schema.EnumSqlType
+import org.ktorm.schema.BaseTable
+import org.ktorm.schema.Column
+import org.ktorm.schema.EnumSqlType
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure

@@ -46,9 +46,11 @@ class NettyHttpServer(
     webSocketPath: Iterable<Pair<String, WebSocketHandler<NettyWebSocketContent>>> = listOf(),
     readTimeout: Int = 60,
     writeTimeout: Int = 0,
-    decodeType: NettyHttpDecodeType = if (webSocketPath.iterator()
-        .hasNext()
-    ) NettyHttpDecodeType.FULL_HTTP else NettyHttpDecodeType.MULTI_PART,
+    decodeType: NettyHttpDecodeType = if (webSocketPath.iterator().hasNext()) {
+      NettyHttpDecodeType.FULL_HTTP
+    } else {
+      NettyHttpDecodeType.MULTI_PART
+    },
     backlog: Int = 1024,
     wrapWebSocketFrame: Boolean = false,
     sslHandlerBuilder: ((allocator: ByteBufAllocator) -> SslHandler)? = null,

@@ -95,7 +95,7 @@ object MurmurHash3 {
     var bits: Int
     var nBytes = 0 // length in UTF8 bytes
     while (pos < end) {
-      val code = data[pos++].toInt()
+      val code = data[pos++].code
       if (code < 0x80) {
         k2 = code
         bits = 8
@@ -112,7 +112,7 @@ object MurmurHash3 {
       } else {
         // surrogate pair
         // int utf32 = pos < end ? (int) data.charAt(pos++) : 0;
-        var utf32 = data[pos++].toInt()
+        var utf32 = data[pos++].code
         utf32 = (code - 0xD7C0 shl 10) + (utf32 and 0x3FF)
         k2 = (0xff and (0xF0 or (utf32 shr 18))
           or (0x80 or (utf32 shr 12 and 0x3F) shl 8

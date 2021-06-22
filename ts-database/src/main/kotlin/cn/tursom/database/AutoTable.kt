@@ -5,9 +5,9 @@ import cn.tursom.core.clone.inject
 import cn.tursom.core.clone.instance
 import cn.tursom.core.uncheckedCast
 import com.baomidou.mybatisplus.annotation.TableField
-import me.liuwj.ktorm.dsl.QueryRowSet
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.Column
+import org.ktorm.dsl.QueryRowSet
+import org.ktorm.schema.BaseTable
+import org.ktorm.schema.Column
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

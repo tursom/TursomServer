@@ -9,7 +9,7 @@ interface MemoryPool {
   val staticSize: Boolean get() = true
   var autoCollection: Boolean
     get() = false
-    set(value) {}
+    set(_) {}
 
   //  fun allocate(): Int
   fun free(memory: ByteBuffer)

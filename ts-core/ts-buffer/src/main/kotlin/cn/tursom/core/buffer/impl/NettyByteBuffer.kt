@@ -96,7 +96,7 @@ class NettyByteBuffer(
   }
 
   override fun put(char: Char) {
-    byteBuf.writeChar(char.toInt())
+    byteBuf.writeChar(char.code)
   }
 
   override fun put(short: Short) {
