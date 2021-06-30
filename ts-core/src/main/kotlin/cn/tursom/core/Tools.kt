@@ -17,6 +17,8 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
+import java.util.zip.Deflater
+import java.util.zip.Inflater
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.resume
@@ -31,6 +33,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.superclasses
+
 
 object Utils {
   const val dollar = '$'
@@ -557,4 +560,38 @@ fun <T> List<T>.binarySearch(comparison: (T) -> Int): T? {
   val index = binarySearch(0, size, comparison)
   return if (index < 0) null
   else get(index)
+}
+
+fun ByteArray.undeflate(): ByteArray {
+  val inf = Inflater()
+  inf.setInput(this)
+  val bos = ByteArrayOutputStream()
+  val outByte = ByteArray(1024)
+  bos.use {
+    while (!inf.finished()) {
+      val len = inf.inflate(outByte)
+      if (len == 0) {
+        break
+      }
+      bos.write(outByte, 0, len)
+    }
+    inf.end()
+  }
+  return bos.toByteArray()
+}
+
+fun ByteArray.deflate(): ByteArray {
+  val def = Deflater()
+  def.setInput(this)
+  def.finish()
+  val bos = ByteArrayOutputStream()
+  val outputByte = ByteArray(1024)
+  bos.use {
+    while (!def.finished()) {
+      val len = def.deflate(outputByte)
+      bos.write(outputByte, 0, len)
+    }
+    def.end()
+  }
+  return bos.toByteArray()
 }
