@@ -17,7 +17,7 @@ ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
 
 
 plugins {
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.20"
     `maven-publish`
 }
 

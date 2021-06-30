@@ -61,3 +61,10 @@ open class CloseSafeByteBuffer(
     return agent.resize(newSize)
   }
 }
+
+
+fun main() {
+  val map = mapOf(1 to "1_", 2 to "2_")
+  map.entries.associate { it.value to it.key }
+}
+
