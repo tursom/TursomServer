@@ -129,26 +129,30 @@ object AsyncHttpRequest {
 		headers: Map<String, String>? = null,
 		client: OkHttpClient = defaultClient
 	) = post(
-        url,
-        RequestBody.create(MediaType.parse("application/octet-stream"), body),
-        headers,
-        client
-    )
-	
+		url,
+		RequestBody.create(MediaType.parse("application/octet-stream"), body),
+		headers,
+		client
+	)
+
 	suspend fun getStr(
 		url: String,
 		param: Map<String, String>? = null,
 		headers: Map<String, String>? = null
-	): String =
-        getStr(url, param, headers, defaultClient)
-	
+	): String {
+		return getStr(url, param, headers, defaultClient)
+	}
+
 	@Suppress("BlockingMethodInNonBlockingContext")
 	suspend fun getStr(
 		url: String,
 		param: Map<String, String>? = null,
 		headers: Map<String, String>? = null,
 		client: OkHttpClient
-	): String = get(url, param, headers, client).body()!!.string()
+	): String {
+		val response = get(url, param, headers, client)
+		return response.body()!!.string()
+	}
 	
 	@Suppress("BlockingMethodInNonBlockingContext")
 	private suspend fun postStr(
