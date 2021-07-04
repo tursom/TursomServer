@@ -24,7 +24,7 @@ import java.net.URI
 @Suppress("unused")
 open class WebSocketClient(
   url: String,
-  val handler: WebSocketHandler,
+  open val handler: WebSocketHandler,
   val autoWrap: Boolean = true,
   val log: Boolean = false,
   val compressed: Boolean = true,
