@@ -1,5 +1,6 @@
 package cn.tursom.core.ws
 
+import cn.tursom.core.ShutdownHook
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.NettyByteBuffer
 import io.netty.bootstrap.Bootstrap
@@ -36,6 +37,12 @@ open class WebSocketClient(
   private val uri: URI = URI.create(url)
   var ch: Channel? = null
     internal set
+
+  init {
+    ShutdownHook.addHook {
+      close()
+    }
+  }
 
   fun open() {
     close()
