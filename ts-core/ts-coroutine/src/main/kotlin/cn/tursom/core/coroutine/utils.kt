@@ -5,6 +5,7 @@ package cn.tursom.core.coroutine
 import cn.tursom.core.cast
 import cn.tursom.core.forAllFields
 import cn.tursom.core.isInheritanceFrom
+import cn.tursom.core.uncheckedCast
 import kotlinx.coroutines.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -156,6 +157,8 @@ suspend inline fun getContinuation(): Continuation<*> {
   val getContinuation: (continuation: Continuation<*>) -> Continuation<*> = ::getContinuation
   return (getContinuation.cast<suspend () -> Continuation<*>>()).invoke()
 }
+
+suspend inline fun <T> getTypedContinuation(): Continuation<T> = getContinuation().uncheckedCast()
 
 suspend fun injectCoroutineContext(
   coroutineContext: CoroutineContext,
