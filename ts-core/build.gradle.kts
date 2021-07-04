@@ -6,6 +6,7 @@ plugins {
 dependencies {
   api(project(":"))
   api(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
+  compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
   compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
   compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }
