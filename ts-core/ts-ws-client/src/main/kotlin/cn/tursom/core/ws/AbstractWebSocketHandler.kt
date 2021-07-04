@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.websocketx.PongWebSocketFrame
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 
 @Suppress("unused")
-class AbstractWebSocketHandler : WebSocketHandler {
+open class AbstractWebSocketHandler : WebSocketHandler {
   private var onOpen: ((client: WebSocketClient) -> Unit)? = null
 
   fun onOpen(onOpen: ((client: WebSocketClient) -> Unit)) {
