@@ -3,6 +3,7 @@ package cn.tursom.core.ws
 import cn.tursom.core.ShutdownHook
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.NettyByteBuffer
+import cn.tursom.core.uncheckedCast
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -22,9 +23,9 @@ import java.net.URI
 
 
 @Suppress("unused")
-open class WebSocketClient(
+open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>>(
   url: String,
-  open val handler: WebSocketHandler,
+  open val handler: H,
   val autoWrap: Boolean = true,
   val log: Boolean = false,
   val compressed: Boolean = true,
@@ -32,7 +33,7 @@ open class WebSocketClient(
   private val headers: Map<String, String>? = null,
   private val handshakerUri: URI? = null,
   val autoRelease: Boolean = true,
-  var initChannel: ((ch: SocketChannel) -> Unit)? = null
+  var initChannel: ((ch: SocketChannel) -> Unit)? = null,
 ) {
   private val uri: URI = URI.create(url)
   var ch: Channel? = null
@@ -44,12 +45,11 @@ open class WebSocketClient(
     }
   }
 
-  fun open() {
+  fun open(): ChannelFuture? {
     close()
     val scheme = if (uri.scheme == null) "ws" else uri.scheme
     val host = if (uri.host == null) "127.0.0.1" else uri.host
-    val port: Int
-    port = if (uri.port == -1) {
+    val port = if (uri.port == -1) {
       when {
         "ws".equals(scheme, ignoreCase = true) -> 80
         "wss".equals(scheme, ignoreCase = true) -> 443
@@ -61,7 +61,7 @@ open class WebSocketClient(
 
     if (!"ws".equals(scheme, ignoreCase = true) && !"wss".equals(scheme, ignoreCase = true)) {
       System.err.println("Only WS(S) is supported.")
-      return
+      return null
     }
 
     val ssl = "wss".equals(scheme, ignoreCase = true)
@@ -78,9 +78,9 @@ open class WebSocketClient(
     val handshakerAdapter = WebSocketClientHandshakerAdapter(
       WebSocketClientHandshakerFactory.newHandshaker(
         handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
-      ), this, handler
+      ), uncheckedCast(), handler
     )
-    val handler = WebSocketClientChannelHandler(this, handler, autoRelease)
+    val handler = WebSocketClientChannelHandler(uncheckedCast(), handler, autoRelease)
     val bootstrap = Bootstrap()
     bootstrap.group(group)
       .channel(NioSocketChannel::class.java)
@@ -107,8 +107,7 @@ open class WebSocketClient(
           initChannel?.invoke(ch)
         }
       })
-    bootstrap.connect(uri.host, port)
-    //handler.handshakeFuture().sync()
+    return bootstrap.connect(uri.host, port)
   }
 
   fun close(reasonText: String? = null): ChannelFuture? {

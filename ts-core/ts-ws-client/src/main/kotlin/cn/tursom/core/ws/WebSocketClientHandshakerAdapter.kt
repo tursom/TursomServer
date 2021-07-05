@@ -7,10 +7,10 @@ import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker
 import io.netty.util.CharsetUtil
 
-class WebSocketClientHandshakerAdapter(
+class WebSocketClientHandshakerAdapter<T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>>(
   private val handshaker: WebSocketClientHandshaker,
-  private val client: WebSocketClient,
-  private val handler: WebSocketHandler,
+  private val client: T,
+  private val handler: WebSocketHandler<T, H>,
 ) : SimpleChannelInboundHandler<FullHttpResponse>() {
   private var handshakeFuture: ChannelPromise? = null
 

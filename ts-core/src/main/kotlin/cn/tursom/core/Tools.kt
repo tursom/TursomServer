@@ -494,7 +494,8 @@ fun getCallerClass(thisClassName: List<String>): Class<*>? {
   var callStackDepth = 1
   do {
     clazz = getCallerClass(callStackDepth++)
-    if (clazz?.name !in thisClassName) {
+    val clazzName = clazz?.name
+    if (clazzName != "cn.tursom.core.ToolsKt" && clazzName !in thisClassName) {
       break
     }
   } while (clazz != null)

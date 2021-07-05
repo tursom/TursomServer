@@ -5,9 +5,9 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.websocketx.*
 
 
-class WebSocketClientChannelHandler(
-  val client: WebSocketClient,
-  val handler: WebSocketHandler,
+class WebSocketClientChannelHandler<T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>>(
+  val client: T,
+  val handler: WebSocketHandler<T, H>,
   private val autoRelease: Boolean = true,
 ) : SimpleChannelInboundHandler<WebSocketFrame>(autoRelease) {
 

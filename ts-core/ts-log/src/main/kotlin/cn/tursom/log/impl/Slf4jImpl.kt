@@ -26,7 +26,10 @@ open class Slf4jImpl constructor(
 
   @Suppress("MemberVisibilityCanBePrivate", "NOTHING_TO_INLINE")
   companion object {
-    private val thisClassName = listOf(this::class.java.name.dropLast(10), this::class.java.name)
+    private val thisClassName = listOf(
+      this::class.java.name.dropLast(10),
+      this::class.java.name,
+    )
     private val loggerName: String
       get() = getCallerClassName(thisClassName)?.substringBefore('$')
         ?: throw UnsupportedOperationException()
