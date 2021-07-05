@@ -195,10 +195,10 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
     return ch!!.writeAndFlush(PongWebSocketFrame(data))
   }
 
-  fun onOpen() {
+  open fun onOpen() {
   }
 
-  fun onClose() {
+  open fun onClose() {
   }
 
   companion object {
