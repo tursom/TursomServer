@@ -195,6 +195,12 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
     return ch!!.writeAndFlush(PongWebSocketFrame(data))
   }
 
+  fun onOpen() {
+  }
+
+  fun onClose() {
+  }
+
   companion object {
     val group: EventLoopGroup = NioEventLoopGroup()
   }

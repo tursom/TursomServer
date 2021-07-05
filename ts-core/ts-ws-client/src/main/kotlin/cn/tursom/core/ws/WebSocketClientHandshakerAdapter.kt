@@ -29,6 +29,7 @@ class WebSocketClientHandshakerAdapter<T : WebSocketClient<T, H>, H : WebSocketH
       handshakeFuture!!.setSuccess()
       //msg.retain()
       //ctx.fireChannelRead(msg)
+      client.onOpen()
       handler.onOpen(client)
       return
     } else {

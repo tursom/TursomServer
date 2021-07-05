@@ -12,6 +12,7 @@ class WebSocketClientChannelHandler<T : WebSocketClient<T, H>, H : WebSocketHand
 ) : SimpleChannelInboundHandler<WebSocketFrame>(autoRelease) {
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
+    client.onClose()
     handler.onClose(client)
     if (client.ch == ctx.channel()) {
       client.ch = null
