@@ -9,13 +9,12 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KMutableProperty1
 
-@Suppress("unused", "MemberVisibilityCanBePrivate")
+@Suppress("unused", "MemberVisibilityCanBePrivate", "NOTHING_TO_INLINE")
 open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>> : WebSocketHandler<T, H> {
-  fun <A1> addListener(
+  inline fun <A1> addListener(
     p: KMutableProperty0<((A1) -> Unit)?>,
-    newHandler: ((A1) -> Unit)?,
+    crossinline newHandler: (A1) -> Unit,
   ) {
-    newHandler ?: return
     val oldHandler = p.get()
     p.set { a1: A1 ->
       oldHandler?.invoke(a1)
@@ -23,11 +22,10 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }
   }
 
-  fun <A1> addListener(
+  inline fun <A1> addListener(
     p: KMutableProperty1<AbstractWebSocketHandler<T, H>, ((A1) -> Unit)?>,
-    newHandler: ((A1) -> Unit)?,
+    crossinline newHandler: (A1) -> Unit,
   ) {
-    newHandler ?: return
     val oldHandler = p.get(this)
     p.set(this) { a1: A1 ->
       oldHandler?.invoke(a1)
@@ -35,11 +33,10 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }
   }
 
-  fun <A1, A2> addListener(
+  inline fun <A1, A2> addListener(
     p: KMutableProperty0<((A1, A2) -> Unit)?>,
-    newHandler: ((A1, A2) -> Unit)?,
+    noinline newHandler: (A1, A2) -> Unit,
   ) {
-    newHandler ?: return
     val oldHandler = p.get()
     p.set { a1: A1, a2: A2 ->
       oldHandler?.invoke(a1, a2)
@@ -47,11 +44,10 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }
   }
 
-  fun <A1, A2> addListener(
+  inline fun <A1, A2> addListener(
     p: KMutableProperty1<AbstractWebSocketHandler<T, H>, ((A1, A2) -> Unit)?>,
-    newHandler: ((A1, A2) -> Unit)?,
+    crossinline newHandler: (A1, A2) -> Unit,
   ) {
-    newHandler ?: return
     val oldHandler = p.get(this)
     p.set(this) { a1: A1, a2: A2 ->
       oldHandler?.invoke(a1, a2)
