@@ -1,7 +1,6 @@
 package cn.tursom.core.ws
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.uncheckedCast
 import io.netty.buffer.ByteBuf
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame
@@ -12,52 +11,52 @@ import kotlin.reflect.KMutableProperty1
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>> : WebSocketHandler<T, H> {
-  fun <F : (A1) -> Unit, A1> addListener(
-    p: KMutableProperty0<F?>,
-    newHandler: F?,
+  fun <A1> addListener(
+    p: KMutableProperty0<((A1) -> Unit)?>,
+    newHandler: ((A1) -> Unit)?,
   ) {
     newHandler ?: return
     val oldHandler = p.get()
-    p.set({ a1: A1 ->
+    p.set { a1: A1 ->
       oldHandler?.invoke(a1)
       newHandler(a1)
-    }.uncheckedCast())
+    }
   }
 
-  fun <F : (A1) -> Unit, A1> addListener(
-    p: KMutableProperty1<AbstractWebSocketHandler<T, H>, F?>,
-    newHandler: F?,
+  fun <A1> addListener(
+    p: KMutableProperty1<AbstractWebSocketHandler<T, H>, ((A1) -> Unit)?>,
+    newHandler: ((A1) -> Unit)?,
   ) {
     newHandler ?: return
     val oldHandler = p.get(this)
-    p.set(this, { a1: A1 ->
+    p.set(this) { a1: A1 ->
       oldHandler?.invoke(a1)
       newHandler(a1)
-    }.uncheckedCast())
+    }
   }
 
-  fun <F : (A1, A2) -> Unit, A1, A2> addListener(
-    p: KMutableProperty0<F?>,
-    newHandler: F?,
+  fun <A1, A2> addListener(
+    p: KMutableProperty0<((A1, A2) -> Unit)?>,
+    newHandler: ((A1, A2) -> Unit)?,
   ) {
     newHandler ?: return
     val oldHandler = p.get()
-    p.set({ a1: A1, a2: A2 ->
+    p.set { a1: A1, a2: A2 ->
       oldHandler?.invoke(a1, a2)
       newHandler(a1, a2)
-    }.uncheckedCast())
+    }
   }
 
-  fun <F : (A1, A2) -> Unit, A1, A2> addListener(
-    p: KMutableProperty1<AbstractWebSocketHandler<T, H>, F?>,
-    newHandler: F?,
+  fun <A1, A2> addListener(
+    p: KMutableProperty1<AbstractWebSocketHandler<T, H>, ((A1, A2) -> Unit)?>,
+    newHandler: ((A1, A2) -> Unit)?,
   ) {
     newHandler ?: return
     val oldHandler = p.get(this)
-    p.set(this, { a1: A1, a2: A2 ->
+    p.set(this) { a1: A1, a2: A2 ->
       oldHandler?.invoke(a1, a2)
       newHandler(a1, a2)
-    }.uncheckedCast())
+    }
   }
 
   var onOpen: ((client: T) -> Unit)? = null
