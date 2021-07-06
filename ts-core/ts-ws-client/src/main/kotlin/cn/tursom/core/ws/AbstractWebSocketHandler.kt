@@ -12,7 +12,7 @@ import kotlin.reflect.KMutableProperty1
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>> : WebSocketHandler<T, H> {
-  fun <F : (A1) -> Unit, A1> addListener1(
+  fun <F : (A1) -> Unit, A1> addListener(
     p: KMutableProperty0<F?>,
     newHandler: F?,
   ) {
@@ -24,7 +24,7 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }.uncheckedCast())
   }
 
-  fun <F : (A1) -> Unit, A1> addListener1(
+  fun <F : (A1) -> Unit, A1> addListener(
     p: KMutableProperty1<AbstractWebSocketHandler<T, H>, F?>,
     newHandler: F?,
   ) {
@@ -36,7 +36,7 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }.uncheckedCast())
   }
 
-  fun <F : (A1, A2) -> Unit, A1, A2> addListener2(
+  fun <F : (A1, A2) -> Unit, A1, A2> addListener(
     p: KMutableProperty0<F?>,
     newHandler: F?,
   ) {
@@ -48,7 +48,7 @@ open class AbstractWebSocketHandler<T : WebSocketClient<T, H>, H : WebSocketHand
     }.uncheckedCast())
   }
 
-  fun <F : (A1, A2) -> Unit, A1, A2> addListener2(
+  fun <F : (A1, A2) -> Unit, A1, A2> addListener(
     p: KMutableProperty1<AbstractWebSocketHandler<T, H>, F?>,
     newHandler: F?,
   ) {
