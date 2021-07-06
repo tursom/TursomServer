@@ -40,6 +40,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
     internal set
 
   init {
+    uncheckedCast<T>()
     ShutdownHook.addHook {
       close()
     }
