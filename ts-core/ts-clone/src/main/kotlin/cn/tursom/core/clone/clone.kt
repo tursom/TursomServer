@@ -2,6 +2,7 @@ package cn.tursom.core.clone
 
 import cn.tursom.core.*
 import cn.tursom.core.datastruct.ArrayMap
+import cn.tursom.core.reflect.InstantAllocator
 import cn.tursom.log.impl.Slf4jImpl
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1

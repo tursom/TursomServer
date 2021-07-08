@@ -1,7 +1,7 @@
 package cn.tursom.database
 
-import cn.tursom.core.InstantAllocator
 import cn.tursom.core.getClassByPackage
+import cn.tursom.core.reflect.InstantAllocator
 import cn.tursom.core.uncheckedCast
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.Column

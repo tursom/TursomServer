@@ -1,12 +1,19 @@
-package cn.tursom.core
+package cn.tursom.core.reflect
 
+import cn.tursom.core.ThreadLocalSimpleDateFormat
 import cn.tursom.core.Unsafe.unsafe
+import cn.tursom.core.cast
+import cn.tursom.core.getClazz
+import cn.tursom.core.isInheritanceFrom
 import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 object Parser {
   private val dateFormat = ThreadLocalSimpleDateFormat()

@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb
 
-import cn.tursom.core.Parser
+import cn.tursom.core.reflect.Parser
 import org.bson.Document
 
 interface BsonFactory<T> {
