@@ -5,6 +5,7 @@ import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.ByteOrder
 import kotlin.math.min
 
 /**
@@ -82,12 +83,12 @@ interface ByteBuffer : Closeable {
   }
 
   fun get(): Byte = read { it.get() }
-  fun getChar(): Char = read { it.char }
-  fun getShort(): Short = read { it.short }
-  fun getInt(): Int = read { it.int }
-  fun getLong(): Long = read { it.long }
-  fun getFloat(): Float = read { it.float }
-  fun getDouble(): Double = read { it.double }
+  fun getChar(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Char = read { it.char }
+  fun getShort(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Short = read { it.short }
+  fun getInt(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int = read { it.int }
+  fun getLong(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Long = read { it.long }
+  fun getFloat(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Float = read { it.float }
+  fun getDouble(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Double = read { it.double }
 
   fun getBytes(size: Int = readable): ByteArray = read {
     val bytes = ByteArray(size)

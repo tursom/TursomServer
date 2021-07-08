@@ -7,6 +7,7 @@ import cn.tursom.core.toBytes
 import java.io.Closeable
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.ByteOrder
 
 @Suppress("unused")
 interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
@@ -123,12 +124,12 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
   override fun resize(newSize: Int): Boolean = false
 
   override fun get(): Byte
-  override fun getChar(): Char = cn.tursom.core.toChar(::get)
-  override fun getShort(): Short = cn.tursom.core.toShort(::get)
-  override fun getInt(): Int = cn.tursom.core.toInt(::get)
-  override fun getLong(): Long = cn.tursom.core.toLong(::get)
-  override fun getFloat(): Float = cn.tursom.core.toFloat(::get)
-  override fun getDouble(): Double = cn.tursom.core.toDouble(::get)
+  override fun getChar(byteOrder: ByteOrder): Char = cn.tursom.core.toChar(byteOrder, ::get)
+  override fun getShort(byteOrder: ByteOrder): Short = cn.tursom.core.toShort(byteOrder, ::get)
+  override fun getInt(byteOrder: ByteOrder): Int = cn.tursom.core.toInt(byteOrder, ::get)
+  override fun getLong(byteOrder: ByteOrder): Long = cn.tursom.core.toLong(byteOrder, ::get)
+  override fun getFloat(byteOrder: ByteOrder): Float = cn.tursom.core.toFloat(byteOrder, ::get)
+  override fun getDouble(byteOrder: ByteOrder): Double = cn.tursom.core.toDouble(byteOrder, ::get)
   override fun getBytes(size: Int): ByteArray {
     val buffer = ByteArray(size)
     buffer.indices.forEach {

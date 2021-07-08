@@ -3,6 +3,7 @@ package cn.tursom.core.buffer.impl
 import cn.tursom.core.buffer.ByteBuffer
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
+import java.nio.ByteOrder
 
 class NettyByteBuffer(
   val byteBuf: ByteBuf
@@ -60,12 +61,12 @@ class NettyByteBuffer(
   }
 
   override fun get(): Byte = byteBuf.readByte()
-  override fun getChar(): Char = byteBuf.readChar()
-  override fun getShort(): Short = byteBuf.readShort()
-  override fun getInt(): Int = byteBuf.readInt()
-  override fun getLong(): Long = byteBuf.readLong()
-  override fun getFloat(): Float = byteBuf.readFloat()
-  override fun getDouble(): Double = byteBuf.readDouble()
+  override fun getChar(byteOrder: ByteOrder): Char = byteBuf.readChar()
+  override fun getShort(byteOrder: ByteOrder): Short = byteBuf.readShort()
+  override fun getInt(byteOrder: ByteOrder): Int = byteBuf.readInt()
+  override fun getLong(byteOrder: ByteOrder): Long = byteBuf.readLong()
+  override fun getFloat(byteOrder: ByteOrder): Float = byteBuf.readFloat()
+  override fun getDouble(byteOrder: ByteOrder): Double = byteBuf.readDouble()
 
   override fun getBytes(size: Int): ByteArray {
     val bytes = ByteArray(size)
