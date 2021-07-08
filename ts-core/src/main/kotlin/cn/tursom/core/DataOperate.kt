@@ -92,7 +92,7 @@ fun DoubleArray.toByteArray(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Byt
 }
 
 fun ByteArray.toChar(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Char {
-  return if (byteOrder == ByteOrder.BIG_ENDIAN) {
+  return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
     (this[offset].toInt() or (this[offset + 1].toInt() shl 8))
   } else {
     (this[offset + 1].toInt() or (this[offset].toInt() shl 8))
@@ -100,7 +100,7 @@ fun ByteArray.toChar(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrd
 }
 
 fun ByteArray.toShort(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Short {
-  return if (byteOrder == ByteOrder.BIG_ENDIAN) {
+  return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
     (this[offset].toInt() or (this[offset + 1].toInt() shl 8))
   } else {
     (this[offset + 1].toInt() or (this[offset].toInt() shl 8))
@@ -108,7 +108,7 @@ fun ByteArray.toShort(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOr
 }
 
 fun ByteArray.toInt(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
-  return if (byteOrder == ByteOrder.BIG_ENDIAN) {
+  return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
     this[offset].toInt() and 0xff or (this[offset + 1].toInt() shl 8 and 0xff00) or
       (this[offset + 2].toInt() shl 16 and 0xff0000) or (this[offset + 3].toInt() shl 24 and 0xff000000.toInt())
   } else {
@@ -118,7 +118,7 @@ fun ByteArray.toInt(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrde
 }
 
 fun ByteArray.toLong(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Long {
-  return if (byteOrder == ByteOrder.BIG_ENDIAN) {
+  return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
     toInt(offset).toLong() or (toInt(offset + 4).toLong().shl(32) and 0xffff_ffffL.inv())
   } else {
     toInt(offset + 4).toLong() or (toInt(offset).toLong().shl(32) and 0xffff_ffffL.inv())
@@ -189,7 +189,7 @@ fun ByteArray.toDoubleArray(offset: Int, size: Int, byteOrder: ByteOrder = ByteO
 
 fun Short.hton(): Short = ntoh()
 fun Short.ntoh(): Short {
-  return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+  return if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
     this
   } else {
     val value = toInt()
@@ -200,7 +200,7 @@ fun Short.ntoh(): Short {
 
 fun Int.hton(): Int = ntoh()
 fun Int.ntoh(): Int {
-  return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+  return if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
     this
   } else {
     shr(24) or (shr(16) and 0xff00) or (shr(8) and 0xff0000) or (this and 0xff)
@@ -210,7 +210,7 @@ fun Int.ntoh(): Int {
 
 fun Long.hton(): Long = ntoh()
 fun Long.ntoh(): Long {
-  return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+  return if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
     this
   } else {
     shr(56) or (shr(48) and 0xff00) or (shr(40) and 0xff0000)
@@ -222,11 +222,11 @@ fun Long.ntoh(): Long {
 fun ByteArray.put(char: Char, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
   val value = char.code
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = value.toByte()
       this[offset + 1] = (value shr 8).toByte()
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       this[offset + 1] = value.toByte()
       this[offset] = (value shr 8).toByte()
     }
@@ -236,11 +236,11 @@ fun ByteArray.put(char: Char, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.
 fun ByteArray.put(short: Short, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
   val value = short.toInt()
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = value.toByte()
       this[offset + 1] = (value shr 8).toByte()
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       this[offset + 1] = value.toByte()
       this[offset] = (value shr 8).toByte()
     }
@@ -249,13 +249,13 @@ fun ByteArray.put(short: Short, offset: Int = 0, byteOrder: ByteOrder = ByteOrde
 
 fun ByteArray.put(int: Int, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = int.toByte()
       this[offset + 1] = (int shr 8).toByte()
       this[offset + 2] = (int shr 16).toByte()
       this[offset + 3] = (int shr 24).toByte()
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       this[offset + 3] = int.toByte()
       this[offset + 2] = (int shr 8).toByte()
       this[offset + 1] = (int shr 16).toByte()
@@ -266,7 +266,7 @@ fun ByteArray.put(int: Int, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.na
 
 fun ByteArray.put(long: Long, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = long.toByte()
       this[offset + 1] = (long shr 8).toByte()
       this[offset + 2] = (long shr 16).toByte()
@@ -276,7 +276,7 @@ fun ByteArray.put(long: Long, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.
       this[offset + 6] = (long shr 48).toByte()
       this[offset + 7] = (long shr 56).toByte()
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       this[offset + 7] = long.toByte()
       this[offset + 6] = (long shr 8).toByte()
       this[offset + 5] = (long shr 16).toByte()
@@ -667,11 +667,11 @@ inline fun DoubleArray.forEachIndex(fromIndex: Int, toIndex: Int, action: (Doubl
 inline fun Char.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: (Byte) -> Unit) {
   val value = code
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       action(value.toByte())
       action((value shr 8).toByte())
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       action((value shr 8).toByte())
       action(value.toByte())
     }
@@ -681,11 +681,11 @@ inline fun Char.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: 
 inline fun Short.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: (Byte) -> Unit) {
   val value = toInt()
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       action(value.toByte())
       action((value shr 8).toByte())
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       action((value shr 8).toByte())
       action(value.toByte())
     }
@@ -694,13 +694,13 @@ inline fun Short.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action:
 
 inline fun Int.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: (Byte) -> Unit) {
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       action(this.toByte())
       action((this shr 8).toByte())
       action((this shr 16).toByte())
       action((this shr 24).toByte())
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       action((this shr 24).toByte())
       action((this shr 16).toByte())
       action((this shr 8).toByte())
@@ -711,7 +711,7 @@ inline fun Int.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: (
 
 inline fun Long.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: (Byte) -> Unit) {
   when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       action(this.toByte())
       action((this shr 8).toByte())
       action((this shr 16).toByte())
@@ -721,7 +721,7 @@ inline fun Long.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action: 
       action((this shr 48).toByte())
       action((this shr 56).toByte())
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       action((this shr 56).toByte())
       action((this shr 48).toByte())
       action((this shr 40).toByte())
@@ -744,10 +744,10 @@ inline fun Double.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action
 
 inline fun toChar(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Char {
   return when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       (get().toInt() or (get().toInt() shl 8))
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       val late = get()
       (get().toInt() or (late.toInt() shl 8))
     }
@@ -757,10 +757,10 @@ inline fun toChar(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byt
 
 inline fun toShort(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Short {
   return when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       (get().toInt() or (get().toInt() shl 8))
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       val late = get()
       (get().toInt() or (late.toInt() shl 8))
     }
@@ -770,11 +770,11 @@ inline fun toShort(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> By
 
 inline fun toInt(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Int {
   return when (byteOrder) {
-    ByteOrder.BIG_ENDIAN -> {
+    ByteOrder.LITTLE_ENDIAN -> {
       get().toInt() and 0xff or (get().toInt() shl 8 and 0xff00) or
         (get().toInt() shl 16 and 0xff0000) or (get().toInt() shl 24 and 0xff000000.toInt())
     }
-    ByteOrder.LITTLE_ENDIAN -> {
+    ByteOrder.BIG_ENDIAN -> {
       val i1 = get()
       val i2 = get()
       val i3 = get()
@@ -786,7 +786,7 @@ inline fun toInt(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte
 }
 
 inline fun toLong(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Long {
-  return if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
+  return if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
     toInt(byteOrder, get).toLong() or (toInt(byteOrder, get).toLong().shl(32) and 0xffff_ffffL.inv())
   } else {
     val late = toInt(byteOrder, get)
