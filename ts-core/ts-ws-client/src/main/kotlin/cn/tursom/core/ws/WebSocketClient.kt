@@ -3,7 +3,9 @@ package cn.tursom.core.ws
 import cn.tursom.core.ShutdownHook
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.NettyByteBuffer
+import cn.tursom.core.notifyAll
 import cn.tursom.core.uncheckedCast
+import cn.tursom.core.wait
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -20,6 +22,8 @@ import io.netty.handler.logging.LoggingHandler
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import java.net.URI
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 
 
 @Suppress("unused")
@@ -38,8 +42,11 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   private val uri: URI = URI.create(url)
   var ch: Channel? = null
     internal set
+  var closed: Boolean = false
+    private set
 
   init {
+    uncheckedCast<T>()
     ShutdownHook.addHook {
       close()
     }
@@ -82,7 +89,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
     )
     val handler = WebSocketClientChannelHandler(uncheckedCast(), handler, autoRelease)
     val bootstrap = Bootstrap()
-    bootstrap.group(group)
+      .group(group)
       .channel(NioSocketChannel::class.java)
       .handler(object : ChannelInitializer<SocketChannel>() {
         override fun initChannel(ch: SocketChannel) {
@@ -196,12 +203,24 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   }
 
   open fun onOpen() {
+    closed = false
   }
 
   open fun onClose() {
+    closed = true
+    notifyAll { }
+  }
+
+  fun waitClose() {
+    if (!closed) wait { }
   }
 
   companion object {
-    val group: EventLoopGroup = NioEventLoopGroup()
+    private val threadId = AtomicInteger()
+    private val group: EventLoopGroup = NioEventLoopGroup(0, ThreadFactory {
+      val thread = Thread(it, "WebSocketClient-${threadId.incrementAndGet()}")
+      thread.isDaemon = true
+      thread
+    })
   }
 }
