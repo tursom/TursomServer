@@ -205,11 +205,12 @@ interface ByteBuffer : Closeable {
     array.forEachIndex(index, index + size - 1, this::put)
   }
 
-  fun put(inputStream: InputStream) {
-    if (hasArray) {
+  fun put(inputStream: InputStream): Int {
+    return if (hasArray) {
       val read = inputStream.read(array, writeOffset, writeable)
-      if (read < 0) throw  IOException("stream closed")
+      if (read < 0) throw IOException("stream closed")
       writePosition += read
+      read
     } else {
       val buffer = ByteArray(10 * 1024)
       val read = inputStream.read(buffer)

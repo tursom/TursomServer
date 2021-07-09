@@ -12,6 +12,8 @@ class ThreadLocalSimpleDateFormat(
   fun format(date: Date) = get().format(date)
   fun parse(date: String) = get().parse(date)
 
+  fun now() = format(System.currentTimeMillis())
+
   companion object {
     val iso8601 = ThreadLocalSimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssZZ")
     val standard = ThreadLocalSimpleDateFormat("YYYY-MM-dd HH:mm:ss")

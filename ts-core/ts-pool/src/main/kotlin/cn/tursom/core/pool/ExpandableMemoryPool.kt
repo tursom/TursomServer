@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 可自动申请新内存空间的内存池
- * 线程安全
+ * 线程安全依赖于poolFactory提供的内存池的线程安全性
  */
 class ExpandableMemoryPool(
   val maxPoolCount: Int = -1,
