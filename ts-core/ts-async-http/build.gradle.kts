@@ -8,7 +8,7 @@ dependencies {
   api(project(":ts-core"))
   api(project(":ts-core:ts-buffer"))
   implementation(project(":ts-core:ts-xml"))
-  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
   api(group = "com.squareup.retrofit2", name = "converter-gson", version = "2.9.0")
   // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
   api(group = "com.squareup.retrofit2", name = "retrofit", version = "2.9.0")
