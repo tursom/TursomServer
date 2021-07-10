@@ -19,10 +19,10 @@ interface ResponseHeaderAdapter {
     mustRevalidate: Boolean = false
   ) = setResponseHeader(
     "Cache-Control", "$cacheControl${
-    if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""
-  }${
-    if (mustRevalidate) ", must-revalidate" else ""
-  }"
+      if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""
+    }${
+      if (mustRevalidate) ", must-revalidate" else ""
+    }"
   )
 
   fun addCookie(cookie: Cookie) = addResponseHeader("Set-Cookie", cookie)

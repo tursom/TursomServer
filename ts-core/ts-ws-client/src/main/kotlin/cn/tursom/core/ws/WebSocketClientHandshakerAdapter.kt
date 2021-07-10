@@ -33,9 +33,11 @@ class WebSocketClientHandshakerAdapter<T : WebSocketClient<T, H>, H : WebSocketH
       handler.onOpen(client)
       return
     } else {
-      throw Exception("Unexpected FullHttpResponse (getStatus=${msg.status()}, content=${
-        msg.content().toString(CharsetUtil.UTF_8)
-      })")
+      throw Exception(
+        "Unexpected FullHttpResponse (getStatus=${msg.status()}, content=${
+          msg.content().toString(CharsetUtil.UTF_8)
+        })"
+      )
     }
   }
 

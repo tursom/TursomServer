@@ -11,12 +11,14 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 
 @ChannelHandler.Sharable
 object WebSocketFrameWrapper : ChannelOutboundHandlerAdapter() {
-    override fun write(ctx: ChannelHandlerContext, msg: Any?, promise: ChannelPromise?) {
-        ctx.write(when (msg) {
-            is String -> TextWebSocketFrame(msg)
-            is ByteArray -> BinaryWebSocketFrame(Unpooled.wrappedBuffer(msg))
-            is ByteBuf -> BinaryWebSocketFrame(msg)
-            else -> msg
-        }, promise)
-    }
+  override fun write(ctx: ChannelHandlerContext, msg: Any?, promise: ChannelPromise?) {
+    ctx.write(
+      when (msg) {
+        is String -> TextWebSocketFrame(msg)
+        is ByteArray -> BinaryWebSocketFrame(Unpooled.wrappedBuffer(msg))
+        is ByteBuf -> BinaryWebSocketFrame(msg)
+        else -> msg
+      }, promise
+    )
+  }
 }

@@ -52,7 +52,11 @@ object Json {
 
   private fun jumpWhitespace(content: JsonParseContent) {
     @Suppress("ControlFlowWithEmptyBody")
-    if (jumpWhitespaceLoopCondition(content.json, content.index)) while (jumpWhitespaceLoopCondition(content.json, ++content.index));
+    if (jumpWhitespaceLoopCondition(content.json, content.index)) while (jumpWhitespaceLoopCondition(
+        content.json,
+        ++content.index
+      )
+    );
   }
 
   private fun charToInt(char: Char): Int {

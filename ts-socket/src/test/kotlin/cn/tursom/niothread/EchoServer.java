@@ -19,47 +19,6 @@ import java.nio.channels.SocketChannel;
  * AsyncSocket 的 NioThread 在 Java 下实现 Echo 服务器
  */
 public class EchoServer implements Closeable, Runnable {
-    public static void main(String[] args) {
-        EchoServer server = new EchoServer(12345);
-        server.run();
-    }
-
-    private final int port;
-    private final ServerSocketChannel serverSocketChannel = getServerSocketChannel();
-    private final NioThread nioThread = new WorkerLoopNioThread("nioLoopThread", getSelector(), false, 3000, loopHandler);
-    private SelectionKey key;
-
-    public EchoServer(int port) {
-        this.port = port;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (key != null) {
-            key.cancel();
-        }
-        serverSocketChannel.close();
-        nioThread.close();
-    }
-
-    @Override
-    public void run() {
-        try {
-            serverSocketChannel.socket().bind(new InetSocketAddress(port));
-            serverSocketChannel.configureBlocking(false);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        nioThread.register(serverSocketChannel, SelectionKey.OP_ACCEPT, key -> {
-            this.key = key;
-            return Unit.INSTANCE;
-        });
-    }
-
     private static final NioProtocol nioProtocol = new NioProtocol() {
         @Override
         public void exceptionCause(@NotNull SelectionKey key, @NotNull NioThread nioThread, @NotNull Throwable e) throws Throwable {
@@ -90,8 +49,20 @@ public class EchoServer implements Closeable, Runnable {
             key.interestOps(SelectionKey.OP_READ);
         }
     };
-
     private static final BossLoopHandler loopHandler = new BossLoopHandler(nioProtocol, null);
+    private final int port;
+    private final ServerSocketChannel serverSocketChannel = getServerSocketChannel();
+    private final NioThread nioThread = new WorkerLoopNioThread("nioLoopThread", getSelector(), false, 3000, loopHandler);
+    private SelectionKey key;
+
+    public EchoServer(int port) {
+        this.port = port;
+    }
+
+    public static void main(String[] args) {
+        EchoServer server = new EchoServer(12345);
+        server.run();
+    }
 
     private static Selector getSelector() {
         try {
@@ -107,5 +78,32 @@ public class EchoServer implements Closeable, Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (key != null) {
+            key.cancel();
+        }
+        serverSocketChannel.close();
+        nioThread.close();
+    }
+
+    @Override
+    public void run() {
+        try {
+            serverSocketChannel.socket().bind(new InetSocketAddress(port));
+            serverSocketChannel.configureBlocking(false);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        nioThread.register(serverSocketChannel, SelectionKey.OP_ACCEPT, key -> {
+            this.key = key;
+            return Unit.INSTANCE;
+        });
     }
 }

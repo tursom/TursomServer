@@ -67,6 +67,7 @@ class NodeContext(val nodeList: List<String>, val location: Int = 0) {
 
 interface ICurlyBracesNode {
   val deep: Int
+
   /**
    * 用来对路径进行匹配与获得参数
    */

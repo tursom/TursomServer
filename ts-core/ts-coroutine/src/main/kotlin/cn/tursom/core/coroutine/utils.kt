@@ -7,6 +7,8 @@ import cn.tursom.core.forAllFields
 import cn.tursom.core.isInheritanceFrom
 import cn.tursom.core.uncheckedCast
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -234,4 +236,27 @@ suspend fun <T> runOnUiThread(
   action: suspend CoroutineScope.() -> T
 ): T {
   return withContext(coroutineContext + Dispatchers.Main, action)
+}
+
+@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+fun bufferTicker(
+  delayMillis: Long,
+  capacity: Int = 16,
+  waitTimeout: Long = 0,
+  initialDelayMillis: Long = delayMillis,
+  context: CoroutineContext = EmptyCoroutineContext,
+): ReceiveChannel<Unit> {
+  return GlobalScope.produce(Dispatchers.Unconfined + context, capacity = capacity) {
+    if (initialDelayMillis > 0) {
+      delay(initialDelayMillis)
+    }
+    while (true) {
+      if (waitTimeout > 0) withTimeoutOrNull(waitTimeout) {
+        channel.send(Unit)
+      } ?: return@produce else {
+        channel.send(Unit)
+      }
+      delay(delayMillis)
+    }
+  }
 }

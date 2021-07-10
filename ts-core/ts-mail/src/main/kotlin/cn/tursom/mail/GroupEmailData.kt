@@ -40,5 +40,6 @@ data class GroupEmailData(
     transport.close()
   }
 
-  fun clone(): GroupEmailData = GroupEmailData(host, port, name, password, from, to, subject, html, text, image, attachment)
+  fun clone(): GroupEmailData =
+    GroupEmailData(host, port, name, password, from, to, subject, html, text, image, attachment)
 }

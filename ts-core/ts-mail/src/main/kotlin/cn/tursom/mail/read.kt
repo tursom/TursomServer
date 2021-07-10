@@ -108,7 +108,13 @@ fun getText(message: Message): String? = when (val content: Any = message.conten
   else -> null
 }
 
-fun forEachUnreadMail(host: String, port: Int, account: String, password: String, onMsg: (from: InternetAddress, msg: String) -> Boolean) {
+fun forEachUnreadMail(
+  host: String,
+  port: Int,
+  account: String,
+  password: String,
+  onMsg: (from: InternetAddress, msg: String) -> Boolean
+) {
   forEachMail(host, port, account, password) { message ->
     // 跳过已读邮件
     if (message.flags.contains(Flags.Flag.SEEN)) return@forEachMail

@@ -26,10 +26,12 @@ class NioLoopServer(
 ) : SocketServer {
   private val listenChannel = ServerSocketChannel.open()
   private val workerNioThread = nioThreadFactory("nio-worker", WorkerLoopHandler(protocol))
-  private val bossNioThread = nioThreadFactory("nio-boss", BossLoopHandler(
-    protocol,
-    workerNioThread
-  ))
+  private val bossNioThread = nioThreadFactory(
+    "nio-boss", BossLoopHandler(
+      protocol,
+      workerNioThread
+    )
+  )
   private val started = AtomicBoolean(false)
 
   override fun run() {

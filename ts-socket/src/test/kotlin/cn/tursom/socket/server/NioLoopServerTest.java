@@ -59,6 +59,11 @@ public class NioLoopServerTest implements Runnable, Closeable {
         });
     }
 
+    public static void main(String[] args) {
+        NioLoopServerTest server = new NioLoopServerTest(12345);
+        server.run();
+    }
+
     @Override
     public void close() {
         server.close();
@@ -71,10 +76,5 @@ public class NioLoopServerTest implements Runnable, Closeable {
 
     public int getPort() {
         return port;
-    }
-
-    public static void main(String[] args) {
-        NioLoopServerTest server = new NioLoopServerTest(12345);
-        server.run();
     }
 }

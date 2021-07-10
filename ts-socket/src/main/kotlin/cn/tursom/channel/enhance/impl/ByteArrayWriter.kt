@@ -12,6 +12,8 @@ class ByteArrayWriter(
   }
 
   override suspend fun flush(timeout: Long): Long = prevWriter.flush(timeout)
-  override suspend fun writeAndFlush(value: ByteArray, timeout: Long): Long = prevWriter.writeAndFlush(HeapByteBuffer(value), timeout)
+  override suspend fun writeAndFlush(value: ByteArray, timeout: Long): Long =
+    prevWriter.writeAndFlush(HeapByteBuffer(value), timeout)
+
   override fun close() = prevWriter.close()
 }

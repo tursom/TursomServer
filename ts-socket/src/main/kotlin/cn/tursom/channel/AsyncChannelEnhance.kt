@@ -12,7 +12,8 @@ fun AsyncChannel.enhance(): EnhanceChannel<ByteBuffer, ByteBuffer> = EnhanceChan
 
 fun ChannelReader<ByteBuffer>.lengthField(): ChannelReader<ByteBuffer> = LengthFieldBasedFrameReader(this)
 fun ChannelWriter<ByteBuffer>.lengthField(): ChannelWriter<ByteBuffer> = LengthFieldPrependWriter(this)
-fun EnhanceChannel<ByteBuffer, ByteBuffer>.lengthField(): EnhanceChannel<ByteBuffer, ByteBuffer> = LengthFieldChannel(this)
+fun EnhanceChannel<ByteBuffer, ByteBuffer>.lengthField(): EnhanceChannel<ByteBuffer, ByteBuffer> =
+  LengthFieldChannel(this)
 
 fun ChannelReader<ByteBuffer>.string() = StringReader(this)
 fun ChannelWriter<ByteBuffer>.string() = StringWriter(this)

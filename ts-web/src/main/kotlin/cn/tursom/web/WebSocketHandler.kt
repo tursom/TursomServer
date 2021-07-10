@@ -2,7 +2,7 @@ package cn.tursom.web
 
 import cn.tursom.core.buffer.ByteBuffer
 
-interface WebSocketHandler<in T :  WebSocketContent> {
+interface WebSocketHandler<in T : WebSocketContent> {
   fun connected(context: T)
 
   fun recvText(str: String, context: T)

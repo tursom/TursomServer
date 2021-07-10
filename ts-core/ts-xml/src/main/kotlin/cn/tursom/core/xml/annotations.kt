@@ -1,7 +1,7 @@
 package cn.tursom.core.xml
 
 enum class ElementTarget {
-	Attribute, ElementText, SubElement
+  Attribute, ElementText, SubElement
 }
 
 @Target(AnnotationTarget.CLASS)
