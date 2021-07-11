@@ -1,7 +1,6 @@
 package cn.tursom.core
 
 import com.sun.org.slf4j.internal.LoggerFactory
-import java.lang.ref.Reference
 import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
@@ -13,10 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger
 @Suppress("unused")
 object ShutdownHook {
   private val logger = LoggerFactory.getLogger(ShutdownHook::class.java)
-
-  private val shutdownHooks = ConcurrentLinkedDeque<Reference<(() -> Unit)?>>()
-  private val availableThreadCount = Runtime.getRuntime().availableProcessors() * 2
-  private val activeThreadCount = AtomicInteger()
 
   interface Reference<out T> {
     fun get(): T
@@ -30,6 +25,10 @@ object ShutdownHook {
       shutdownHooks.remove(reference)
     }
   }
+
+  private val shutdownHooks = ConcurrentLinkedDeque<Reference<(() -> Unit)?>>()
+  private val availableThreadCount = Runtime.getRuntime().availableProcessors() * 2
+  private val activeThreadCount = AtomicInteger()
 
   fun addHook(softReference: Boolean = false, hook: () -> Unit): Hook {
     if (activeThreadCount.incrementAndGet() <= availableThreadCount) {
