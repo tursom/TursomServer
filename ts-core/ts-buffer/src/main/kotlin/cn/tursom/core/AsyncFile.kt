@@ -9,17 +9,26 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import java.util.concurrent.Future
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused", "DuplicatedCode")
 class AsyncFile(val path: Path) {
   constructor(path: String) : this(Paths.get(path))
 
-  private var existsCache = false
+  interface Writer {
+    suspend fun writeAndWait(file: AsyncFile, position: Long): Int
+  }
+
+  interface Reader {
+    suspend fun read(file: AsyncFile, position: Long): Int
+  }
+
+  private var existsCache = exists
 
   val exists: Boolean
     get() {
@@ -27,21 +36,28 @@ class AsyncFile(val path: Path) {
       existsCache = exists
       return exists
     }
+
   val size get() = if (existsCache || exists) Files.size(path) else 0
 
+  var writePosition: Long = 0
+  var readPosition: Long = 0
   val writeChannel: AsynchronousFileChannel by lazy { AsynchronousFileChannel.open(path, StandardOpenOption.WRITE) }
   val readChannel: AsynchronousFileChannel by lazy { AsynchronousFileChannel.open(path, StandardOpenOption.READ) }
 
-  fun write(buffer: ByteBuffer, position: Long = 0) {
-    create()
-    buffer.read { writeChannel.write(it, position) }
+  fun write(buffer: ByteBuffer, position: Long = writePosition): Future<Int> {
+    return buffer.read {
+      writeChannel.write(it, position)
+    }
   }
 
-  suspend fun writeAndWait(buffer: ByteBuffer, position: Long = 0): Int {
-    create()
-    return suspendCoroutine { cont ->
-      buffer.read { writeChannel.write(it, position, cont, handler) }
+  suspend fun writeAndWait(buffer: ByteBuffer, position: Long = writePosition): Int {
+    val writeSize = buffer.fileWriter?.writeAndWait(this, position) ?: buffer.read {
+      suspendCoroutine { cont ->
+        writeChannel.write(it, position, cont, handler)
+      }
     }
+    writePosition += writeSize
+    return writeSize
   }
 
   fun append(buffer: ByteBuffer, position: Long = size) {
@@ -52,13 +68,17 @@ class AsyncFile(val path: Path) {
     return writeAndWait(buffer, position)
   }
 
-  suspend fun read(buffer: ByteBuffer, position: Long = 0): Int {
-    return suspendCoroutine { cont ->
-      buffer.write { readChannel.read(it, position, cont, handler) }
+  suspend fun read(buffer: ByteBuffer, position: Long = readPosition): Int {
+    val readSize = buffer.fileReader?.read(this, position) ?: buffer.write {
+      suspendCoroutine { cont ->
+        readChannel.read(it, position, cont, handler)
+      }
     }
+    readPosition += readSize
+    return readSize
   }
 
-  fun create() = if (existsCache || !exists) {
+  fun create() = if (!existsCache || !exists) {
     Files.createFile(path)
     existsCache = true
     true
@@ -84,6 +104,26 @@ class AsyncFile(val path: Path) {
     val handler = object : CompletionHandler<Int, Continuation<Int>> {
       override fun completed(result: Int, attachment: Continuation<Int>) = attachment.resume(result)
       override fun failed(exc: Throwable, attachment: Continuation<Int>) = attachment.resumeWithException(exc)
+    }
+
+    @JvmStatic
+    val writePositionHandler = object : CompletionHandler<Int, AsyncFile> {
+      override fun completed(result: Int, attachment: AsyncFile) {
+        attachment.writePosition += result
+      }
+
+      override fun failed(exc: Throwable, attachment: AsyncFile) {
+      }
+    }
+
+    @JvmStatic
+    val readPositionHandler = object : CompletionHandler<Int, AsyncFile> {
+      override fun completed(result: Int, attachment: AsyncFile) {
+        attachment.readPosition += result
+      }
+
+      override fun failed(exc: Throwable, attachment: AsyncFile) {
+      }
     }
   }
 }

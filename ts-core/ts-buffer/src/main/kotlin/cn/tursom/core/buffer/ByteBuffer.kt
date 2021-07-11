@@ -1,5 +1,6 @@
 package cn.tursom.core.buffer
 
+import cn.tursom.core.AsyncFile
 import cn.tursom.core.forEachIndex
 import java.io.Closeable
 import java.io.IOException
@@ -41,6 +42,9 @@ interface ByteBuffer : Closeable {
   val readable: Int get() = writePosition - readPosition
   val writeable: Int get() = capacity - writePosition
 
+  val isReadable: Boolean get() = readable != 0
+  val isWriteable: Boolean get() = writeable != 0
+
   val hasArray: Boolean
   val array: ByteArray
 
@@ -51,6 +55,9 @@ interface ByteBuffer : Closeable {
 
   val closed: Boolean get() = false
   val resized: Boolean
+
+  val fileReader: AsyncFile.Reader? get() = null
+  val fileWriter: AsyncFile.Writer? get() = null
 
   override fun close() {
   }
@@ -119,14 +126,14 @@ interface ByteBuffer : Closeable {
     return readSize
   }
 
-  fun writeTo(os: OutputStream): Int {
+  fun writeTo(os: OutputStream, buffer: ByteArray? = null): Int {
     val size = readable
     if (hasArray) {
       os.write(array, readOffset, size)
       readPosition += size
       reset()
     } else {
-      val buffer = ByteArray(1024)
+      val buffer = buffer ?: ByteArray(1024)
       read {
         while (it.remaining() > 0) {
           it.put(buffer)
@@ -283,4 +290,3 @@ interface ByteBuffer : Closeable {
     return size
   }
 }
-

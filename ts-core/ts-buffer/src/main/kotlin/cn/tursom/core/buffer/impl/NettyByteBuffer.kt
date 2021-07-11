@@ -1,9 +1,12 @@
 package cn.tursom.core.buffer.impl
 
+import cn.tursom.core.AsyncFile
 import cn.tursom.core.buffer.ByteBuffer
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
 import java.nio.ByteOrder
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.suspendCoroutine
 
 class NettyByteBuffer(
   val byteBuf: ByteBuf
@@ -32,7 +35,47 @@ class NettyByteBuffer(
       byteBuf.readerIndex(value)
     }
   override val resized: Boolean get() = false
-  override var closed: Boolean = false
+  override val closed get() = atomicClosed.get()
+  override val isReadable get() = byteBuf.isReadable
+  override val isWriteable get() = byteBuf.isWritable
+
+  private val atomicClosed = AtomicBoolean(false)
+
+  override val fileReader: AsyncFile.Reader = object : AsyncFile.Reader {
+    override suspend fun read(file: AsyncFile, position: Long): Int {
+      val nioBuffers = byteBuf.nioBuffers(byteBuf.writerIndex(), byteBuf.capacity())
+      var readPosition = position
+      for (nioBuffer in nioBuffers) {
+        while (nioBuffer.hasRemaining()) {
+          val readSize = suspendCoroutine<Int> { cont ->
+            file.writeChannel.read(nioBuffer, readPosition, cont, AsyncFile.handler)
+          }
+          if (readSize <= 0) break
+          readPosition += readSize
+          byteBuf.writerIndex(byteBuf.writerIndex() + readSize)
+        }
+      }
+      return (readPosition - position).toInt()
+    }
+  }
+
+  override val fileWriter: AsyncFile.Writer = object : AsyncFile.Writer {
+    override suspend fun writeAndWait(file: AsyncFile, position: Long): Int {
+      val nioBuffers = byteBuf.nioBuffers()
+      var writePosition = position
+      for (nioBuffer in nioBuffers) {
+        while (nioBuffer.hasRemaining()) {
+          val writeSize = suspendCoroutine<Int> { cont ->
+            file.writeChannel.write(nioBuffer, writePosition, cont, AsyncFile.handler)
+          }
+          if (writeSize <= 0) break
+          writePosition += writeSize
+          byteBuf.readerIndex(byteBuf.readerIndex() + writeSize)
+        }
+      }
+      return (writePosition - position).toInt()
+    }
+  }
 
   override fun readBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
@@ -85,7 +128,7 @@ class NettyByteBuffer(
     return size
   }
 
-  override fun writeTo(os: OutputStream): Int {
+  override fun writeTo(os: OutputStream, buffer: ByteArray?): Int {
     val size = readable
     byteBuf.readBytes(os, size)
     reset()
@@ -135,8 +178,7 @@ class NettyByteBuffer(
   }
 
   override fun close() {
-    if (closed) {
-      closed = true
+    if (atomicClosed.compareAndSet(false, true)) {
       byteBuf.release()
     }
   }

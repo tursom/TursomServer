@@ -150,7 +150,7 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
     return write
   }
 
-  override fun writeTo(os: OutputStream): Int {
+  override fun writeTo(os: OutputStream, buffer: ByteArray?): Int {
     var write = 0
     try {
       while (true) {

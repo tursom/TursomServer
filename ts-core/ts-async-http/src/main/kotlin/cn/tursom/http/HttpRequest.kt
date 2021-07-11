@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.http
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
@@ -72,6 +72,13 @@ object HttpRequest {
     return conn
   }
 
+  fun send(
+    method: String = "GET",
+    url: String,
+    headers: Map<String, String> = defaultHeader,
+    data: ByteArray?
+  ) = send(method, url, headers, data?.let { HeapByteBuffer(data) })
+
   fun getContextStream(
     method: String = "GET",
     url: String,
@@ -95,13 +102,6 @@ object HttpRequest {
     val conn = send(method, url, headers, data)
     return conn.getRealInputStream().readBytes().toString(conn.getCharset())
   }
-
-  fun send(
-    method: String = "GET",
-    url: String,
-    headers: Map<String, String> = defaultHeader,
-    data: ByteArray?
-  ) = send(method, url, headers, data?.let { HeapByteBuffer(data) })
 
   fun doGet(
     url: String,
@@ -132,6 +132,24 @@ object HttpRequest {
     }, headers)
   }
 
+  fun doPost(
+    url: String,
+    data: ByteArray,
+    headers: Map<String, String> = defaultHeader
+  ): String = getContextStr("POST", url, headers, HeapByteBuffer(data))
+
+  fun doPost(
+    url: String,
+    param: Map<String, String>,
+    headers: Map<String, String> = defaultHeader
+  ): String {
+    val sb = StringBuilder()
+    param.forEach { (key, value) ->
+      sb.append("${URLEncoder.encode(key, "utf-8")}=${URLEncoder.encode(value, "utf-8")}&")
+    }
+    if (sb.isNotEmpty()) sb.deleteCharAt(sb.lastIndex)
+    return doPost(url, sb.toString().toByteArray(), headers)
+  }
 
   fun doHead(
     url: String,
@@ -152,25 +170,6 @@ object HttpRequest {
       if (paramSB.isNotEmpty()) paramSB.deleteCharAt(paramSB.lastIndex)
       paramSB.toString()
     }, headers)
-  }
-
-  fun doPost(
-    url: String,
-    data: ByteArray,
-    headers: Map<String, String> = defaultHeader
-  ): String = getContextStr("POST", url, headers, HeapByteBuffer(data))
-
-  fun doPost(
-    url: String,
-    param: Map<String, String>,
-    headers: Map<String, String> = defaultHeader
-  ): String {
-    val sb = StringBuilder()
-    param.forEach { (key, value) ->
-      sb.append("${URLEncoder.encode(key, "utf-8")}=${URLEncoder.encode(value, "utf-8")}&")
-    }
-    if (sb.isNotEmpty()) sb.deleteCharAt(sb.lastIndex)
-    return doPost(url, sb.toString().toByteArray(), headers)
   }
 
 }

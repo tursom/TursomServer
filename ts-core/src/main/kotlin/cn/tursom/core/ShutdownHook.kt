@@ -1,6 +1,8 @@
 package cn.tursom.core
 
 import com.sun.org.slf4j.internal.LoggerFactory
+import java.lang.ref.Reference
+import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -12,15 +14,40 @@ import java.util.concurrent.atomic.AtomicInteger
 object ShutdownHook {
   private val logger = LoggerFactory.getLogger(ShutdownHook::class.java)
 
-  private val shutdownHooks = ConcurrentLinkedDeque<() -> Unit>()
+  private val shutdownHooks = ConcurrentLinkedDeque<Reference<(() -> Unit)?>>()
   private val availableThreadCount = Runtime.getRuntime().availableProcessors() * 2
   private val activeThreadCount = AtomicInteger()
 
-  fun addHook(hook: () -> Unit): Boolean {
+  interface Reference<out T> {
+    fun get(): T
+  }
+
+  class Hook(
+    private val hook: () -> Unit,
+    private val reference: Reference<(() -> Unit)?>
+  ) {
+    fun cancel() {
+      shutdownHooks.remove(reference)
+    }
+  }
+
+  fun addHook(softReference: Boolean = false, hook: () -> Unit): Hook {
     if (activeThreadCount.incrementAndGet() <= availableThreadCount) {
       addWorkThread()
     }
-    return shutdownHooks.add(hook)
+
+    val reference = if (softReference) {
+      object : Reference<(() -> Unit)?> {
+        private val ref = SoftReference(hook)
+        override fun get(): (() -> Unit)? = ref.get()
+      }
+    } else {
+      object : Reference<() -> Unit> {
+        override fun get(): () -> Unit = hook
+      }
+    }
+    shutdownHooks.add(reference)
+    return Hook(hook, reference)
   }
 
   private fun addWorkThread() {
@@ -28,7 +55,7 @@ object ShutdownHook {
       var hook = shutdownHooks.poll()
       while (hook != null) {
         try {
-          hook()
+          hook.get()?.invoke()
         } catch (e: Throwable) {
           //error("an exception caused on hook", e)
         }
