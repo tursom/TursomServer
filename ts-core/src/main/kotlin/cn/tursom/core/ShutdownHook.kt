@@ -16,6 +16,19 @@ object ShutdownHook {
     fun get(): (() -> Unit)?
   }
 
+  internal class SoftHookReference(
+    hook: () -> Unit,
+  ) : HookReference {
+    private val ref = SoftReference(hook)
+    override fun get(): (() -> Unit)? = ref.get()
+  }
+
+  internal class HardHookReference(
+    private val hook: () -> Unit,
+  ) : HookReference {
+    override fun get(): () -> Unit = hook
+  }
+
   class Hook internal constructor(
     private val hook: () -> Unit,
     private val reference: HookReference,
@@ -44,12 +57,7 @@ object ShutdownHook {
       addWorkThread()
     }
 
-    val reference = if (softReference) object : HookReference {
-      private val ref = SoftReference(hook)
-      override fun get(): (() -> Unit)? = ref.get()
-    } else object : HookReference {
-      override fun get(): () -> Unit = hook
-    }
+    val reference = if (softReference) SoftHookReference(hook) else HardHookReference(hook)
 
     shutdownHooks.add(reference)
     return Hook(hook, reference)
