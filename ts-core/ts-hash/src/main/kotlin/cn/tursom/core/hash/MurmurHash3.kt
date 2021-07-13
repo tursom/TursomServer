@@ -1,9 +1,8 @@
+@file:Suppress("DuplicatedCode")
+
 package cn.tursom.core.hash
 
 import cn.tursom.core.buffer.impl.HeapByteBuffer
-import cn.tursom.core.toHexString
-import cn.tursom.core.toUTF8String
-import java.io.File
 
 
 @Suppress("unused", "FunctionName", "NAME_SHADOWING")
@@ -28,7 +27,9 @@ object MurmurHash3 {
     return k
   }
 
-  /** Gets a long from a byte buffer in little endian byte order.  */
+  /**
+   * Gets a long from a byte buffer in little endian byte order.
+   */
   private fun getLongLittleEndian(buf: ByteArray, offset: Int): Long {
     return (buf[offset + 7].toLong() shl 56 // no mask needed
       or (buf[offset + 6].toLong() and 0xffL shl 48)
@@ -40,7 +41,9 @@ object MurmurHash3 {
       or (buf[offset].toLong() and 0xffL)) // no shift needed
   }
 
-  /** Returns the MurmurHash3_x86_32 hash.  */
+  /**
+   * Returns the MurmurHash3_x86_32 hash.
+   */
   fun murmurHash3_x86_32(data: ByteArray, offset: Int, len: Int, seed: Int): Int {
     val c1 = -0x3361d2af
     val c2 = 0x1b873593
@@ -79,7 +82,8 @@ object MurmurHash3 {
     return fmix32(h1 xor len)
   }
 
-  /** Returns the MurmurHash3_x86_32 hash of the UTF-8 bytes of the String without actually encoding
+  /**
+   * Returns the MurmurHash3_x86_32 hash of the UTF-8 bytes of the String without actually encoding
    * the string to a temporary buffer.  This is more than 2x faster than hashing the result
    * of String.getBytes().
    */
@@ -160,18 +164,20 @@ object MurmurHash3 {
     offset: Int = 0,
     len: Int = key.size - offset,
     seed: Int,
-    out: LongPair = LongPair()
+    out: LongPair = LongPair(),
   ): LongPair {
     return murmurHash3_x64_128(key, offset, len, seed.toLong() and 0x00000000FFFFFFFFL, out)
   }
 
-  /** Returns the MurmurHash3_x64_128 hash, placing the result in "out".  */
+  /**
+   * Returns the MurmurHash3_x64_128 hash, placing the result in "out".
+   */
   fun murmurHash3_x64_128(
     key: ByteArray,
     offset: Int = 0,
     len: Int = key.size - offset,
     seed: Long = 0,
-    out: LongPair = LongPair()
+    out: LongPair = LongPair(),
   ): LongPair {
     // The original algorithm does have a 32 bit unsigned seed.
     // We have to mask to match the behavior of the unsigned types and prevent sign extension.
@@ -245,7 +251,9 @@ object MurmurHash3 {
     return out
   }
 
-  /** 128 bits of state  */
+  /**
+   * 128 bits of state
+   */
   data class LongPair(var val1: Long = 0, var val2: Long = 0) {
     fun toByteArray(): ByteArray {
       val buffer = HeapByteBuffer(16)
@@ -254,12 +262,4 @@ object MurmurHash3 {
       return buffer.array
     }
   }
-}
-
-fun main() {
-  val data = File("build.gradle").readText().toByteArray()
-  println(data.toUTF8String())
-  val hash = MurmurHash3.murmurHash3_x64_128(data, seed = 100)
-  println(hash)
-  println(hash.toByteArray().toHexString())
 }

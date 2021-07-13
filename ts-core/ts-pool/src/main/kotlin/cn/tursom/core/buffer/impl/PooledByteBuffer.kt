@@ -1,15 +1,12 @@
 package cn.tursom.core.buffer.impl
 
-import cn.tursom.core.FreeReference
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.ClosedBufferException
 import cn.tursom.core.buffer.ProxyByteBuffer
 import cn.tursom.core.pool.MemoryPool
+import cn.tursom.core.reference.FreeReference
 import java.util.concurrent.atomic.AtomicInteger
 
-/**
- * 在被垃圾回收时能保证释放占用的内存池内存
- */
 class PooledByteBuffer(
   agent: ByteBuffer,
   val pool: MemoryPool,
@@ -21,7 +18,7 @@ class PooledByteBuffer(
     val pool: MemoryPool,
     val token: Int,
   ) : FreeReference<PooledByteBuffer>(pooledByteBuffer) {
-    override fun free() {
+    override fun release() {
       pool.free(token)
     }
   }

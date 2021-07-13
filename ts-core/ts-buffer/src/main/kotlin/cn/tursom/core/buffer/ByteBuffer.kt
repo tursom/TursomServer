@@ -1,6 +1,7 @@
 package cn.tursom.core.buffer
 
 import cn.tursom.core.AsyncFile
+import cn.tursom.core.Utils.bufferThreadLocal
 import cn.tursom.core.forEachIndex
 import java.io.Closeable
 import java.io.IOException
@@ -59,8 +60,7 @@ interface ByteBuffer : Closeable {
   val fileReader: AsyncFile.Reader? get() = null
   val fileWriter: AsyncFile.Writer? get() = null
 
-  override fun close() {
-  }
+  override fun close() {}
 
   fun readBuffer(): java.nio.ByteBuffer
   fun finishRead(buffer: java.nio.ByteBuffer) {
@@ -133,7 +133,8 @@ interface ByteBuffer : Closeable {
       readPosition += size
       reset()
     } else {
-      val buffer = buffer ?: ByteArray(1024)
+      @Suppress("NAME_SHADOWING")
+      val buffer = buffer ?: bufferThreadLocal.get()
       read {
         while (it.remaining() > 0) {
           it.put(buffer)
@@ -219,7 +220,7 @@ interface ByteBuffer : Closeable {
       writePosition += read
       read
     } else {
-      val buffer = ByteArray(10 * 1024)
+      val buffer = bufferThreadLocal.get()
       val read = inputStream.read(buffer)
       put(buffer, 0, read)
     }

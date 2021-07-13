@@ -1,8 +1,8 @@
 package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.AsyncFile
-import cn.tursom.core.FreeReference
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.reference.FreeReference
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
 import java.nio.ByteOrder
@@ -22,12 +22,15 @@ class NettyByteBuffer(
     this.readPosition = readPosition
   }
 
-  class AutoFreeReference(
+  internal class AutoFreeReference(
     nettyByteBuffer: NettyByteBuffer,
+    private val atomicClosed: AtomicBoolean,
     private val byteBuf: ByteBuf,
   ) : FreeReference<NettyByteBuffer>(nettyByteBuffer) {
-    override fun free() {
-      byteBuf.release()
+    override fun release() {
+      if (atomicClosed.compareAndSet(false, true)) {
+        byteBuf.release()
+      }
     }
   }
 
@@ -88,7 +91,11 @@ class NettyByteBuffer(
     }
   }
 
-  private val reference = if (autoClose) AutoFreeReference(this, byteBuf) else null
+  private val reference = if (autoClose) {
+    AutoFreeReference(this, atomicClosed, byteBuf)
+  } else {
+    null
+  }
 
   override fun readBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
@@ -186,14 +193,14 @@ class NettyByteBuffer(
     return byteBuf.writerIndex() - writePosition
   }
 
-  override fun toString(): String {
-    return "Nettyjava.nio.ByteBuffer(byteBuf=$byteBuf)"
-  }
-
   override fun close() {
     if (atomicClosed.compareAndSet(false, true)) {
       byteBuf.release()
       reference?.cancel()
     }
+  }
+
+  override fun toString(): String {
+    return "Nettyjava.nio.ByteBuffer(byteBuf=$byteBuf)"
   }
 }

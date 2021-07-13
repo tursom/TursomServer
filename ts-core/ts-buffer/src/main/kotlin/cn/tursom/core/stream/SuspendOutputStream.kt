@@ -2,23 +2,22 @@ package cn.tursom.core.stream
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
-import java.io.Closeable
 
-interface OutputStream : Closeable {
-  fun write(buffer: ByteBuffer)
-  fun write(byte: Byte) {
-    write(byteArrayOf(byte))
+interface SuspendOutputStream : OutputStream {
+  suspend fun suspendWrite(buffer: ByteBuffer)
+  suspend fun suspendWrite(byte: Byte) {
+    suspendWrite(byteArrayOf(byte))
   }
 
-  fun write(
+  suspend fun suspendWrite(
     buffer: ByteArray,
     offset: Int = 0,
     len: Int = buffer.size - offset,
   ): Int {
     val byteBuffer = HeapByteBuffer(buffer, offset, len)
-    write(byteBuffer)
+    suspendWrite(byteBuffer)
     return byteBuffer.readPosition
   }
 
-  fun flush() {}
+  suspend fun suspendFlush() {}
 }

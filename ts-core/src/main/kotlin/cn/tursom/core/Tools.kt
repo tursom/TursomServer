@@ -39,6 +39,8 @@ object Utils {
   const val dollar = '$'
   val random = Random(System.currentTimeMillis())
 
+  val bufferThreadLocal = SimpThreadLocal { ByteArray(1024) }
+
   @Suppress("unused", "SpellCheckingInspection")
   val gson: Gson by lazy {
     GsonBuilder()
@@ -567,7 +569,7 @@ fun ByteArray.undeflate(): ByteArray {
   val inf = Inflater()
   inf.setInput(this)
   val bos = ByteArrayOutputStream()
-  val outByte = ByteArray(1024)
+  val outByte = Utils.bufferThreadLocal.get()
   bos.use {
     while (!inf.finished()) {
       val len = inf.inflate(outByte)
@@ -586,7 +588,7 @@ fun ByteArray.deflate(): ByteArray {
   def.setInput(this)
   def.finish()
   val bos = ByteArrayOutputStream()
-  val outputByte = ByteArray(1024)
+  val outputByte = Utils.bufferThreadLocal.get()
   bos.use {
     while (!def.finished()) {
       val len = def.deflate(outputByte)

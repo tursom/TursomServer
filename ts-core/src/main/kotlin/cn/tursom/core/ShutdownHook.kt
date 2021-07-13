@@ -1,5 +1,6 @@
 package cn.tursom.core
 
+import cn.tursom.core.reference.FreeSoftReference
 import com.sun.org.slf4j.internal.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
@@ -40,8 +41,8 @@ object ShutdownHook {
 
   private class SoftReference(
     hook: () -> Unit,
-  ) : FreeReference<() -> Unit>(hook) {
-    override fun free() {
+  ) : FreeSoftReference<() -> Unit>(hook) {
+    override fun release() {
       shutdownHooks.removeIf {
         it.get() == null
       }

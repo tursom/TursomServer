@@ -4,7 +4,8 @@ import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.stream.InputStream
 
 class JavaInputStream(
-  @Suppress("MemberVisibilityCanBePrivate") val inputStream: java.io.InputStream
+  @Suppress("MemberVisibilityCanBePrivate")
+  val inputStream: java.io.InputStream,
 ) : InputStream {
   override val available: Int get() = inputStream.available()
   override fun skip(n: Long) {

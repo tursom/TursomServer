@@ -1,26 +1,52 @@
 package cn.tursom.core.stream.impl
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.stream.OutputStream
+import cn.tursom.core.stream.SuspendOutputStream
+import java.util.concurrent.locks.Lock
+import kotlin.concurrent.withLock
 
 class ByteBufferOutputStream(
-  val buffer: ByteBuffer
-) : OutputStream {
+  val buffer: ByteBuffer,
+  private val lock: Lock? = null,
+) : SuspendOutputStream {
   private var closed = false
+
+  private inline fun <R> withLock(func: () -> R): R {
+    return if (lock != null) {
+      lock.withLock(func)
+    } else {
+      func()
+    }
+  }
+
   override fun write(byte: Byte) {
     checkClosed {
-      buffer.put(byte)
+      withLock {
+        buffer.put(byte)
+      }
     }
   }
 
   override fun write(buffer: ByteArray, offset: Int, len: Int): Int = checkClosed {
-    this.buffer.put(buffer, offset, len)
+    withLock {
+      this.buffer.put(buffer, offset, len)
+    }
   } ?: -1
 
   override fun write(buffer: ByteBuffer) {
     checkClosed {
-      buffer.writeTo(this.buffer)
+      withLock {
+        buffer.writeTo(this.buffer)
+      }
     }
+  }
+
+  override suspend fun suspendWrite(byte: Byte) {
+    write(byte)
+  }
+
+  override suspend fun suspendWrite(buffer: ByteBuffer) {
+    write(buffer)
   }
 
   override fun flush() {}

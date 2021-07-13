@@ -5,14 +5,14 @@ import cn.tursom.core.toByteArray
 import kotlin.math.pow
 
 @Suppress("MemberVisibilityCanBePrivate")
-class BloomFilter(val hash: Hash = murmur3Hash, val bitSize: Long, val hashCount: Int = 5) {
+class BloomFilter(val hash: Hash = Murmur3Hash, val bitSize: Long, val hashCount: Int = 5) {
   private val bitSet = ArrayBitSet(bitSize)
 
   constructor(
     valueCount: Long = 1000000,
     hashCount: Int = 5,
     wrongChance: Double = 0.03,
-    hash: Hash = murmur3Hash
+    hash: Hash = Murmur3Hash,
   ) : this(
     hash,
     wrongChance.run {
@@ -78,7 +78,7 @@ class BloomFilter(val hash: Hash = murmur3Hash, val bitSize: Long, val hashCount
   }
 
   companion object {
-    val murmur3Hash = object : Hash {
+    object Murmur3Hash : Hash {
       override fun hash(src: ByteArray): HashContent {
         val hash = MurmurHash3.murmurHash3_x64_128(src)
         return object : HashContent {

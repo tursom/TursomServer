@@ -2,39 +2,28 @@ package cn.tursom.core.stream.impl
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.stream.IOStream
-import cn.tursom.core.stream.InputStream
-import cn.tursom.core.stream.OutputStream
 import cn.tursom.core.stream.SuspendInputStream
+import cn.tursom.core.stream.SuspendOutputStream
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
-class ByteBufferIOStream private constructor(
+class ByteBufferIOStream(
   private val buffer: ByteBuffer,
-  val inputStream: ByteBufferInputStream,
-  val outputStream: ByteBufferOutputStream
+  private val lock: Lock?,
+  val inputStream: ByteBufferInputStream = ByteBufferInputStream(buffer, lock),
+  val outputStream: ByteBufferOutputStream = ByteBufferOutputStream(buffer, lock),
 ) : IOStream,
-  SuspendInputStream,
-  InputStream by inputStream,
-  OutputStream by outputStream {
-  constructor(buffer: ByteBuffer) : this(buffer, ByteBufferInputStream(buffer), ByteBufferOutputStream(buffer))
-
-  override fun skip(n: Long, handler: () -> Unit) = handler()
-  override fun skip(n: Long) {}
-
-  override fun read(handler: (Int) -> Unit) {
-    handler(read())
-  }
-
-  override fun read(buffer: ByteArray, handler: (Int) -> Unit) {
-    handler(read(buffer))
-  }
-
-  override fun read(buffer: ByteArray, offset: Int, len: Int, handler: (Int) -> Unit) {
-    handler(read(buffer, offset, len))
-  }
-
-  override fun read(buffer: ByteBuffer, handler: () -> Unit) {
-    read(buffer)
-    handler()
-  }
+  SuspendInputStream by inputStream,
+  SuspendOutputStream by outputStream {
+  constructor(
+    buffer: ByteBuffer,
+    lock: Boolean = true,
+  ) : this(
+    buffer,
+    if (lock) ReentrantLock() else null,
+    ByteBufferInputStream(buffer),
+    ByteBufferOutputStream(buffer)
+  )
 
   override fun close() {
     buffer.close()
