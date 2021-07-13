@@ -1,8 +1,8 @@
 .gradle
 .idea
-gradle
-gradlew
-gradlew.bat
+#gradle
+#gradlew
+#gradlew.bat
 build
 */build/
-gradle.properties
+#gradle.properties

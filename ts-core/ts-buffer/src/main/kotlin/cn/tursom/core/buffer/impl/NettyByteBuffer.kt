@@ -20,7 +20,8 @@ class NettyByteBuffer(
     byteBuf: ByteBuf,
     readPosition: Int = byteBuf.readerIndex(),
     writePosition: Int = byteBuf.writerIndex(),
-  ) : this(byteBuf) {
+    autoClose: Boolean = false,
+  ) : this(byteBuf, autoClose) {
     this.writePosition = writePosition
     this.readPosition = readPosition
   }
@@ -119,7 +120,7 @@ class NettyByteBuffer(
   }
 
   override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
-    return NettyByteBuffer(byteBuf.slice(position, size), readPosition, writePosition)
+    return NettyByteBuffer(byteBuf.retainedSlice(position, size), readPosition, writePosition, reference != null)
   }
 
   override fun resize(newSize: Int): Boolean {
