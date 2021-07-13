@@ -45,11 +45,12 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   var closed: Boolean = false
     private set
 
+  private val hook = ShutdownHook.addHook(true) {
+    close()
+  }
+
   init {
     uncheckedCast<T>()
-    ShutdownHook.addHook {
-      close()
-    }
   }
 
   fun open(): ChannelFuture? {

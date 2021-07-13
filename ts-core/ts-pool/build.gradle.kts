@@ -4,8 +4,9 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":"))
-  implementation(project(":ts-core:ts-buffer"))
+  api(project(":"))
+  api(project(":ts-core"))
+  api(project(":ts-core:ts-buffer"))
   implementation(project(":ts-core:ts-datastruct"))
 }
 

@@ -1,6 +1,7 @@
 package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.AsyncFile
+import cn.tursom.core.FreeReference
 import cn.tursom.core.buffer.ByteBuffer
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
@@ -9,15 +10,25 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.suspendCoroutine
 
 class NettyByteBuffer(
-  val byteBuf: ByteBuf
+  val byteBuf: ByteBuf,
+  autoClose: Boolean = false,
 ) : ByteBuffer {
   constructor(
     byteBuf: ByteBuf,
     readPosition: Int = byteBuf.readerIndex(),
-    writePosition: Int = byteBuf.writerIndex()
+    writePosition: Int = byteBuf.writerIndex(),
   ) : this(byteBuf) {
     this.writePosition = writePosition
     this.readPosition = readPosition
+  }
+
+  class AutoFreeReference(
+    nettyByteBuffer: NettyByteBuffer,
+    private val byteBuf: ByteBuf,
+  ) : FreeReference<NettyByteBuffer>(nettyByteBuffer) {
+    override fun free() {
+      byteBuf.release()
+    }
   }
 
   override val hasArray: Boolean get() = byteBuf.hasArray()
@@ -76,6 +87,8 @@ class NettyByteBuffer(
       return (writePosition - position).toInt()
     }
   }
+
+  private val reference = if (autoClose) AutoFreeReference(this, byteBuf) else null
 
   override fun readBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
@@ -180,6 +193,7 @@ class NettyByteBuffer(
   override fun close() {
     if (atomicClosed.compareAndSet(false, true)) {
       byteBuf.release()
+      reference?.cancel()
     }
   }
 }

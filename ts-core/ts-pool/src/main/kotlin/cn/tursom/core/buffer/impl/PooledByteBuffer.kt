@@ -1,15 +1,11 @@
 package cn.tursom.core.buffer.impl
 
+import cn.tursom.core.FreeReference
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.ClosedBufferException
 import cn.tursom.core.buffer.ProxyByteBuffer
 import cn.tursom.core.pool.MemoryPool
-import java.lang.ref.PhantomReference
-import java.lang.ref.Reference
-import java.lang.ref.ReferenceQueue
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 
 /**
  * 在被垃圾回收时能保证释放占用的内存池内存
@@ -20,11 +16,17 @@ class PooledByteBuffer(
   val token: Int,
   autoClose: Boolean = false,
 ) : ProxyByteBuffer, CloseSafeByteBuffer(agent) {
-  private val reference = if (autoClose) PhantomReference(this, allocatedReferenceQueue) else null
-
-  init {
-    if (reference != null) allocatedMap[reference] = pool to token
+  class AutoFreeReference(
+    pooledByteBuffer: PooledByteBuffer,
+    val pool: MemoryPool,
+    val token: Int,
+  ) : FreeReference<PooledByteBuffer>(pooledByteBuffer) {
+    override fun free() {
+      pool.free(token)
+    }
   }
+
+  private val reference = if (autoClose) AutoFreeReference(this, pool, token) else null
 
   private val childCount = AtomicInteger(0)
   override val resized get() = agent.resized
@@ -32,7 +34,7 @@ class PooledByteBuffer(
   override fun close() {
     if (tryClose()) {
       if (childCount.get() == 0) {
-        if (reference != null) allocatedMap.remove(reference)
+        reference?.cancel()
         pool.free(this)
       }
     }
@@ -59,26 +61,5 @@ class PooledByteBuffer(
 
   override fun toString(): String {
     return "PooledByteBuffer(buffer=$agent, pool=$pool, token=$token, closed=$closed)"
-  }
-
-  //protected fun finalize() {
-  //  pool.free(this)
-  //}
-
-  companion object {
-    private val allocatedReferenceQueue = ReferenceQueue<PooledByteBuffer>()
-    private val allocatedMap = ConcurrentHashMap<Reference<PooledByteBuffer>, Pair<MemoryPool, Int>>()
-
-    init {
-      thread(isDaemon = true) {
-        while (true) {
-          val (pool, token) = allocatedMap.remove(allocatedReferenceQueue.remove() ?: return@thread) ?: continue
-          try {
-            pool.free(token)
-          } catch (e: Exception) {
-          }
-        }
-      }
-    }
   }
 }
