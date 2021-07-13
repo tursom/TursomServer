@@ -1,8 +1,7 @@
 package cn.tursom.core.buffer
 
-import cn.tursom.core.AsyncFile
+import cn.tursom.core.*
 import cn.tursom.core.Utils.bufferThreadLocal
-import cn.tursom.core.forEachIndex
 import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream
@@ -94,12 +93,19 @@ interface ByteBuffer : Closeable {
   }
 
   fun get(): Byte = read { it.get() }
-  fun getChar(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Char = read { it.char }
-  fun getShort(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Short = read { it.short }
-  fun getInt(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int = read { it.int }
-  fun getLong(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Long = read { it.long }
-  fun getFloat(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Float = read { it.float }
-  fun getDouble(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Double = read { it.double }
+  fun getChar(): Char = read { it.char }
+  fun getShort(): Short = read { it.short }
+  fun getInt(): Int = read { it.int }
+  fun getLong(): Long = read { it.long }
+  fun getFloat(): Float = read { it.float }
+  fun getDouble(): Double = read { it.double }
+
+  fun getChar(byteOrder: ByteOrder): Char = toChar(byteOrder) { get() }
+  fun getShort(byteOrder: ByteOrder): Short = toShort(byteOrder) { get() }
+  fun getInt(byteOrder: ByteOrder): Int = toInt(byteOrder) { get() }
+  fun getLong(byteOrder: ByteOrder): Long = toLong(byteOrder) { get() }
+  fun getFloat(byteOrder: ByteOrder): Float = toFloat(byteOrder) { get() }
+  fun getDouble(byteOrder: ByteOrder): Double = toDouble(byteOrder) { get() }
 
   fun getBytes(size: Int = readable): ByteArray = read {
     val bytes = ByteArray(size)
@@ -177,6 +183,14 @@ interface ByteBuffer : Closeable {
   fun put(long: Long): Unit = write { it.putLong(long) }
   fun put(float: Float): Unit = write { it.putFloat(float) }
   fun put(double: Double): Unit = write { it.putDouble(double) }
+
+  fun put(char: Char, byteOrder: ByteOrder): Unit = char.toBytes(byteOrder) { put(it) }
+  fun put(short: Short, byteOrder: ByteOrder): Unit = short.toBytes(byteOrder) { put(it) }
+  fun put(int: Int, byteOrder: ByteOrder): Unit = int.toBytes(byteOrder) { put(it) }
+  fun put(long: Long, byteOrder: ByteOrder): Unit = long.toBytes(byteOrder) { put(it) }
+  fun put(float: Float, byteOrder: ByteOrder): Unit = float.toBytes(byteOrder) { put(it) }
+  fun put(double: Double, byteOrder: ByteOrder): Unit = double.toBytes(byteOrder) { put(it) }
+
   fun put(str: String): Int = put(str.toByteArray())
   fun put(buffer: ByteBuffer): Int = buffer.writeTo(this)
   fun put(byteArray: ByteArray, offset: Int = 0, len: Int = byteArray.size - offset): Int {

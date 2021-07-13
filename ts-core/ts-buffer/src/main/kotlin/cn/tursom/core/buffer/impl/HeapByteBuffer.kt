@@ -41,6 +41,7 @@ class HeapByteBuffer(
   }
 
   override fun reset() {
+    if (readPosition == 0) return
     if (writePosition == readPosition) {
       readPosition = 0
       writePosition = 0
@@ -48,8 +49,8 @@ class HeapByteBuffer(
       buffer.limit(writePosition)
       buffer.position(readPosition)
       buffer.compact()
-      readPosition = buffer.position()
-      writePosition = buffer.limit()
+      readPosition = 0
+      writePosition = buffer.position()
     }
   }
 

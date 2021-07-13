@@ -11,8 +11,6 @@ package cn.tursom.core.buffer
 
 import cn.tursom.core.Unsafe.unsafe
 import cn.tursom.core.isStatic
-import cn.tursom.core.toInt
-import java.nio.ByteOrder
 
 class UnsupportedException : Exception()
 
@@ -207,26 +205,4 @@ fun <T> ByteBuffer.unSerialize(clazz: Class<T>): T {
 
 inline fun <reified T : Any> ByteBuffer.unSerialize(): T {
   return unSerialize(T::class.java)
-}
-
-fun ByteBuffer.getIntWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
-  var time = 4
-  return toInt(byteOrder) {
-    if (--time < size) {
-      get()
-    } else {
-      0
-    }
-  }
-}
-
-fun ByteBuffer.getLongWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
-  var time = 8
-  return toInt(byteOrder) {
-    if (--time < size) {
-      get()
-    } else {
-      0
-    }
-  }
 }

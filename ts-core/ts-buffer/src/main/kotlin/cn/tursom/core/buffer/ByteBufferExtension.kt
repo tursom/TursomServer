@@ -7,6 +7,9 @@ package cn.tursom.core.buffer
 
 import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
+import cn.tursom.core.toBytes
+import cn.tursom.core.toInt
+import java.nio.ByteOrder
 import java.nio.channels.GatheringByteChannel
 import java.nio.channels.ReadableByteChannel
 import java.nio.channels.ScatteringByteChannel
@@ -153,3 +156,68 @@ val Collection<ByteBuffer>.writeable: Int
     forEach { size += it.writeable }
     return size
   }
+
+fun ByteBuffer.getIntWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
+  var time = 4
+  return toInt(byteOrder) {
+    if (--time < size) {
+      get()
+    } else {
+      0
+    }
+  }
+}
+
+fun ByteBuffer.getLongWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
+  var time = 8
+  return toInt(byteOrder) {
+    if (--time < size) {
+      get()
+    } else {
+      0
+    }
+  }
+}
+
+fun ByteBuffer.putIntWithSize(n: Int, size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
+  when (byteOrder) {
+    ByteOrder.LITTLE_ENDIAN -> {
+      var time = size
+      n.toBytes(ByteOrder.LITTLE_ENDIAN) {
+        if (time++ < 4) {
+          put(it)
+        }
+      }
+    }
+    ByteOrder.BIG_ENDIAN -> {
+      var time = size
+      n.toBytes(ByteOrder.BIG_ENDIAN) {
+        if (++time > 4) {
+          put(it)
+        }
+      }
+    }
+  }
+}
+
+fun ByteBuffer.putLongWithSize(l: Long, size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
+  when (byteOrder) {
+    ByteOrder.LITTLE_ENDIAN -> {
+      var time = size
+      l.toBytes(ByteOrder.LITTLE_ENDIAN) {
+        if (time++ < 8) {
+          put(it)
+        }
+      }
+    }
+    ByteOrder.BIG_ENDIAN -> {
+      var time = size
+      l.toBytes(ByteOrder.BIG_ENDIAN) {
+        if (++time > 8) {
+          put(it)
+        }
+      }
+    }
+  }
+}
+

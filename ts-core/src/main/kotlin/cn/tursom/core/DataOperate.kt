@@ -745,24 +745,26 @@ inline fun Double.toBytes(byteOrder: ByteOrder = ByteOrder.nativeOrder(), action
 inline fun toChar(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Char {
   return when (byteOrder) {
     ByteOrder.LITTLE_ENDIAN -> {
-      (get().toInt() or (get().toInt() shl 8))
+      get().toInt() or (get().toInt() shl 8)
     }
     ByteOrder.BIG_ENDIAN -> {
       val late = get()
-      (get().toInt() or (late.toInt() shl 8))
+      get().toInt() or (late.toInt() shl 8)
     }
-    else -> throw UnsupportedOperationException()
+    else -> {
+      throw UnsupportedOperationException()
+    }
   }.toChar()
 }
 
 inline fun toShort(byteOrder: ByteOrder = ByteOrder.nativeOrder(), get: () -> Byte): Short {
   return when (byteOrder) {
     ByteOrder.LITTLE_ENDIAN -> {
-      (get().toInt() or (get().toInt() shl 8))
+      get().toInt() or (get().toInt() shl 8)
     }
     ByteOrder.BIG_ENDIAN -> {
       val late = get()
-      (get().toInt() or (late.toInt() shl 8))
+      get().toInt() or (late.toInt() shl 8)
     }
     else -> throw UnsupportedOperationException()
   }.toShort()
