@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":ts-core"))
+  api(project(":ts-core"))
   compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
 }
 

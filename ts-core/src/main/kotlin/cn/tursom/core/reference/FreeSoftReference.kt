@@ -10,6 +10,11 @@ abstract class FreeSoftReference<T>(
 
   private var cancel: Boolean = false
 
+  init {
+    @Suppress("LeakingThis")
+    ReleasableReference.hosting(this)
+  }
+
   override fun enqueue(): Boolean {
     return if (cancel) {
       false
@@ -18,7 +23,8 @@ abstract class FreeSoftReference<T>(
     }
   }
 
-  fun cancel() {
+  override fun cancel() {
+    super.cancel()
     cancel = true
   }
 }

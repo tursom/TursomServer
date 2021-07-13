@@ -3,6 +3,7 @@ package cn.tursom.core.buffer.impl
 import cn.tursom.core.AsyncFile
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.reference.FreeReference
+import cn.tursom.log.impl.Slf4jImpl
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
 import java.nio.ByteOrder
@@ -13,6 +14,8 @@ class NettyByteBuffer(
   val byteBuf: ByteBuf,
   autoClose: Boolean = false,
 ) : ByteBuffer {
+  companion object : Slf4jImpl()
+
   constructor(
     byteBuf: ByteBuf,
     readPosition: Int = byteBuf.readerIndex(),
