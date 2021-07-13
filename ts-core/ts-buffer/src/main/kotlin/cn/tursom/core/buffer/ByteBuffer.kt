@@ -89,6 +89,10 @@ interface ByteBuffer : Closeable {
     writePosition = 0
   }
 
+  fun skip(n: Int) {
+    readPosition += n
+  }
+
   fun get(): Byte = read { it.get() }
   fun getChar(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Char = read { it.char }
   fun getShort(byteOrder: ByteOrder = ByteOrder.nativeOrder()): Short = read { it.short }
