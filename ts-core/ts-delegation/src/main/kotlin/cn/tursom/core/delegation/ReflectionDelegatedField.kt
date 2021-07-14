@@ -1,5 +1,6 @@
 package cn.tursom.core.delegation
 
+import cn.tursom.core.final
 import cn.tursom.core.getFieldForAll
 import cn.tursom.core.uncheckedCast
 import java.lang.reflect.Field
@@ -10,12 +11,17 @@ class ReflectionDelegatedField<in T, V>(
 ) : MutableDelegatedField<T, V> {
   init {
     field.isAccessible = true
+    field.final = false
   }
 
   override fun getValue(): V = field.get(receiver).uncheckedCast()
 
   override fun setValue(value: V) {
     field.set(receiver, value)
+  }
+
+  override fun toString(): String {
+    return "ReflectionDelegatedField(receiver=$receiver, field=$field)"
   }
 
   companion object {
@@ -31,6 +37,7 @@ class ReflectionDelegatedField<in T, V>(
       return ReflectionDelegatedField(this, field)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun <T, V> T.field(
       field: Field,
       type: V,
@@ -38,6 +45,7 @@ class ReflectionDelegatedField<in T, V>(
       return ReflectionDelegatedField(this, field)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     inline fun <T, V> T.field(
       field: Field,
       type: () -> V,
@@ -46,4 +54,3 @@ class ReflectionDelegatedField<in T, V>(
     }
   }
 }
-
