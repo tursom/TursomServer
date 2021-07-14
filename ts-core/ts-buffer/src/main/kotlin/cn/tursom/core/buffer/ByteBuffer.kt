@@ -1,7 +1,8 @@
 package cn.tursom.core.buffer
 
-import cn.tursom.core.*
+import cn.tursom.core.AsyncFile
 import cn.tursom.core.Utils.bufferThreadLocal
+import cn.tursom.core.forEachIndex
 import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream
@@ -93,21 +94,47 @@ interface ByteBuffer : Closeable {
   }
 
   fun get(): Byte = read { it.get() }
-  fun getChar(): Char = read { it.char }
-  fun getShort(): Short = read { it.short }
-  fun getInt(): Int = read { it.int }
-  fun getLong(): Long = read { it.long }
-  fun getFloat(): Float = read { it.float }
-  fun getDouble(): Double = read { it.double }
+  //fun getChar(): Char = read { it.char }
+  //fun getShort(): Short = read { it.short }
+  //fun getInt(): Int = read { it.int }
+  //fun getLong(): Long = read { it.long }
+  //fun getFloat(): Float = read { it.float }
+  //fun getDouble(): Double = read { it.double }
 
-  fun getChar(byteOrder: ByteOrder): Char = toChar(byteOrder) { get() }
-  fun getShort(byteOrder: ByteOrder): Short = toShort(byteOrder) { get() }
-  fun getInt(byteOrder: ByteOrder): Int = toInt(byteOrder) { get() }
-  fun getLong(byteOrder: ByteOrder): Long = toLong(byteOrder) { get() }
-  fun getFloat(byteOrder: ByteOrder): Float = toFloat(byteOrder) { get() }
-  fun getDouble(byteOrder: ByteOrder): Double = toDouble(byteOrder) { get() }
+  fun getChar(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Char = read { buf ->
+    buf.order(byteOrder)
+    buf.char
+  }
+
+  fun getShort(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Short = read { buf ->
+    buf.order(byteOrder)
+    buf.short
+  }
+
+  fun getInt(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Int = read { buf ->
+    buf.order(byteOrder)
+    buf.int
+  }
+
+  fun getLong(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Long = read { buf ->
+    buf.order(byteOrder)
+    buf.long
+  }
+
+  fun getFloat(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Float = read { buf ->
+    buf.order(byteOrder)
+    buf.float
+  }
+
+  fun getDouble(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Double = read { buf ->
+    buf.order(byteOrder)
+    buf.double
+  }
 
   fun getBytes(size: Int = readable): ByteArray = read {
+    if (it.limit() - it.position() < size) {
+      throw IndexOutOfBoundsException()
+    }
     val bytes = ByteArray(size)
     it.get(bytes)
     bytes
@@ -177,19 +204,42 @@ interface ByteBuffer : Closeable {
    */
 
   fun put(byte: Byte): Unit = write { it.put(byte) }
-  fun put(char: Char): Unit = write { it.putChar(char) }
-  fun put(short: Short): Unit = write { it.putShort(short) }
-  fun put(int: Int): Unit = write { it.putInt(int) }
-  fun put(long: Long): Unit = write { it.putLong(long) }
-  fun put(float: Float): Unit = write { it.putFloat(float) }
-  fun put(double: Double): Unit = write { it.putDouble(double) }
+  //fun put(char: Char): Unit = write { it.putChar(char) }
+  //fun put(short: Short): Unit = write { it.putShort(short) }
+  //fun put(int: Int): Unit = write { it.putInt(int) }
+  //fun put(long: Long): Unit = write { it.putLong(long) }
+  //fun put(float: Float): Unit = write { it.putFloat(float) }
+  //fun put(double: Double): Unit = write { it.putDouble(double) }
 
-  fun put(char: Char, byteOrder: ByteOrder): Unit = char.toBytes(byteOrder) { put(it) }
-  fun put(short: Short, byteOrder: ByteOrder): Unit = short.toBytes(byteOrder) { put(it) }
-  fun put(int: Int, byteOrder: ByteOrder): Unit = int.toBytes(byteOrder) { put(it) }
-  fun put(long: Long, byteOrder: ByteOrder): Unit = long.toBytes(byteOrder) { put(it) }
-  fun put(float: Float, byteOrder: ByteOrder): Unit = float.toBytes(byteOrder) { put(it) }
-  fun put(double: Double, byteOrder: ByteOrder): Unit = double.toBytes(byteOrder) { put(it) }
+  fun put(char: Char, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putChar(char)
+  }
+
+  fun put(short: Short, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putShort(short)
+  }
+
+  fun put(int: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putInt(int)
+  }
+
+  fun put(long: Long, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putLong(long)
+  }
+
+  fun put(float: Float, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putFloat(float)
+  }
+
+  fun put(double: Double, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
+    buf.order(byteOrder)
+    buf.putDouble(double)
+  }
 
   fun put(str: String): Int = put(str.toByteArray())
   fun put(buffer: ByteBuffer): Int = buffer.writeTo(this)
@@ -207,28 +257,58 @@ interface ByteBuffer : Closeable {
     }
   }
 
-  fun put(array: CharArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: CharArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
-  fun put(array: ShortArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: ShortArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
-  fun put(array: IntArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: IntArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
-  fun put(array: LongArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: LongArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
-  fun put(array: FloatArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: FloatArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
-  fun put(array: DoubleArray, index: Int = 0, size: Int = array.size - index) {
-    array.forEachIndex(index, index + size - 1, this::put)
+  fun put(
+    array: DoubleArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) {
+    array.forEachIndex(index, index + size - 1) { put(it, byteOrder) }
   }
 
   fun put(inputStream: InputStream): Int {
@@ -263,23 +343,59 @@ interface ByteBuffer : Closeable {
   }
 
   fun putByte(byte: Byte): Unit = put(byte)
-  fun putChar(char: Char): Unit = put(char)
-  fun putShort(short: Short): Unit = put(short)
-  fun putInt(int: Int): Unit = put(int)
-  fun putLong(long: Long): Unit = put(long)
-  fun putFloat(float: Float): Unit = put(float)
-  fun putDouble(double: Double): Unit = put(double)
+  fun putChar(char: Char, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(char, byteOrder)
+  fun putShort(short: Short, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(short, byteOrder)
+  fun putInt(int: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(int, byteOrder)
+  fun putLong(long: Long, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(long, byteOrder)
+  fun putFloat(float: Float, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(float, byteOrder)
+  fun putDouble(double: Double, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = put(double, byteOrder)
+
   fun putString(str: String): Int = put(str)
   fun putBuffer(buffer: ByteBuffer): Int = put(buffer)
   fun putBytes(byteArray: ByteArray, startIndex: Int = 0, endIndex: Int = byteArray.size - startIndex) =
     put(byteArray, startIndex, endIndex)
 
-  fun putChars(array: CharArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
-  fun putShorts(array: ShortArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
-  fun putInts(array: IntArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
-  fun putLongs(array: LongArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
-  fun putFloats(array: FloatArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
-  fun putDoubles(array: DoubleArray, index: Int = 0, size: Int = array.size - index) = put(array, index, size)
+  fun putChars(
+    array: CharArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
+
+  fun putShorts(
+    array: ShortArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
+
+  fun putInts(
+    array: IntArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
+
+  fun putLongs(
+    array: LongArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
+
+  fun putFloats(
+    array: FloatArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
+
+  fun putDoubles(
+    array: DoubleArray,
+    index: Int = 0,
+    size: Int = array.size - index,
+    byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  ) = put(array, index, size, byteOrder)
 
   fun fill(byte: Byte) {
     readPosition = 0
@@ -292,7 +408,7 @@ interface ByteBuffer : Closeable {
     writePosition = 0
   }
 
-  fun split(maxSize: Int): Array<out ByteBuffer> {
+  fun split(maxSize: Int): List<ByteBuffer> {
     val size = (((capacity - 1) / maxSize) + 1).and(0x7fff_ffff)
     return Array(size) {
       if (it != size - 1) {
@@ -300,7 +416,7 @@ interface ByteBuffer : Closeable {
       } else {
         slice(it * maxSize, capacity - it * maxSize)
       }
-    }
+    }.asList()
   }
 
   fun readAllSize(): Int {

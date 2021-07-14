@@ -3,5 +3,5 @@ package cn.tursom.core.buffer.impl
 import cn.tursom.core.buffer.ByteBuffer
 
 class ArrayByteBuffer(
-  override vararg val buffers: ByteBuffer
-) : ListByteBuffer(buffers.asList())
+  vararg buffers: ByteBuffer,
+) : ListByteBuffer(ArrayList(buffers.asList()))

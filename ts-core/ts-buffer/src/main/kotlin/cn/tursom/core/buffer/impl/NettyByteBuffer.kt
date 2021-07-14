@@ -128,12 +128,48 @@ class NettyByteBuffer(
   }
 
   override fun get(): Byte = byteBuf.readByte()
-  override fun getChar(byteOrder: ByteOrder): Char = byteBuf.readChar()
-  override fun getShort(byteOrder: ByteOrder): Short = byteBuf.readShort()
-  override fun getInt(byteOrder: ByteOrder): Int = byteBuf.readInt()
-  override fun getLong(byteOrder: ByteOrder): Long = byteBuf.readLong()
-  override fun getFloat(byteOrder: ByteOrder): Float = byteBuf.readFloat()
-  override fun getDouble(byteOrder: ByteOrder): Double = byteBuf.readDouble()
+  //override fun getChar(): Char = byteBuf.readChar()
+  //override fun getShort(): Short = byteBuf.readShort()
+  //override fun getInt(): Int = byteBuf.readInt()
+  //override fun getLong(): Long = byteBuf.readLong()
+  //override fun getFloat(): Float = byteBuf.readFloat()
+  //override fun getDouble(): Double = byteBuf.readDouble()
+
+  override fun getChar(byteOrder: ByteOrder): Char = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readChar()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readShortLE().toInt().toChar()
+    else -> throw IllegalArgumentException("")
+  }
+
+  override fun getShort(byteOrder: ByteOrder): Short = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readShort()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readShortLE()
+    else -> throw IllegalArgumentException("")
+  }
+
+  override fun getInt(byteOrder: ByteOrder): Int = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readInt()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readIntLE()
+    else -> throw IllegalArgumentException("")
+  }
+
+  override fun getLong(byteOrder: ByteOrder): Long = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readLong()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readLongLE()
+    else -> throw IllegalArgumentException("")
+  }
+
+  override fun getFloat(byteOrder: ByteOrder): Float = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readFloat()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readFloatLE()
+    else -> throw IllegalArgumentException("")
+  }
+
+  override fun getDouble(byteOrder: ByteOrder): Double = when (byteOrder) {
+    ByteOrder.BIG_ENDIAN -> byteBuf.readDouble()
+    ByteOrder.LITTLE_ENDIAN -> byteBuf.readDoubleLE()
+    else -> throw IllegalArgumentException("")
+  }
 
   override fun getBytes(size: Int): ByteArray {
     val bytes = ByteArray(size)
@@ -163,28 +199,52 @@ class NettyByteBuffer(
     byteBuf.writeByte(byte.toInt())
   }
 
-  override fun put(char: Char) {
-    byteBuf.writeChar(char.code)
+  override fun put(char: Char, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeChar(char.code)
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeShortLE(char.code)
+      else -> throw IllegalArgumentException()
+    }
   }
 
-  override fun put(short: Short) {
-    byteBuf.writeShort(short.toInt())
+  override fun put(short: Short, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeShort(short.toInt())
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeShortLE(short.toInt())
+      else -> throw IllegalArgumentException()
+    }
   }
 
-  override fun put(int: Int) {
-    byteBuf.writeInt(int)
+  override fun put(int: Int, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeInt(int)
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeIntLE(int)
+      else -> throw IllegalArgumentException()
+    }
   }
 
-  override fun put(long: Long) {
-    byteBuf.writeLong(long)
+  override fun put(long: Long, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeLong(long)
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeLongLE(long)
+      else -> throw IllegalArgumentException()
+    }
   }
 
-  override fun put(float: Float) {
-    byteBuf.writeFloat(float)
+  override fun put(float: Float, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeFloat(float)
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeFloatLE(float)
+      else -> throw IllegalArgumentException()
+    }
   }
 
-  override fun put(double: Double) {
-    byteBuf.writeDouble(double)
+  override fun put(double: Double, byteOrder: ByteOrder) {
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> byteBuf.writeDouble(double)
+      ByteOrder.LITTLE_ENDIAN -> byteBuf.writeDoubleLE(double)
+      else -> throw IllegalArgumentException()
+    }
   }
 
   override fun put(str: String): Int {

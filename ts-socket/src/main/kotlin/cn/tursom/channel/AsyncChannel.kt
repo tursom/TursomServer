@@ -17,23 +17,25 @@ interface AsyncChannel : Closeable {
 
   suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
   suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long = 0L): Long
+  suspend fun write(buffer: List<ByteBuffer>, timeout: Long = 0L): Long = write(buffer.toTypedArray(), timeout)
+  suspend fun read(buffer: List<ByteBuffer>, timeout: Long = 0L): Long = read(buffer.toTypedArray(), timeout)
   suspend fun write(buffer: ByteBuffer, timeout: Long = 0L): Int = write(arrayOf(buffer), timeout).toInt()
   suspend fun read(buffer: ByteBuffer, timeout: Long = 0L): Int = read(arrayOf(buffer), timeout).toInt()
-  suspend fun write(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = write(buffer.buffers, timeout)
-  suspend fun read(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = read(buffer.buffers, timeout)
+  suspend fun write(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = write(buffer.buffersArray, timeout)
+  suspend fun read(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = read(buffer.buffersArray, timeout)
 
   suspend fun write(
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long = 0
+    timeout: Long = 0,
   ): Long
 
   suspend fun read(
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long = 0
+    timeout: Long = 0,
   ): Long
 
   suspend fun write(bytes: ByteArray, offset: Int = 0, len: Int = bytes.size - offset): Int {

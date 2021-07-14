@@ -87,7 +87,7 @@ fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
   val bufferList = ArrayList<java.nio.ByteBuffer>()
   buffers.forEach {
     if (it is MultipleByteBuffer) {
-      it.forEach {
+      it.buffers.forEach {
         bufferList.add(it.writeBuffer())
       }
     } else {
@@ -101,7 +101,7 @@ fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
     var index = 0
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.forEach {
+        it.buffers.forEach {
           it.finishWrite(bufferArray[index])
         }
       } else {
@@ -116,7 +116,7 @@ fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
   val bufferList = ArrayList<java.nio.ByteBuffer>()
   buffers.forEach {
     if (it is MultipleByteBuffer) {
-      it.forEach {
+      it.buffers.forEach {
         bufferList.add(it.readBuffer())
       }
     } else {
@@ -130,7 +130,7 @@ fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
     var index = 0
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.forEach {
+        it.buffers.forEach {
           it.finishRead(bufferArray[index])
         }
       } else {

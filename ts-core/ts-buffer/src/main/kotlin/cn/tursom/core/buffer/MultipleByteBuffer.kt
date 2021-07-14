@@ -3,15 +3,17 @@ package cn.tursom.buffer
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.ListByteBuffer
 import cn.tursom.core.forEachIndex
-import cn.tursom.core.toBytes
 import java.io.Closeable
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteOrder
 
 @Suppress("unused")
-interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
-  val buffers: Array<out ByteBuffer> get() = toTypedArray()
+interface MultipleByteBuffer : Closeable, ByteBuffer {
+  val buffers: List<ByteBuffer>
+  val buffersArray: Array<out ByteBuffer> get() = buffers.toTypedArray()
+
+  fun append(buffer: ByteBuffer)
 
   /**
    * 使用读 buffer，ByteBuffer 实现类有义务维护指针正常推进
@@ -41,7 +43,7 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
     val bufferList = ArrayList<java.nio.ByteBuffer>()
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.forEach {
+        it.buffers.forEach {
           bufferList.add(it.readBuffer())
         }
       } else {
@@ -55,7 +57,7 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
     val bufferList = ArrayList<java.nio.ByteBuffer>()
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.forEach {
+        it.buffers.forEach {
           bufferList.add(it.writeBuffer())
         }
       } else {
@@ -67,9 +69,9 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
 
   fun finishRead(buffers: List<java.nio.ByteBuffer>) {
     var index = 0
-    forEach {
+    this.buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.forEach {
+        it.buffers.forEach {
           it.finishRead(buffers[index])
           index++
         }
@@ -82,39 +84,38 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
 
   fun finishWrite(buffers: List<java.nio.ByteBuffer>) {
     var index = 0
-    forEach {
-      if (it is MultipleByteBuffer) {
-        it.forEach {
-          it.finishWrite(buffers[index])
+    this.buffers.forEach { subBuf ->
+      if (subBuf is MultipleByteBuffer) {
+        subBuf.buffers.forEach { writeBuf ->
+          writeBuf.finishWrite(buffers[index])
           index++
         }
       } else {
-        it.finishWrite(buffers[index])
+        subBuf.finishWrite(buffers[index])
         index++
       }
     }
   }
 
-  override fun close() = forEach(ByteBuffer::close)
-  override fun slice(position: Int, size: Int): MultipleByteBuffer = ListByteBuffer(subList(position, position + size))
-  override fun fill(byte: Byte) = forEach { it.fill(byte) }
-  override fun clear() = forEach(ByteBuffer::clear)
-  override fun reset() = forEach(ByteBuffer::reset)
+  override fun close() = buffers.forEach(ByteBuffer::close)
+  override fun slice(position: Int, size: Int): MultipleByteBuffer {
+    return ListByteBuffer(ArrayList(buffers.subList(position, position + size)))
+  }
+
+  override fun fill(byte: Byte) = buffers.forEach { it.fill(byte) }
+  override fun clear() = buffers.forEach(ByteBuffer::clear)
+  override fun reset() = buffers.forEach(ByteBuffer::reset)
 
 
   override val resized: Boolean get() = false
   override val hasArray: Boolean get() = false
-  override val array: ByteArray
-    get() = throw UnsupportedOperationException()
+  override val array: ByteArray get() = throw UnsupportedOperationException()
   override val arrayOffset: Int get() = 0
-  override val capacity: Int
-    get() {
-      var capacity = 0
-      forEach {
-        capacity += it.capacity
-      }
-      return capacity
-    }
+  override val capacity: Int get() = buffers.sumOf { it.capacity }
+  override val isReadable: Boolean get() = buffers.any { it.isReadable }
+  override val isWriteable: Boolean get() = buffers.any { it.isWriteable }
+  override val readable: Int get() = buffers.sumOf { it.readable }
+  override val writeable: Int get() = buffers.sumOf { it.writeable }
 
   override fun readBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
   override fun writeBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
@@ -124,12 +125,14 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
   override fun resize(newSize: Int): Boolean = false
 
   override fun get(): Byte
-  override fun getChar(byteOrder: ByteOrder): Char = cn.tursom.core.toChar(byteOrder, ::get)
-  override fun getShort(byteOrder: ByteOrder): Short = cn.tursom.core.toShort(byteOrder, ::get)
-  override fun getInt(byteOrder: ByteOrder): Int = cn.tursom.core.toInt(byteOrder, ::get)
-  override fun getLong(byteOrder: ByteOrder): Long = cn.tursom.core.toLong(byteOrder, ::get)
-  override fun getFloat(byteOrder: ByteOrder): Float = cn.tursom.core.toFloat(byteOrder, ::get)
-  override fun getDouble(byteOrder: ByteOrder): Double = cn.tursom.core.toDouble(byteOrder, ::get)
+
+  override fun getChar(byteOrder: ByteOrder): Char = cn.tursom.core.toChar(byteOrder) { get() }
+  override fun getShort(byteOrder: ByteOrder): Short = cn.tursom.core.toShort(byteOrder) { get() }
+  override fun getInt(byteOrder: ByteOrder): Int = cn.tursom.core.toInt(byteOrder) { get() }
+  override fun getLong(byteOrder: ByteOrder): Long = cn.tursom.core.toLong(byteOrder) { get() }
+  override fun getFloat(byteOrder: ByteOrder): Float = cn.tursom.core.toFloat(byteOrder) { get() }
+  override fun getDouble(byteOrder: ByteOrder): Double = cn.tursom.core.toDouble(byteOrder) { get() }
+
   override fun getBytes(size: Int): ByteArray {
     val buffer = ByteArray(size)
     buffer.indices.forEach {
@@ -174,13 +177,8 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
     return write
   }
 
-  override fun put(byte: Byte): Unit
-  override fun put(char: Char) = char.toBytes { put(it) }
-  override fun put(short: Short) = short.toBytes { put(it) }
-  override fun put(int: Int) = int.toBytes { put(it) }
-  override fun put(long: Long) = long.toBytes { put(it) }
-  override fun put(float: Float) = float.toBytes { put(it) }
-  override fun put(double: Double) = double.toBytes { put(it) }
+  override fun put(byte: Byte)
+
   override fun put(byteArray: ByteArray, offset: Int, len: Int): Int {
     var write = 0
     byteArray.forEachIndex(offset, offset + len) {
@@ -200,6 +198,6 @@ interface MultipleByteBuffer : List<ByteBuffer>, Closeable, ByteBuffer {
     return read
   }
 
-  override fun split(maxSize: Int): Array<out ByteBuffer> = throw UnsupportedOperationException()
+  override fun split(maxSize: Int): List<ByteBuffer> = throw UnsupportedOperationException()
   override fun readAllSize(): Int = throw UnsupportedOperationException()
 }
