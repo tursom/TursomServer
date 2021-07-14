@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   implementation(project(":ts-core"))
-  implementation(project(":ts-core:ts-delegation"))
+  api(project(":ts-core:ts-delegation"))
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

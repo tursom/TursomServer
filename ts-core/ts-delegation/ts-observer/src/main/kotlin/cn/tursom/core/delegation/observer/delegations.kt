@@ -44,6 +44,11 @@ infix operator fun <T, V> ListenableListener<T, V>.plus(listener: T.(old: V, new
   addListener(listener)
 
 @OptIn(Listenable::class)
+infix fun <V> KProperty0<V>.listen(listener: Any.(old: V, new: V) -> Unit) {
+  getListenableMutableDelegatedField()!!.addListener(listener)
+}
+
+@OptIn(Listenable::class)
 fun <V> KProperty0<V>.getListenableMutableDelegatedField(): ListenableMutableDelegatedField<Any, V>? {
   isAccessible = true
   var delegate = getDelegate() ?: getDelegate(receiver, name)
