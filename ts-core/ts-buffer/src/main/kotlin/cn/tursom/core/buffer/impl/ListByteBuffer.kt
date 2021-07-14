@@ -160,12 +160,14 @@ open class ListByteBuffer(
   override fun put(byte: Byte) {
     updateWrite()
     writeOperator!!.put(byte)
+    writePosition++
   }
 
   override fun put(char: Char, byteOrder: ByteOrder) {
     updateWrite()
     if (writeOperator!!.writeable > 2) {
       writeOperator!!.put(char, byteOrder)
+      writePosition += 2
     } else {
       super.put(char, byteOrder)
     }
@@ -175,6 +177,7 @@ open class ListByteBuffer(
     updateWrite()
     if (writeOperator!!.writeable > 2) {
       writeOperator!!.put(short, byteOrder)
+      writePosition += 2
     } else {
       super.put(short, byteOrder)
     }
@@ -184,6 +187,7 @@ open class ListByteBuffer(
     updateWrite()
     if (writeOperator!!.writeable > 4) {
       writeOperator!!.put(int, byteOrder)
+      writePosition += 4
     } else {
       super.put(int, byteOrder)
     }
@@ -193,6 +197,7 @@ open class ListByteBuffer(
     updateWrite()
     if (writeOperator!!.writeable > 8) {
       writeOperator!!.put(long, byteOrder)
+      writePosition += 8
     } else {
       super.put(long, byteOrder)
     }
@@ -202,6 +207,7 @@ open class ListByteBuffer(
     updateWrite()
     if (writeOperator!!.writeable > 4) {
       writeOperator!!.put(float, byteOrder)
+      writePosition += 4
     } else {
       super.put(float, byteOrder)
     }
@@ -211,6 +217,7 @@ open class ListByteBuffer(
     updateWrite()
     if (writeOperator!!.writeable > 8) {
       writeOperator!!.put(double, byteOrder)
+      writePosition += 8
     } else {
       super.put(double, byteOrder)
     }
