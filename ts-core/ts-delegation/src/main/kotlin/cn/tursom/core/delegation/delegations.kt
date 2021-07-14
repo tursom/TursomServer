@@ -94,10 +94,15 @@ fun <T, V> T.delegated(
 ): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField(threadLocal)
 
 fun <T, V> T.threadLocalDelegated(): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField()
+
+@Suppress("UNUSED_PARAMETER")
 fun <T, V> T.threadLocalDelegated(type: V?): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField()
+
+@Suppress("UNUSED_PARAMETER")
 fun <T, V> T.threadLocalDelegated(type: Class<out V?>): MutableDelegatedField<T, V?> =
   ThreadLocalMutableDelegatedField()
 
+@Suppress("UNUSED_PARAMETER")
 fun <T, V : Any> T.threadLocalDelegated(type: KClass<V>): MutableDelegatedField<T, V?> =
   ThreadLocalMutableDelegatedField()
 
@@ -111,20 +116,26 @@ fun <T, V : Any> T.threadLocalDelegated(
 //fun <T, V> T.threadLocalDelegated(simpThreadLocal: SimpThreadLocal<V>): MutableDelegatedField<T, V> =
 //    SimpThreadLocalMutableDelegatedField(simpThreadLocal)
 
-fun <T, V> MutableDelegatedField<T, V>.filter(filter: T.(old: V, new: V) -> Boolean): MutableDelegatedField<T, V> =
-  FilterDelegatedField(this, filter)
+fun <T, V> MutableDelegatedField<T, V>.filter(
+  filter: T.(old: V, new: V) -> Boolean,
+): MutableDelegatedField<T, V> = FilterDelegatedField(this, filter)
 
-fun <T, V> DelegatedField<T, V>.setter(setter: DelegatedField<T, V>.(value: V) -> Unit): DelegatedField<T, V> =
-  SetterDelegatedField(this, setter)
+fun <T, V> DelegatedField<T, V>.setter(
+  setter: DelegatedField<T, V>.(value: V) -> Unit,
+): DelegatedField<T, V> = SetterDelegatedField(this, setter)
 
-fun <T, V> MutableDelegatedField<T, V>.setter(setter: MutableDelegatedField<T, V>.(thisRef: T, property: KProperty<*>, value: V) -> Unit): MutableDelegatedField<T, V> =
-  SetterMutableDelegatedField(this, setter)
+fun <T, V> MutableDelegatedField<T, V>.setter(
+  setter: MutableDelegatedField<T, V>.(thisRef: T, property: KProperty<*>, value: V) -> Unit,
+): MutableDelegatedField<T, V> = SetterMutableDelegatedField(this, setter)
 
-fun <T, V> DelegatedField<T, V>.getter(getter: DelegatedField<T, V>.(thisRef: T, property: KProperty<*>) -> V): DelegatedField<T, V> =
-  GetterDelegatedField(this, getter)
+fun <T, V> DelegatedField<T, V>.getter(
+  getter: DelegatedField<T, V>.(thisRef: T, property: KProperty<*>) -> V,
+): DelegatedField<T, V> = GetterDelegatedField(this, getter)
 
-fun <T, V> MutableDelegatedField<T, V>.getter(getter: MutableDelegatedField<T, V>.(thisRef: T, property: KProperty<*>) -> V): MutableDelegatedField<T, V> =
-  GetterMutableDelegatedField(this, getter)
+fun <T, V> MutableDelegatedField<T, V>.mGetter(
+  getter: MutableDelegatedField<T, V>.(thisRef: T, property: KProperty<*>) -> V,
+): MutableDelegatedField<T, V> = GetterMutableDelegatedField(this, getter)
 
-fun <T, V> MutableDelegatedField<T, V>.withExecutor(executor: Executor): MutableDelegatedField<T, V> =
-  ExecutorMutableDelegatedField(this, executor)
+fun <T, V> MutableDelegatedField<T, V>.withExecutor(
+  executor: Executor,
+): MutableDelegatedField<T, V> = ExecutorMutableDelegatedField(this, executor)
