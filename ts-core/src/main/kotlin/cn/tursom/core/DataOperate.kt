@@ -7,6 +7,13 @@ import java.nio.ByteOrder
 
 class WrongPushTypeException : Exception()
 
+fun Char.reverseBytes() = Character.reverseBytes(this)
+fun Short.reverseBytes() = java.lang.Short.reverseBytes(this)
+fun Int.reverseBytes() = Integer.reverseBytes(this)
+fun Long.reverseBytes() = java.lang.Long.reverseBytes(this)
+fun Float.reverseBytes() = Float.fromBits(toBits().reverseBytes())
+fun Double.reverseBytes() = Double.fromBits(toBits().reverseBytes())
+
 fun Char.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(2)
   array.put(this, 0, byteOrder)

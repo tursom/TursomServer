@@ -128,12 +128,6 @@ class NettyByteBuffer(
   }
 
   override fun get(): Byte = byteBuf.readByte()
-  //override fun getChar(): Char = byteBuf.readChar()
-  //override fun getShort(): Short = byteBuf.readShort()
-  //override fun getInt(): Int = byteBuf.readInt()
-  //override fun getLong(): Long = byteBuf.readLong()
-  //override fun getFloat(): Float = byteBuf.readFloat()
-  //override fun getDouble(): Double = byteBuf.readDouble()
 
   override fun getChar(byteOrder: ByteOrder): Char = when (byteOrder) {
     ByteOrder.BIG_ENDIAN -> byteBuf.readChar()

@@ -3,6 +3,7 @@ package cn.tursom.core.buffer
 import cn.tursom.core.AsyncFile
 import cn.tursom.core.Utils.bufferThreadLocal
 import cn.tursom.core.forEachIndex
+import cn.tursom.core.reverseBytes
 import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream
@@ -94,41 +95,53 @@ interface ByteBuffer : Closeable {
   }
 
   fun get(): Byte = read { it.get() }
-  //fun getChar(): Char = read { it.char }
-  //fun getShort(): Short = read { it.short }
-  //fun getInt(): Int = read { it.int }
-  //fun getLong(): Long = read { it.long }
-  //fun getFloat(): Float = read { it.float }
-  //fun getDouble(): Double = read { it.double }
 
   fun getChar(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Char = read { buf ->
-    buf.order(byteOrder)
-    buf.char
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.char
+      ByteOrder.LITTLE_ENDIAN -> buf.char.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getShort(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Short = read { buf ->
-    buf.order(byteOrder)
-    buf.short
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.short
+      ByteOrder.LITTLE_ENDIAN -> buf.short.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getInt(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Int = read { buf ->
-    buf.order(byteOrder)
-    buf.int
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.int
+      ByteOrder.LITTLE_ENDIAN -> buf.int.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getLong(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Long = read { buf ->
-    buf.order(byteOrder)
-    buf.long
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.long
+      ByteOrder.LITTLE_ENDIAN -> buf.long.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getFloat(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Float = read { buf ->
-    buf.order(byteOrder)
-    buf.float
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.float
+      ByteOrder.LITTLE_ENDIAN -> buf.float.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getDouble(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Double = read { buf ->
-    buf.order(byteOrder)
-    buf.double
+    when (byteOrder) {
+      ByteOrder.BIG_ENDIAN -> buf.double
+      ByteOrder.LITTLE_ENDIAN -> buf.double.reverseBytes()
+      else -> throw IllegalArgumentException()
+    }
   }
 
   fun getBytes(size: Int = readable): ByteArray = read {
@@ -204,12 +217,6 @@ interface ByteBuffer : Closeable {
    */
 
   fun put(byte: Byte): Unit = write { it.put(byte) }
-  //fun put(char: Char): Unit = write { it.putChar(char) }
-  //fun put(short: Short): Unit = write { it.putShort(short) }
-  //fun put(int: Int): Unit = write { it.putInt(int) }
-  //fun put(long: Long): Unit = write { it.putLong(long) }
-  //fun put(float: Float): Unit = write { it.putFloat(float) }
-  //fun put(double: Double): Unit = write { it.putDouble(double) }
 
   fun put(char: Char, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Unit = write { buf ->
     buf.order(byteOrder)
