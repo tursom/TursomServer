@@ -53,8 +53,12 @@ open class ListByteBuffer(
   override fun writeBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
 
   override fun append(buffer: ByteBuffer) {
+    val bufReadPosition = buffer.readPosition
+    val bufWritePosition = buffer.writePosition
     buffers.add(buffer)
     buffersArrayCache = null
+    readPosition += bufReadPosition
+    writePosition += bufWritePosition
   }
 
   override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer =
