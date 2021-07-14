@@ -4,11 +4,14 @@ import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
 import java.nio.ByteOrder
 
+@Suppress("MemberVisibilityCanBePrivate")
 open class ListByteBuffer(
   final override val buffers: MutableList<ByteBuffer> = ArrayList(),
 ) : MultipleByteBuffer {
-  private var readOperator = buffers.firstOrNull()
-  private var writeOperator = buffers.firstOrNull()
+  var readArrayPosition: Int = 0
+  var writeArrayPosition: Int = 0
+  var readOperator = buffers.firstOrNull()
+  var writeOperator = buffers.firstOrNull()
 
   private var buffersArrayCache: Array<out ByteBuffer>? = null
   override val buffersArray: Array<out ByteBuffer>
@@ -21,17 +24,7 @@ open class ListByteBuffer(
 
   override val hasArray: Boolean get() = false
   override val array: ByteArray get() = throw UnsupportedOperationException()
-  override val capacity: Int
-    get() {
-      var capacity = 0
-      buffers.forEach {
-        capacity += it.capacity
-      }
-      return capacity
-    }
-
-  var writeArrayPosition: Int = 0
-  var readArrayPosition: Int = 0
+  override val capacity: Int get() = buffers.sumOf { it.capacity }
 
   override var writePosition: Int = buffers.sumOf { it.writePosition }
   override var readPosition: Int = buffers.sumOf { it.readPosition }
@@ -66,14 +59,14 @@ open class ListByteBuffer(
 
   override fun resize(newSize: Int): Boolean = throw UnsupportedOperationException()
 
-  fun updateRead() {
-    while (readArrayPosition < buffers.size && (readOperator == null || !readOperator!!.isReadable)) {
+  private fun updateRead() {
+    while (readArrayPosition < buffers.size && readOperator?.isReadable != true) {
       readOperator = buffers[readArrayPosition++]
     }
   }
 
-  fun updateWrite() {
-    while (writeArrayPosition < buffers.size && (writeOperator == null || !writeOperator!!.isReadable)) {
+  private fun updateWrite() {
+    while (writeArrayPosition < buffers.size && writeOperator?.isWriteable == true) {
       writeOperator = buffers[writeArrayPosition++]
     }
   }

@@ -40,7 +40,7 @@ inline fun <T> ByteBuffer.write(block: (java.nio.ByteBuffer) -> T): T {
   }
 }
 
-inline fun <T> MultipleByteBuffer.reads(block: (List<java.nio.ByteBuffer>) -> T): T {
+inline fun <T> MultipleByteBuffer.reads(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
   val bufferList = readBuffers()
   try {
     return block(bufferList)
@@ -50,7 +50,7 @@ inline fun <T> MultipleByteBuffer.reads(block: (List<java.nio.ByteBuffer>) -> T)
 }
 
 
-inline fun <T> MultipleByteBuffer.writes(block: (List<java.nio.ByteBuffer>) -> T): T {
+inline fun <T> MultipleByteBuffer.writes(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
   val bufferList = writeBuffers()
   try {
     return block(bufferList)
@@ -61,7 +61,7 @@ inline fun <T> MultipleByteBuffer.writes(block: (List<java.nio.ByteBuffer>) -> T
 
 fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer && this is ScatteringByteChannel) {
-    buffer.writeBuffers { read(it.toTypedArray()) }.toInt()
+    buffer.writeBuffers { read(it.toList().toTypedArray()) }.toInt()
   } else {
     buffer.write { read(it) }
   }
@@ -69,18 +69,18 @@ fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
 
 fun WritableByteChannel.write(buffer: ByteBuffer): Int {
   return if (buffer is MultipleByteBuffer && this is GatheringByteChannel) {
-    buffer.readBuffers { write(it.toTypedArray()) }.toInt()
+    buffer.readBuffers { write(it.toList().toTypedArray()) }.toInt()
   } else {
     buffer.read { write(it) }
   }
 }
 
 fun ScatteringByteChannel.read(buffer: MultipleByteBuffer): Long {
-  return buffer.writeBuffers { read(it.toTypedArray()) }
+  return buffer.writeBuffers { read(it.toList().toTypedArray()) }
 }
 
 fun GatheringByteChannel.write(buffer: MultipleByteBuffer): Long {
-  return buffer.readBuffers { write(it.toTypedArray()) }
+  return buffer.readBuffers { write(it.toList().toTypedArray()) }
 }
 
 fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {

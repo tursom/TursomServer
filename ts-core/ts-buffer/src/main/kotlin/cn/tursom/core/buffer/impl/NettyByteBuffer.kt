@@ -13,7 +13,7 @@ import kotlin.coroutines.suspendCoroutine
 class NettyByteBuffer(
   val byteBuf: ByteBuf,
   autoClose: Boolean = false,
-) : ByteBuffer {
+) : ByteBuffer, AsyncFile.Reader, AsyncFile.Writer {
   companion object : Slf4jImpl()
 
   constructor(
@@ -59,40 +59,36 @@ class NettyByteBuffer(
 
   private val atomicClosed = AtomicBoolean(false)
 
-  override val fileReader: AsyncFile.Reader = object : AsyncFile.Reader {
-    override suspend fun read(file: AsyncFile, position: Long): Int {
-      val nioBuffers = byteBuf.nioBuffers(byteBuf.writerIndex(), byteBuf.capacity())
-      var readPosition = position
-      for (nioBuffer in nioBuffers) {
-        while (nioBuffer.hasRemaining()) {
-          val readSize = suspendCoroutine<Int> { cont ->
-            file.writeChannel.read(nioBuffer, readPosition, cont, AsyncFile.handler)
-          }
-          if (readSize <= 0) break
-          readPosition += readSize
-          byteBuf.writerIndex(byteBuf.writerIndex() + readSize)
+  override suspend fun readAsyncFile(file: AsyncFile, position: Long): Int {
+    val nioBuffers = byteBuf.nioBuffers(byteBuf.writerIndex(), byteBuf.writableBytes())
+    var readPosition = position
+    for (nioBuffer in nioBuffers) {
+      while (nioBuffer.hasRemaining()) {
+        val readSize = suspendCoroutine<Int> { cont ->
+          file.writeChannel.read(nioBuffer, readPosition, cont, AsyncFile.handler)
         }
+        if (readSize <= 0) break
+        readPosition += readSize
+        byteBuf.writerIndex(byteBuf.writerIndex() + readSize)
       }
-      return (readPosition - position).toInt()
     }
+    return (readPosition - position).toInt()
   }
 
-  override val fileWriter: AsyncFile.Writer = object : AsyncFile.Writer {
-    override suspend fun writeAndWait(file: AsyncFile, position: Long): Int {
-      val nioBuffers = byteBuf.nioBuffers()
-      var writePosition = position
-      for (nioBuffer in nioBuffers) {
-        while (nioBuffer.hasRemaining()) {
-          val writeSize = suspendCoroutine<Int> { cont ->
-            file.writeChannel.write(nioBuffer, writePosition, cont, AsyncFile.handler)
-          }
-          if (writeSize <= 0) break
-          writePosition += writeSize
-          byteBuf.readerIndex(byteBuf.readerIndex() + writeSize)
+  override suspend fun writeAsyncFile(file: AsyncFile, position: Long): Int {
+    val nioBuffers = byteBuf.nioBuffers()
+    var writePosition = position
+    for (nioBuffer in nioBuffers) {
+      while (nioBuffer.hasRemaining()) {
+        val writeSize = suspendCoroutine<Int> { cont ->
+          file.writeChannel.write(nioBuffer, writePosition, cont, AsyncFile.handler)
         }
+        if (writeSize <= 0) break
+        writePosition += writeSize
+        byteBuf.readerIndex(byteBuf.readerIndex() + writeSize)
       }
-      return (writePosition - position).toInt()
     }
+    return (writePosition - position).toInt()
   }
 
   private val reference = if (autoClose) {

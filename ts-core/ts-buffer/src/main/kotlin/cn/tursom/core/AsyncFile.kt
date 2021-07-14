@@ -9,7 +9,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
-import java.util.concurrent.Future
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -21,11 +20,11 @@ class AsyncFile(val path: Path) {
   constructor(path: String) : this(Paths.get(path))
 
   interface Writer {
-    suspend fun writeAndWait(file: AsyncFile, position: Long): Int
+    suspend fun writeAsyncFile(file: AsyncFile, position: Long): Int
   }
 
   interface Reader {
-    suspend fun read(file: AsyncFile, position: Long): Int
+    suspend fun readAsyncFile(file: AsyncFile, position: Long): Int
   }
 
   private var existsCache = exists
@@ -44,14 +43,10 @@ class AsyncFile(val path: Path) {
   val writeChannel: AsynchronousFileChannel by lazy { AsynchronousFileChannel.open(path, StandardOpenOption.WRITE) }
   val readChannel: AsynchronousFileChannel by lazy { AsynchronousFileChannel.open(path, StandardOpenOption.READ) }
 
-  fun write(buffer: ByteBuffer, position: Long = writePosition): Future<Int> {
-    return buffer.read {
-      writeChannel.write(it, position)
-    }
-  }
-
   suspend fun writeAndWait(buffer: ByteBuffer, position: Long = writePosition): Int {
-    val writeSize = buffer.fileWriter?.writeAndWait(this, position) ?: buffer.read {
+    val writeSize = if (buffer is Writer) {
+      buffer.writeAsyncFile(this, position)
+    } else buffer.read {
       suspendCoroutine { cont ->
         writeChannel.write(it, position, cont, handler)
       }
@@ -60,16 +55,14 @@ class AsyncFile(val path: Path) {
     return writeSize
   }
 
-  fun append(buffer: ByteBuffer, position: Long = size) {
-    write(buffer, position)
-  }
-
   suspend fun appendAndWait(buffer: ByteBuffer, position: Long = size): Int {
     return writeAndWait(buffer, position)
   }
 
   suspend fun read(buffer: ByteBuffer, position: Long = readPosition): Int {
-    val readSize = buffer.fileReader?.read(this, position) ?: buffer.write {
+    val readSize = if (buffer is Reader) {
+      buffer.readAsyncFile(this, position)
+    } else buffer.write {
       suspendCoroutine { cont ->
         readChannel.read(it, position, cont, handler)
       }

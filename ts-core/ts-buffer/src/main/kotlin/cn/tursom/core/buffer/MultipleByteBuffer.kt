@@ -10,15 +10,15 @@ import java.nio.ByteOrder
 
 @Suppress("unused")
 interface MultipleByteBuffer : Closeable, ByteBuffer {
-  val buffers: List<ByteBuffer>
-  val buffersArray: Array<out ByteBuffer> get() = buffers.toTypedArray()
+  val buffers: List<ByteBuffer> get() = listOf(this)
+  val buffersArray: Array<out ByteBuffer> get() = arrayOf(this)
 
   fun append(buffer: ByteBuffer)
 
   /**
    * 使用读 buffer，ByteBuffer 实现类有义务维护指针正常推进
    */
-  fun <T> readBuffers(block: (List<java.nio.ByteBuffer>) -> T): T {
+  fun <T> readBuffers(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
     val buffer = readBuffers()
     return try {
       block(buffer)
@@ -30,7 +30,7 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
   /**
    * 使用写 buffer，ByteBuffer 实现类有义务维护指针正常推进
    */
-  fun <T> writeBuffers(block: (List<java.nio.ByteBuffer>) -> T): T {
+  fun <T> writeBuffers(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
     val buffer = writeBuffers()
     return try {
       block(buffer)
@@ -39,60 +39,44 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
     }
   }
 
-  fun readBuffers(): List<java.nio.ByteBuffer> {
-    val bufferList = ArrayList<java.nio.ByteBuffer>()
+  fun readBuffers(): Sequence<java.nio.ByteBuffer> = sequence {
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.buffers.forEach {
-          bufferList.add(it.readBuffer())
-        }
+        yieldAll(it.readBuffers())
       } else {
-        bufferList.add(it.readBuffer())
+        yield(it.readBuffer())
       }
     }
-    return bufferList
   }
 
-  fun writeBuffers(): List<java.nio.ByteBuffer> {
-    val bufferList = ArrayList<java.nio.ByteBuffer>()
+  fun writeBuffers(): Sequence<java.nio.ByteBuffer> = sequence {
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.buffers.forEach {
-          bufferList.add(it.writeBuffer())
-        }
+        yieldAll(it.writeBuffers())
       } else {
-        bufferList.add(it.writeBuffer())
+        yield(it.writeBuffer())
       }
     }
-    return bufferList
   }
 
-  fun finishRead(buffers: List<java.nio.ByteBuffer>) {
-    var index = 0
+  fun finishRead(buffers: Sequence<java.nio.ByteBuffer>) = finishRead(buffers.iterator())
+  fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
     this.buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.buffers.forEach {
-          it.finishRead(buffers[index])
-          index++
-        }
+        it.finishRead(buffers)
       } else {
-        it.finishRead(buffers[index])
-        index++
+        it.finishRead(buffers.next())
       }
     }
   }
 
-  fun finishWrite(buffers: List<java.nio.ByteBuffer>) {
-    var index = 0
+  fun finishWrite(buffers: Sequence<java.nio.ByteBuffer>) = finishWrite(buffers.iterator())
+  fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
     this.buffers.forEach { subBuf ->
       if (subBuf is MultipleByteBuffer) {
-        subBuf.buffers.forEach { writeBuf ->
-          writeBuf.finishWrite(buffers[index])
-          index++
-        }
+        subBuf.finishWrite(buffers)
       } else {
-        subBuf.finishWrite(buffers[index])
-        index++
+        subBuf.finishWrite(buffers.next())
       }
     }
   }

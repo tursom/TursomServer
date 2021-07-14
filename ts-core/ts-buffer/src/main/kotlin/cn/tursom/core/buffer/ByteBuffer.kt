@@ -1,6 +1,5 @@
 package cn.tursom.core.buffer
 
-import cn.tursom.core.AsyncFile
 import cn.tursom.core.Utils.bufferThreadLocal
 import cn.tursom.core.forEachIndex
 import cn.tursom.core.reverseBytes
@@ -57,9 +56,6 @@ interface ByteBuffer : Closeable {
 
   val closed: Boolean get() = false
   val resized: Boolean
-
-  val fileReader: AsyncFile.Reader? get() = null
-  val fileWriter: AsyncFile.Writer? get() = null
 
   override fun close() {}
 
