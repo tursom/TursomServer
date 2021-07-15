@@ -33,10 +33,10 @@ val <V> KProperty0<V>.getOwnerDelegated: DelegatedField<*, V>?
  * 获取委托过后的值
  * 不会触发getter方法
  */
-val <V> KProperty0<V>.getDelegatedValue: V?
+val <V> KProperty0<V>.getDelegatedValue: V
   get() {
     val delegate = getDelegate() ?: getOwnerDelegated
-    return delegate?.castOrNull<DelegatedField<*, V>>()?.getValue()
+    return delegate?.castOrNull<DelegatedField<*, V>>()?.getValue() ?: get()
   }
 
 fun <V> KProperty0<*>.getDelegatedAttachmentValue(key: DelegatedFieldAttachmentKey<V>): V? {
