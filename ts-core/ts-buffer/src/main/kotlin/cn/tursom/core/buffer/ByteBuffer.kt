@@ -58,6 +58,7 @@ interface ByteBuffer : Closeable {
   val resized: Boolean
 
   override fun close() {}
+  fun closeChild(child: ByteBuffer) {}
 
   fun readBuffer(): java.nio.ByteBuffer
   fun finishRead(buffer: java.nio.ByteBuffer) {

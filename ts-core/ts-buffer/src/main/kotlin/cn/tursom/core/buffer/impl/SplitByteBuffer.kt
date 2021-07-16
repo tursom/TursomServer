@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class SplitByteBuffer(
-  private val parent: ByteBuffer,
+  val parent: ByteBuffer,
   private val childCount: AtomicInteger,
-  override val agent: ByteBuffer
+  override val agent: ByteBuffer,
 ) : ProxyByteBuffer, ByteBuffer by agent {
   init {
     childCount.incrementAndGet()
@@ -21,10 +21,7 @@ class SplitByteBuffer(
   override fun close() {
     if (atomicClosed.compareAndSet(false, true)) {
       agent.close()
-      childCount.decrementAndGet()
-      if (childCount.get() == 0 && (parent.closed || parent.resized)) {
-        parent.close()
-      }
+      parent.closeChild(this)
     }
   }
 
@@ -42,5 +39,9 @@ class SplitByteBuffer(
 
   protected fun finalize() {
     close()
+  }
+
+  override fun toString(): String {
+    return "SplitByteBuffer(parent=$parent, childCount=$childCount, agent=$agent)"
   }
 }

@@ -29,8 +29,15 @@ class PooledByteBuffer(
   override val resized get() = agent.resized
 
   override fun close() {
-    if (tryClose()) {
-      if (childCount.get() == 0) {
+    if (tryClose() && childCount.get() == 0) {
+      reference?.cancel()
+      pool.free(this)
+    }
+  }
+
+  override fun closeChild(child: ByteBuffer) {
+    if (child is SplitByteBuffer && child.parent == this && childCount.decrementAndGet() == 0) {
+      if (closed) {
         reference?.cancel()
         pool.free(this)
       }
