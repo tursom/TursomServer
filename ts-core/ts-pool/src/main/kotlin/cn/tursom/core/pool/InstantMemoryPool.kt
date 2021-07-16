@@ -14,7 +14,6 @@ class InstantMemoryPool(
 
   override fun free(memory: ByteBuffer) {
     if (memory is InstantByteBuffer && memory.pool == this && !memory.closed) {
-      memory.closed = true
       memoryList.add(SoftReference(memory))
     }
   }
