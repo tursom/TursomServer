@@ -5,7 +5,6 @@
 
 package cn.tursom.core.buffer
 
-import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
 import cn.tursom.core.toBytes
 import cn.tursom.core.toInt
@@ -87,8 +86,8 @@ fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
   val bufferList = ArrayList<java.nio.ByteBuffer>()
   buffers.forEach {
     if (it is MultipleByteBuffer) {
-      it.buffers.forEach {
-        bufferList.add(it.writeBuffer())
+      it.writeBuffers().forEach { nioBuffer ->
+        bufferList.add(nioBuffer)
       }
     } else {
       bufferList.add(it.writeBuffer())
@@ -99,13 +98,12 @@ fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
     read(bufferArray)
   } finally {
     var index = 0
+    val nioBuffers = bufferList.iterator()
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.buffers.forEach {
-          it.finishWrite(bufferArray[index])
-        }
+        it.finishWrite(nioBuffers)
       } else {
-        it.finishWrite(bufferArray[index])
+        it.finishWrite(nioBuffers.next())
       }
     }
     index++
@@ -116,8 +114,8 @@ fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
   val bufferList = ArrayList<java.nio.ByteBuffer>()
   buffers.forEach {
     if (it is MultipleByteBuffer) {
-      it.buffers.forEach {
-        bufferList.add(it.readBuffer())
+      it.readBuffers().forEach { nioBuffer ->
+        bufferList.add(nioBuffer)
       }
     } else {
       bufferList.add(it.readBuffer())
@@ -128,13 +126,12 @@ fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
     write(bufferArray)
   } finally {
     var index = 0
+    val iterator = bufferList.iterator()
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        it.buffers.forEach {
-          it.finishRead(bufferArray[index])
-        }
+        it.finishRead(iterator)
       } else {
-        it.finishRead(bufferArray[index])
+        it.finishRead(iterator.next())
       }
     }
     index++

@@ -1,7 +1,7 @@
 package cn.tursom.channel
 
-import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.pool.MemoryPool
 import java.io.Closeable

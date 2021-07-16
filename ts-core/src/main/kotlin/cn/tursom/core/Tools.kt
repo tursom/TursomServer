@@ -135,6 +135,9 @@ inline fun <T> Any?.cast() = this as T
 inline fun <T> Any?.uncheckedCast() = this as T
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+inline fun <T> Any?.uncheckedCastNullable() = this as? T
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 inline fun <reified T> Any?.castOrNull() = if (this is T) this else null
 
 inline fun <T> T?.checkNull(ifNull: () -> Exception): T {

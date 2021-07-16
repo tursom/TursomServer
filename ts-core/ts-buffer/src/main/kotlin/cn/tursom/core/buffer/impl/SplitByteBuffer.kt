@@ -1,6 +1,7 @@
 package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.ClosedBufferException
 import cn.tursom.core.buffer.ProxyByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -26,6 +27,9 @@ class SplitByteBuffer(
   }
 
   override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
+    if (closed) {
+      throw ClosedBufferException("SplitByteBuffer was closed.")
+    }
     return SplitByteBuffer(parent, childCount, agent.slice(position, size, readPosition, writePosition))
   }
 

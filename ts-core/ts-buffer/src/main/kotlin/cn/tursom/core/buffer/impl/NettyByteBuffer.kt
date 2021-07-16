@@ -2,7 +2,9 @@ package cn.tursom.core.buffer.impl
 
 import cn.tursom.core.AsyncFile
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.ByteBufferExtensionKey
 import cn.tursom.core.reference.FreeReference
+import cn.tursom.core.uncheckedCast
 import cn.tursom.log.impl.Slf4jImpl
 import io.netty.buffer.ByteBuf
 import java.io.OutputStream
@@ -58,6 +60,13 @@ class NettyByteBuffer(
   override val isWriteable get() = byteBuf.isWritable
 
   private val atomicClosed = AtomicBoolean(false)
+
+  override fun <T> getExtension(key: ByteBufferExtensionKey<T>): T? {
+    return when (key) {
+      AsyncFile.Reader, AsyncFile.Writer -> this.uncheckedCast()
+      else -> super.getExtension(key)
+    }
+  }
 
   override suspend fun readAsyncFile(file: AsyncFile, position: Long): Int {
     val nioBuffers = byteBuf.nioBuffers(byteBuf.writerIndex(), byteBuf.writableBytes())

@@ -1,7 +1,7 @@
 package cn.tursom.core.buffer.impl
 
-import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.MultipleByteBuffer
 import java.nio.ByteOrder
 
 @Suppress("MemberVisibilityCanBePrivate")

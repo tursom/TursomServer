@@ -16,6 +16,8 @@ import kotlin.math.min
  */
 @Suppress("unused")
 interface ByteBuffer : Closeable {
+  fun <T> getExtension(key: ByteBufferExtensionKey<T>): T? = key.get(this)
+
   /**
    * 使用读 buffer，ByteBuffer 实现类有义务维护指针正常推进
    */

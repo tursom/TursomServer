@@ -1,9 +1,9 @@
 package cn.tursom.channel
 
-import cn.tursom.buffer.MultipleByteBuffer
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferCode
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferLongCode
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.pool.MemoryPool

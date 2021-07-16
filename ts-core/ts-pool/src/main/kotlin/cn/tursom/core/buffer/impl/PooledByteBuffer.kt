@@ -57,7 +57,7 @@ class PooledByteBuffer(
 
   override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer {
     if (closed) {
-      throw ClosedBufferException("PooledByteBuffer has closed.")
+      throw ClosedBufferException("PooledByteBuffer was closed.")
     }
     return SplitByteBuffer(this, childCount, agent.slice(position, size, readPosition, writePosition))
   }

@@ -1,6 +1,5 @@
-package cn.tursom.buffer
+package cn.tursom.core.buffer
 
-import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.ListByteBuffer
 import cn.tursom.core.forEachIndex
 import java.io.Closeable

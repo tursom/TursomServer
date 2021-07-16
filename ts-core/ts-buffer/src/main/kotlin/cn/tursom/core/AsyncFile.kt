@@ -1,8 +1,8 @@
 package cn.tursom.core
 
-import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.buffer.read
-import cn.tursom.core.buffer.write
+import cn.tursom.core.AsyncFile.Reader
+import cn.tursom.core.AsyncFile.Writer
+import cn.tursom.core.buffer.*
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.CompletionHandler
 import java.nio.file.Files
@@ -19,11 +19,69 @@ import kotlin.coroutines.suspendCoroutine
 class AsyncFile(val path: Path) {
   constructor(path: String) : this(Paths.get(path))
 
-  interface Writer {
+  fun interface Writer {
+    companion object : ByteBufferExtensionKey<Writer> {
+      override tailrec fun get(buffer: ByteBuffer): Writer? {
+        return when (buffer) {
+          is MultipleByteBuffer -> Writer { file, position ->
+            var writePosition = position
+            val nioBuffers = buffer.readBuffers().toList()
+
+            run {
+              nioBuffers.forEach { readBuf ->
+                while (readBuf.position() < readBuf.limit()) {
+                  val writeSize = file.write(readBuf, writePosition)
+                  if (writeSize > 0) {
+                    writePosition += writeSize
+                  } else {
+                    return@run
+                  }
+                }
+              }
+            }
+
+            buffer.finishRead(nioBuffers.iterator())
+            (writePosition - position).toInt()
+          }
+          is ProxyByteBuffer -> get(buffer.agent)
+          else -> null
+        }
+      }
+    }
+
     suspend fun writeAsyncFile(file: AsyncFile, position: Long): Int
   }
 
-  interface Reader {
+  fun interface Reader {
+    companion object : ByteBufferExtensionKey<Reader> {
+      override tailrec fun get(buffer: ByteBuffer): Reader? {
+        return when (buffer) {
+          is MultipleByteBuffer -> Reader { file, position ->
+            var readPosition = position
+            val nioBuffers = buffer.writeBuffers().toList()
+
+            run {
+              nioBuffers.forEach { nioBuf ->
+                while (nioBuf.position() < nioBuf.limit()) {
+                  val readSize = file.read(nioBuf, readPosition)
+                  if (readSize > 0) {
+                    readPosition += readSize
+                  } else {
+                    return@run
+                  }
+                }
+              }
+            }
+
+            buffer.finishWrite(nioBuffers.iterator())
+            (readPosition - position).toInt()
+          }
+          is ProxyByteBuffer -> get(buffer.agent)
+          else -> null
+        }
+      }
+    }
+
     suspend fun readAsyncFile(file: AsyncFile, position: Long): Int
   }
 
@@ -44,15 +102,16 @@ class AsyncFile(val path: Path) {
   val readChannel: AsynchronousFileChannel by lazy { AsynchronousFileChannel.open(path, StandardOpenOption.READ) }
 
   suspend fun writeAndWait(buffer: ByteBuffer, position: Long = writePosition): Int {
-    val writeSize = if (buffer is Writer) {
-      buffer.writeAsyncFile(this, position)
-    } else buffer.read {
-      suspendCoroutine { cont ->
-        writeChannel.write(it, position, cont, handler)
+    val writeSize = buffer.getExtension(Writer)?.writeAsyncFile(this, position)
+      ?: buffer.read {
+        write(it, position)
       }
-    }
     writePosition += writeSize
     return writeSize
+  }
+
+  private suspend fun write(nioBuf: java.nio.ByteBuffer, position: Long): Int = suspendCoroutine { cont ->
+    writeChannel.write(nioBuf, position, cont, handler)
   }
 
   suspend fun appendAndWait(buffer: ByteBuffer, position: Long = size): Int {
@@ -60,15 +119,16 @@ class AsyncFile(val path: Path) {
   }
 
   suspend fun read(buffer: ByteBuffer, position: Long = readPosition): Int {
-    val readSize = if (buffer is Reader) {
-      buffer.readAsyncFile(this, position)
-    } else buffer.write {
-      suspendCoroutine { cont ->
-        readChannel.read(it, position, cont, handler)
+    val readSize = buffer.getExtension(Reader)?.readAsyncFile(this, position)
+      ?: buffer.write {
+        read(it, position)
       }
-    }
     readPosition += readSize
     return readSize
+  }
+
+  private suspend fun read(nioBuf: java.nio.ByteBuffer, position: Long): Int = suspendCoroutine { cont ->
+    readChannel.read(nioBuf, position, cont, handler)
   }
 
   fun create() = if (!existsCache || !exists) {
