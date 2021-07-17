@@ -1,8 +1,8 @@
 package cn.tursom.datagram.server
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.buffer.MultipleByteBuffer
-import cn.tursom.core.buffer.read
+import cn.tursom.core.buffer.NioBuffers.finishRead
+import cn.tursom.core.buffer.NioBuffers.getReadNioBufferList
 import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
@@ -38,11 +38,16 @@ class ServerNioDatagram(
   }
 
   override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
+    val nioBufferList = buffer.getReadNioBufferList()
+    buffer.finishRead(nioBufferList.iterator())
     var write = 0L
-    buffer.forEach { buf ->
-      if (buf is MultipleByteBuffer) {
-      } else {
-        write += buf.read { channel.send(it, remoteAddress) }
+    nioBufferList.forEach { buf ->
+      if (buf.remaining() != 0) {
+        val send = channel.send(buf, remoteAddress)
+        if (send <= 0) {
+          return write
+        }
+        write += send
       }
     }
     return write

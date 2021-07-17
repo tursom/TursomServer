@@ -3,6 +3,7 @@ package cn.tursom.core.buffer.impl
 import cn.tursom.core.AsyncFile
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.ByteBufferExtensionKey
+import cn.tursom.core.buffer.NioBuffers
 import cn.tursom.core.reference.FreeReference
 import cn.tursom.core.uncheckedCast
 import cn.tursom.log.impl.Slf4jImpl
@@ -15,7 +16,7 @@ import kotlin.coroutines.suspendCoroutine
 class NettyByteBuffer(
   val byteBuf: ByteBuf,
   autoClose: Boolean = false,
-) : ByteBuffer, AsyncFile.Reader, AsyncFile.Writer {
+) : ByteBuffer, AsyncFile.Reader, AsyncFile.Writer, NioBuffers.Arrays {
   companion object : Slf4jImpl()
 
   constructor(
@@ -60,6 +61,11 @@ class NettyByteBuffer(
   override val isWriteable get() = byteBuf.isWritable
 
   private val atomicClosed = AtomicBoolean(false)
+
+  private var nioReadPosition = 0
+  private var nioReadBuffersNum = 0
+  private var nioWritePosition = 0
+  private var nioWriteBuffersNum = 0
 
   override fun <T> getExtension(key: ByteBufferExtensionKey<T>): T? {
     return when (key) {
@@ -261,6 +267,38 @@ class NettyByteBuffer(
       byteBuf.release()
       reference?.cancel()
     }
+  }
+
+  override fun readBufferArray(): Array<out java.nio.ByteBuffer> {
+    val nioBuffers = byteBuf.nioBuffers()
+    nioReadPosition = nioBuffers.sumOf { it.position() }
+    nioReadBuffersNum = nioBuffers.size
+    return nioBuffers
+  }
+
+  override fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
+    var readPositionResult = 0
+    repeat(nioReadBuffersNum) {
+      readPositionResult += buffers.next().position()
+    }
+    nioReadBuffersNum = 0
+    byteBuf.readerIndex(byteBuf.readerIndex() + readPositionResult - nioReadPosition)
+  }
+
+  override fun writeBufferArray(): Array<out java.nio.ByteBuffer> {
+    val nioBuffers = byteBuf.nioBuffers(byteBuf.writerIndex(), byteBuf.writableBytes())
+    nioWritePosition = nioBuffers.sumOf { it.position() }
+    nioWriteBuffersNum = nioBuffers.size
+    return nioBuffers
+  }
+
+  override fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
+    var writePositionResult = 0
+    repeat(nioWriteBuffersNum) {
+      writePositionResult += buffers.next().position()
+    }
+    nioWriteBuffersNum = 0
+    byteBuf.writerIndex(byteBuf.writerIndex() + writePositionResult - nioWritePosition)
   }
 
   override fun toString(): String {

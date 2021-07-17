@@ -21,11 +21,14 @@ class AsyncFile(val path: Path) {
 
   fun interface Writer {
     companion object : ByteBufferExtensionKey<Writer> {
+      override val extensionClass: Class<Writer> = Writer::class.java
+
       override tailrec fun get(buffer: ByteBuffer): Writer? {
-        return when (buffer) {
-          is MultipleByteBuffer -> Writer { file, position ->
+        val sequences = buffer.getExtension(NioBuffers.Sequences)
+        return when {
+          sequences != null -> Writer { file, position ->
             var writePosition = position
-            val nioBuffers = buffer.readBuffers().toList()
+            val nioBuffers = sequences.readBufferSequence().toList()
 
             run {
               nioBuffers.forEach { readBuf ->
@@ -40,10 +43,10 @@ class AsyncFile(val path: Path) {
               }
             }
 
-            buffer.finishRead(nioBuffers.iterator())
+            sequences.finishRead(nioBuffers.iterator())
             (writePosition - position).toInt()
           }
-          is ProxyByteBuffer -> get(buffer.agent)
+          buffer is ProxyByteBuffer -> get(buffer.agent)
           else -> null
         }
       }
@@ -54,11 +57,14 @@ class AsyncFile(val path: Path) {
 
   fun interface Reader {
     companion object : ByteBufferExtensionKey<Reader> {
+      override val extensionClass: Class<Reader> = Reader::class.java
+
       override tailrec fun get(buffer: ByteBuffer): Reader? {
-        return when (buffer) {
-          is MultipleByteBuffer -> Reader { file, position ->
+        val sequences = buffer.getExtension(NioBuffers.Sequences)
+        return when {
+          sequences != null -> Reader { file, position ->
             var readPosition = position
-            val nioBuffers = buffer.writeBuffers().toList()
+            val nioBuffers = sequences.writeBufferSequence().toList()
 
             run {
               nioBuffers.forEach { nioBuf ->
@@ -73,10 +79,10 @@ class AsyncFile(val path: Path) {
               }
             }
 
-            buffer.finishWrite(nioBuffers.iterator())
+            sequences.finishWrite(nioBuffers.iterator())
             (readPosition - position).toInt()
           }
-          is ProxyByteBuffer -> get(buffer.agent)
+          buffer is ProxyByteBuffer -> get(buffer.agent)
           else -> null
         }
       }

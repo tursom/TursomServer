@@ -8,7 +8,7 @@ import java.io.OutputStream
 import java.nio.ByteOrder
 
 @Suppress("unused")
-interface MultipleByteBuffer : Closeable, ByteBuffer {
+interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
   val buffers: List<ByteBuffer> get() = listOf(this)
   val buffersArray: Array<out ByteBuffer> get() = arrayOf(this)
 
@@ -18,7 +18,7 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
    * 使用读 buffer，ByteBuffer 实现类有义务维护指针正常推进
    */
   fun <T> readBuffers(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
-    val buffer = readBuffers()
+    val buffer = readBufferSequence()
     return try {
       block(buffer)
     } finally {
@@ -30,7 +30,7 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
    * 使用写 buffer，ByteBuffer 实现类有义务维护指针正常推进
    */
   fun <T> writeBuffers(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
-    val buffer = writeBuffers()
+    val buffer = writeBufferSequence()
     return try {
       block(buffer)
     } finally {
@@ -38,20 +38,20 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
     }
   }
 
-  fun readBuffers(): Sequence<java.nio.ByteBuffer> = sequence {
+  override fun readBufferSequence(): Sequence<java.nio.ByteBuffer> = sequence {
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        yieldAll(it.readBuffers())
+        yieldAll(it.readBufferSequence())
       } else {
         yield(it.readBuffer())
       }
     }
   }
 
-  fun writeBuffers(): Sequence<java.nio.ByteBuffer> = sequence {
+  override fun writeBufferSequence(): Sequence<java.nio.ByteBuffer> = sequence {
     buffers.forEach {
       if (it is MultipleByteBuffer) {
-        yieldAll(it.writeBuffers())
+        yieldAll(it.writeBufferSequence())
       } else {
         yield(it.writeBuffer())
       }
@@ -59,7 +59,7 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
   }
 
   fun finishRead(buffers: Sequence<java.nio.ByteBuffer>) = finishRead(buffers.iterator())
-  fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
+  override fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
     this.buffers.forEach {
       if (it is MultipleByteBuffer) {
         it.finishRead(buffers)
@@ -70,7 +70,7 @@ interface MultipleByteBuffer : Closeable, ByteBuffer {
   }
 
   fun finishWrite(buffers: Sequence<java.nio.ByteBuffer>) = finishWrite(buffers.iterator())
-  fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
+  override fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
     this.buffers.forEach { subBuf ->
       if (subBuf is MultipleByteBuffer) {
         subBuf.finishWrite(buffers)

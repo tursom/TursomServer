@@ -11,8 +11,7 @@ import java.nio.ByteOrder
 import kotlin.math.min
 
 /**
- * 针对 java nio 的弱智 ByteBuffer 的简单封装
- * 支持读写 buffer 分离
+ * 针对其他库的字节缓冲的封装
  */
 @Suppress("unused")
 interface ByteBuffer : Closeable {

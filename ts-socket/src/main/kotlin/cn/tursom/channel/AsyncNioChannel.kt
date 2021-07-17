@@ -3,7 +3,6 @@ package cn.tursom.channel
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferCode
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferLongCode
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.buffer.read
 import cn.tursom.core.pool.MemoryPool
@@ -26,8 +25,8 @@ interface AsyncNioChannel : AsyncChannel {
   override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long
   override suspend fun write(buffer: ByteBuffer, timeout: Long): Int = write(arrayOf(buffer), timeout).toInt()
   override suspend fun read(buffer: ByteBuffer, timeout: Long): Int = read(arrayOf(buffer), timeout).toInt()
-  override suspend fun write(buffer: MultipleByteBuffer, timeout: Long): Long = write(buffer.buffers, timeout)
-  override suspend fun read(buffer: MultipleByteBuffer, timeout: Long): Long = read(buffer.buffers, timeout)
+  //override suspend fun write(buffer: MultipleByteBuffer, timeout: Long): Long = write(buffer.buffers, timeout)
+  //override suspend fun read(buffer: MultipleByteBuffer, timeout: Long): Long = read(buffer.buffers, timeout)
 
   override suspend fun write(
     file: FileChannel,

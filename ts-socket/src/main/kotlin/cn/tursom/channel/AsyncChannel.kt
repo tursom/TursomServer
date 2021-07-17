@@ -1,7 +1,6 @@
 package cn.tursom.channel
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.buffer.MultipleByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 import cn.tursom.core.pool.MemoryPool
 import java.io.Closeable
@@ -21,8 +20,8 @@ interface AsyncChannel : Closeable {
   suspend fun read(buffer: List<ByteBuffer>, timeout: Long = 0L): Long = read(buffer.toTypedArray(), timeout)
   suspend fun write(buffer: ByteBuffer, timeout: Long = 0L): Int = write(arrayOf(buffer), timeout).toInt()
   suspend fun read(buffer: ByteBuffer, timeout: Long = 0L): Int = read(arrayOf(buffer), timeout).toInt()
-  suspend fun write(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = write(buffer.buffersArray, timeout)
-  suspend fun read(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = read(buffer.buffersArray, timeout)
+  //suspend fun write(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = write(buffer.buffersArray, timeout)
+  //suspend fun read(buffer: MultipleByteBuffer, timeout: Long = 0L): Long = read(buffer.buffersArray, timeout)
 
   suspend fun write(
     file: FileChannel,

@@ -5,7 +5,19 @@
 
 package cn.tursom.core.buffer
 
+import cn.tursom.core.buffer.NioBuffers.Arrays.Companion.readArrays
+import cn.tursom.core.buffer.NioBuffers.Arrays.Companion.writeArrays
+import cn.tursom.core.buffer.NioBuffers.Lists.Companion.readLists
+import cn.tursom.core.buffer.NioBuffers.Lists.Companion.writeLists
+import cn.tursom.core.buffer.NioBuffers.Sequences.Companion.readSequences
+import cn.tursom.core.buffer.NioBuffers.Sequences.Companion.writeSequences
+import cn.tursom.core.buffer.NioBuffers.finishRead
+import cn.tursom.core.buffer.NioBuffers.finishWrite
+import cn.tursom.core.buffer.NioBuffers.getReadNioBufferList
+import cn.tursom.core.buffer.NioBuffers.getWriteNioBufferList
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
+import cn.tursom.core.buffer.impl.HeapByteBuffer
+import cn.tursom.core.buffer.impl.ListByteBuffer
 import cn.tursom.core.toBytes
 import cn.tursom.core.toInt
 import java.nio.ByteOrder
@@ -39,102 +51,104 @@ inline fun <T> ByteBuffer.write(block: (java.nio.ByteBuffer) -> T): T {
   }
 }
 
-inline fun <T> MultipleByteBuffer.reads(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
-  val bufferList = readBuffers()
-  try {
-    return block(bufferList)
-  } finally {
-    finishRead(bufferList)
-  }
-}
+//inline fun <T> MultipleByteBuffer.reads(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
+//  val bufferList = readBufferSequence()
+//  try {
+//    return block(bufferList)
+//  } finally {
+//    finishRead(bufferList)
+//  }
+//}
 
-
-inline fun <T> MultipleByteBuffer.writes(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
-  val bufferList = writeBuffers()
-  try {
-    return block(bufferList)
-  } finally {
-    finishWrite(bufferList)
-  }
-}
+//inline fun <T> MultipleByteBuffer.writes(block: (Sequence<java.nio.ByteBuffer>) -> T): T {
+//  val bufferList = writeBufferSequence()
+//  try {
+//    return block(bufferList)
+//  } finally {
+//    finishWrite(bufferList)
+//  }
+//}
 
 fun ReadableByteChannel.read(buffer: ByteBuffer): Int {
-  return if (buffer is MultipleByteBuffer && this is ScatteringByteChannel) {
-    buffer.writeBuffers { read(it.toList().toTypedArray()) }.toInt()
-  } else {
-    buffer.write { read(it) }
+  if (this is ScatteringByteChannel) {
+    val arrays = buffer.getExtension(NioBuffers.Arrays)
+    if (arrays != null) {
+      return arrays.writeArrays { nioBuffers ->
+        read(nioBuffers)
+      }.toInt()
+    }
+
+    val list = buffer.getExtension(NioBuffers.Lists)
+    if (list != null) {
+      return list.writeLists { nioBuffers ->
+        read(nioBuffers.toTypedArray())
+      }.toInt()
+    }
+
+    val sequences = buffer.getExtension(NioBuffers.Sequences)
+    if (sequences != null) {
+      return sequences.writeSequences { nioBuffers ->
+        read(nioBuffers.toList().toTypedArray())
+      }.toInt()
+    }
   }
+
+  return buffer.write { read(it) }
 }
 
 fun WritableByteChannel.write(buffer: ByteBuffer): Int {
-  return if (buffer is MultipleByteBuffer && this is GatheringByteChannel) {
-    buffer.readBuffers { write(it.toList().toTypedArray()) }.toInt()
-  } else {
-    buffer.read { write(it) }
-  }
-}
+  if (this is GatheringByteChannel) {
+    val arrays = buffer.getExtension(NioBuffers.Arrays)
+    if (arrays != null) {
+      return arrays.readArrays { nioBuffers ->
+        write(nioBuffers)
+      }.toInt()
+    }
 
-fun ScatteringByteChannel.read(buffer: MultipleByteBuffer): Long {
-  return buffer.writeBuffers { read(it.toList().toTypedArray()) }
-}
+    val list = buffer.getExtension(NioBuffers.Lists)
+    if (list != null) {
+      return list.readLists { nioBuffers ->
+        write(nioBuffers.toTypedArray())
+      }.toInt()
+    }
 
-fun GatheringByteChannel.write(buffer: MultipleByteBuffer): Long {
-  return buffer.readBuffers { write(it.toList().toTypedArray()) }
-}
-
-fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
-  val bufferList = ArrayList<java.nio.ByteBuffer>()
-  buffers.forEach {
-    if (it is MultipleByteBuffer) {
-      it.writeBuffers().forEach { nioBuffer ->
-        bufferList.add(nioBuffer)
-      }
-    } else {
-      bufferList.add(it.writeBuffer())
+    val sequences = buffer.getExtension(NioBuffers.Sequences)
+    if (sequences != null) {
+      return sequences.readSequences { nioBuffers ->
+        write(nioBuffers.toList().toTypedArray())
+      }.toInt()
     }
   }
+  return buffer.read { write(it) }
+}
+
+//fun ScatteringByteChannel.read(buffer: MultipleByteBuffer): Long {
+//  return buffer.writeBuffers { read(it.toList().toTypedArray()) }
+//}
+
+//fun GatheringByteChannel.write(buffer: MultipleByteBuffer): Long {
+//  return buffer.readBuffers { write(it.toList().toTypedArray()) }
+//}
+
+fun ScatteringByteChannel.read(buffers: Array<out ByteBuffer>): Long {
+  val bufferList = buffers.iterator().getWriteNioBufferList()
   val bufferArray = bufferList.toTypedArray()
   return try {
     read(bufferArray)
   } finally {
-    var index = 0
-    val nioBuffers = bufferList.iterator()
-    buffers.forEach {
-      if (it is MultipleByteBuffer) {
-        it.finishWrite(nioBuffers)
-      } else {
-        it.finishWrite(nioBuffers.next())
-      }
-    }
-    index++
+    val iterator = bufferList.iterator()
+    buffers.iterator().finishWrite(iterator)
   }
 }
 
 fun GatheringByteChannel.write(buffers: Array<out ByteBuffer>): Long {
-  val bufferList = ArrayList<java.nio.ByteBuffer>()
-  buffers.forEach {
-    if (it is MultipleByteBuffer) {
-      it.readBuffers().forEach { nioBuffer ->
-        bufferList.add(nioBuffer)
-      }
-    } else {
-      bufferList.add(it.readBuffer())
-    }
-  }
+  val bufferList = buffers.iterator().getReadNioBufferList()
   val bufferArray = bufferList.toTypedArray()
   return try {
     write(bufferArray)
   } finally {
-    var index = 0
     val iterator = bufferList.iterator()
-    buffers.forEach {
-      if (it is MultipleByteBuffer) {
-        it.finishRead(iterator)
-      } else {
-        it.finishRead(iterator.next())
-      }
-    }
-    index++
+    buffers.iterator().finishRead(iterator)
   }
 }
 
@@ -218,3 +232,7 @@ fun ByteBuffer.putLongWithSize(l: Long, size: Int, byteOrder: ByteOrder = ByteOr
   }
 }
 
+fun main() {
+  println(HeapByteBuffer(1).getExtension(NioBuffers.Sequences))
+  println(ListByteBuffer().getExtension(NioBuffers.Sequences))
+}
