@@ -2,6 +2,72 @@ package cn.tursom.core.buffer
 
 
 object NioBuffers {
+  inline fun <T> Array<out ByteBuffer>.readNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getReadNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishRead(bufferList.iterator())
+    }
+  }
+
+  inline fun <T> Sequence<ByteBuffer>.readNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getReadNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishRead(bufferList.iterator())
+    }
+  }
+
+  inline fun <T> Iterable<ByteBuffer>.readNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getReadNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishRead(bufferList.iterator())
+    }
+  }
+
+  inline fun <T> Array<out ByteBuffer>.writeNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getWriteNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishWrite(bufferList.iterator())
+    }
+  }
+
+  inline fun <T> Sequence<ByteBuffer>.writeNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getWriteNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishWrite(bufferList.iterator())
+    }
+  }
+
+  inline fun <T> Iterable<ByteBuffer>.writeNioBuffers(
+    action: (bufferList: List<java.nio.ByteBuffer>) -> T
+  ): T {
+    val bufferList = getWriteNioBufferList()
+    try {
+      return action(bufferList)
+    } finally {
+      finishWrite(bufferList.iterator())
+    }
+  }
+
   fun Array<out ByteBuffer>.getReadNioBufferList(): List<java.nio.ByteBuffer> = iterator().getReadNioBufferList()
   fun Sequence<ByteBuffer>.getReadNioBufferList(): List<java.nio.ByteBuffer> = iterator().getReadNioBufferList()
   fun Iterable<ByteBuffer>.getReadNioBufferList(): List<java.nio.ByteBuffer> = iterator().getReadNioBufferList()
