@@ -29,7 +29,13 @@ class HeapByteBuffer(
       buffer.limit(writePosition)
     if (buffer.position() != readPosition)
       buffer.position(readPosition)
-    return buffer.slice()
+    return buffer
+  }
+
+  override fun finishRead(buffer: java.nio.ByteBuffer) {
+    if (buffer === this.buffer) {
+      readPosition = buffer.position()
+    }
   }
 
   override fun writeBuffer(): java.nio.ByteBuffer {
@@ -37,7 +43,13 @@ class HeapByteBuffer(
       buffer.limit(capacity)
     if (buffer.position() != writePosition)
       buffer.position(writePosition)
-    return buffer.slice()
+    return buffer
+  }
+
+  override fun finishWrite(buffer: java.nio.ByteBuffer) {
+    if (buffer === this.buffer) {
+      writePosition = buffer.position()
+    }
   }
 
   override fun reset() {

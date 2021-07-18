@@ -128,7 +128,7 @@ val Collection<ByteBuffer>.writeable: Int
     return size
   }
 
-fun ByteBuffer.getIntWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
+fun ByteBuffer.getIntWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Int {
   var time = 4
   return toInt(byteOrder) {
     if (--time < size) {
@@ -139,7 +139,7 @@ fun ByteBuffer.getIntWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.native
   }
 }
 
-fun ByteBuffer.getLongWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()): Int {
+fun ByteBuffer.getLongWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Int {
   var time = 8
   return toInt(byteOrder) {
     if (--time < size) {
@@ -150,7 +150,7 @@ fun ByteBuffer.getLongWithSize(size: Int, byteOrder: ByteOrder = ByteOrder.nativ
   }
 }
 
-fun ByteBuffer.putIntWithSize(n: Int, size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
+fun ByteBuffer.putIntWithSize(n: Int, size: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
   when (byteOrder) {
     ByteOrder.LITTLE_ENDIAN -> {
       var time = size
@@ -171,7 +171,7 @@ fun ByteBuffer.putIntWithSize(n: Int, size: Int, byteOrder: ByteOrder = ByteOrde
   }
 }
 
-fun ByteBuffer.putLongWithSize(l: Long, size: Int, byteOrder: ByteOrder = ByteOrder.nativeOrder()) {
+fun ByteBuffer.putLongWithSize(l: Long, size: Int, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
   when (byteOrder) {
     ByteOrder.LITTLE_ENDIAN -> {
       var time = size

@@ -116,8 +116,16 @@ class NettyByteBuffer(
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
   }
 
+  override fun finishRead(buffer: java.nio.ByteBuffer) {
+    byteBuf.readerIndex(buffer.position())
+  }
+
   override fun writeBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(writePosition, writeable).slice()
+  }
+
+  override fun finishWrite(buffer: java.nio.ByteBuffer) {
+    byteBuf.writerIndex(buffer.position())
   }
 
   override val readOffset: Int get() = byteBuf.arrayOffset() + byteBuf.readerIndex()

@@ -62,14 +62,10 @@ interface ByteBuffer : Closeable {
   fun closeChild(child: ByteBuffer) {}
 
   fun readBuffer(): java.nio.ByteBuffer
-  fun finishRead(buffer: java.nio.ByteBuffer) {
-    readPosition += buffer.position()
-  }
+  fun finishRead(buffer: java.nio.ByteBuffer)
 
   fun writeBuffer(): java.nio.ByteBuffer
-  fun finishWrite(buffer: java.nio.ByteBuffer) {
-    writePosition += buffer.position()
-  }
+  fun finishWrite(buffer: java.nio.ByteBuffer)
 
   fun reset()
   fun slice(position: Int, size: Int): ByteBuffer = slice(position, size, 0, 0)
@@ -88,8 +84,9 @@ interface ByteBuffer : Closeable {
     writePosition = 0
   }
 
-  fun skip(n: Int) {
+  fun skip(n: Int): Int {
     readPosition += n
+    return n
   }
 
   fun get(): Byte = read { it.get() }

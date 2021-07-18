@@ -8,10 +8,10 @@ import java.nio.ByteOrder
 open class ListByteBuffer(
   final override val buffers: MutableList<ByteBuffer> = ArrayList(),
 ) : MultipleByteBuffer {
-  var readArrayPosition: Int = 0
-  var writeArrayPosition: Int = 0
   var readOperator = buffers.firstOrNull()
   var writeOperator = buffers.firstOrNull()
+  var readArrayPosition: Int = if (readOperator == null) -1 else 0
+  var writeArrayPosition: Int = if (writeOperator == null) -1 else 0
 
   private var buffersArrayCache: Array<out ByteBuffer>? = null
   override val buffersArray: Array<out ByteBuffer>
@@ -42,8 +42,56 @@ open class ListByteBuffer(
       return writeOperator?.isWriteable ?: false
     }
 
+  override fun clear() {
+    super.clear()
+    readPosition = 0
+    writePosition = 0
+    readArrayPosition = 0
+    writeArrayPosition = 0
+  }
+
+  override fun reset() {
+    super.reset()
+    readPosition = 0
+    writePosition = 0
+    readArrayPosition = 0
+    writeArrayPosition = 0
+  }
+
+  override fun skip(n: Int): Int {
+    return when {
+      n == 0 -> 0
+      n > 0 -> {
+        var skip = 0
+        while (skip == n) {
+          skip += readOperator?.skip(n - skip) ?: 0
+          if (readArrayPosition < buffers.size) {
+            readOperator = buffers[readArrayPosition++]
+          } else {
+            break
+          }
+        }
+        skip
+      }
+      else -> {
+        var fallback = 0
+        while (fallback == n) {
+          fallback += readOperator?.skip(n - fallback) ?: 0
+          if (readArrayPosition > 0) {
+            readOperator = buffers[--readArrayPosition]
+          } else {
+            break
+          }
+        }
+        fallback
+      }
+    }
+  }
+
   override fun readBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
+  override fun finishRead(buffer: java.nio.ByteBuffer) = throw UnsupportedOperationException()
   override fun writeBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
+  override fun finishWrite(buffer: java.nio.ByteBuffer) = throw UnsupportedOperationException()
 
   override fun append(buffer: ByteBuffer) {
     val bufReadPosition = buffer.readPosition
@@ -66,7 +114,7 @@ open class ListByteBuffer(
   }
 
   private fun updateWrite() {
-    while (writeArrayPosition < buffers.size && writeOperator?.isWriteable == true) {
+    while (writeArrayPosition < buffers.size && writeOperator?.isWriteable != true) {
       writeOperator = buffers[writeArrayPosition++]
     }
   }

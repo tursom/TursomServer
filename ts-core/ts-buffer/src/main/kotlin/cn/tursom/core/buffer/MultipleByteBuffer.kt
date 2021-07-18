@@ -2,6 +2,7 @@ package cn.tursom.core.buffer
 
 import cn.tursom.core.buffer.impl.ListByteBuffer
 import cn.tursom.core.forEachIndex
+import cn.tursom.core.toBytes
 import java.io.Closeable
 import java.io.InputStream
 import java.io.OutputStream
@@ -39,32 +40,35 @@ interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
   }
 
   override fun readBufferSequence(): Sequence<java.nio.ByteBuffer> = sequence {
-    buffers.forEach {
-      if (it is MultipleByteBuffer) {
-        yieldAll(it.readBufferSequence())
+    buffers.forEach { subBuf ->
+      val sequences = subBuf.getExtension(NioBuffers.Sequences)
+      if (sequences != null) {
+        yieldAll(sequences.readBufferSequence())
       } else {
-        yield(it.readBuffer())
+        yield(subBuf.readBuffer())
       }
     }
   }
 
   override fun writeBufferSequence(): Sequence<java.nio.ByteBuffer> = sequence {
-    buffers.forEach {
-      if (it is MultipleByteBuffer) {
-        yieldAll(it.writeBufferSequence())
+    buffers.forEach { subBuf ->
+      val sequences = subBuf.getExtension(NioBuffers.Sequences)
+      if (sequences != null) {
+        yieldAll(sequences.writeBufferSequence())
       } else {
-        yield(it.writeBuffer())
+        yield(subBuf.writeBuffer())
       }
     }
   }
 
   fun finishRead(buffers: Sequence<java.nio.ByteBuffer>) = finishRead(buffers.iterator())
   override fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
-    this.buffers.forEach {
-      if (it is MultipleByteBuffer) {
-        it.finishRead(buffers)
+    this.buffers.forEach { subBuf ->
+      val sequences = subBuf.getExtension(NioBuffers.Sequences)
+      if (sequences != null) {
+        sequences.finishRead(buffers)
       } else {
-        it.finishRead(buffers.next())
+        subBuf.finishRead(buffers.next())
       }
     }
   }
@@ -72,8 +76,9 @@ interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
   fun finishWrite(buffers: Sequence<java.nio.ByteBuffer>) = finishWrite(buffers.iterator())
   override fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
     this.buffers.forEach { subBuf ->
-      if (subBuf is MultipleByteBuffer) {
-        subBuf.finishWrite(buffers)
+      val sequences = subBuf.getExtension(NioBuffers.Sequences)
+      if (sequences != null) {
+        sequences.finishWrite(buffers)
       } else {
         subBuf.finishWrite(buffers.next())
       }
@@ -85,9 +90,12 @@ interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
     return ListByteBuffer(ArrayList(buffers.subList(position, position + size)))
   }
 
+  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer =
+    throw UnsupportedOperationException()
+
   override fun fill(byte: Byte) = buffers.forEach { it.fill(byte) }
-  override fun clear() = buffers.forEach(ByteBuffer::clear)
-  override fun reset() = buffers.forEach(ByteBuffer::reset)
+  override fun clear() = buffers.forEach { it.clear() }
+  override fun reset() = buffers.forEach { it.reset() }
 
 
   override val resized: Boolean get() = false
@@ -102,8 +110,6 @@ interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
 
   override fun readBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
   override fun writeBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
-  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer =
-    throw UnsupportedOperationException()
 
   override fun resize(newSize: Int): Boolean = false
 
@@ -161,6 +167,29 @@ interface MultipleByteBuffer : Closeable, ByteBuffer, NioBuffers.Sequences {
   }
 
   override fun put(byte: Byte)
+  override fun put(char: Char, byteOrder: ByteOrder) {
+    char.toBytes { put(it) }
+  }
+
+  override fun put(short: Short, byteOrder: ByteOrder) {
+    short.toBytes { put(it) }
+  }
+
+  override fun put(int: Int, byteOrder: ByteOrder) {
+    int.toBytes { put(it) }
+  }
+
+  override fun put(long: Long, byteOrder: ByteOrder) {
+    long.toBytes { put(it) }
+  }
+
+  override fun put(float: Float, byteOrder: ByteOrder) {
+    float.toBytes { put(it) }
+  }
+
+  override fun put(double: Double, byteOrder: ByteOrder) {
+    double.toBytes { put(it) }
+  }
 
   override fun put(byteArray: ByteArray, offset: Int, len: Int): Int {
     var write = 0

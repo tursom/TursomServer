@@ -80,6 +80,23 @@ object Utils {
   val ownerField: Field by lazy {
     kotlin.jvm.internal.CallableReference::class.java.getDeclaredField("owner").apply { isAccessible = true }
   }
+
+  val strValue = String::class.java.declaredFields.firstOrNull {
+    it.type == CharArray::class.java
+  }?.also {
+    it.isAccessible = true
+    it.final = false
+  }
+}
+
+fun CharArray.packageToString(): String {
+  return if (size < 64 * 1024 || Utils.strValue == null) {
+    String(this)
+  } else {
+    val str = String()
+    Utils.strValue.set(str, this)
+    str
+  }
 }
 
 fun String.hexStringToByteArray(): ByteArray {
