@@ -18,6 +18,8 @@ tasks.register("install") {
 }
 
 publishing {
+  @Suppress("UNCHECKED_CAST")
+  (rootProject.ext["publishRepositories"] as (Project, PublishingExtension) -> Unit)(project, this)
   publications {
     create<MavenPublication>("maven") {
       groupId = project.group.toString()

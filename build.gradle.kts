@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.*
 
 ext["netty.version"] = "4.1.59.Final"
 ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
@@ -14,7 +15,30 @@ ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
     }
   }
 }
+ext["publishRepositories"] = { project: Project, p: PublishingExtension ->
+  val artifactoryUser: String by rootProject
+  val artifactoryPassword: String by rootProject
+  p.repositories {
+    maven {
+      val releasesRepoUrl = uri("https://nvm.tursom.cn/repository/maven-releases/")
+      val snapshotRepoUrl = uri("https://nvm.tursom.cn/repository/maven-snapshots/")
+      url = if (project.version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
+      credentials {
+        username = artifactoryUser
+        password = artifactoryPassword
+      }
+    }
+  }
+}
 
+try {
+  val properties = Properties()
+  properties.load(rootProject.file("local.properties").inputStream())
+  properties.forEach { (k, v) ->
+    rootProject.ext.set(k.toString(), v)
+  }
+} catch (e: Exception) {
+}
 
 plugins {
   kotlin("jvm") version "1.5.21"
@@ -23,7 +47,7 @@ plugins {
 
 allprojects {
   group = "cn.tursom"
-  version = "0.2"
+  version = "1.0"
 
   repositories {
     mavenLocal()
@@ -52,7 +76,7 @@ allprojects {
   }
 }
 
-@kotlin.Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST")
 (rootProject.ext["excludeTest"] as (Project, TaskContainer) -> Unit)(project, tasks)
 
 dependencies {
@@ -70,6 +94,8 @@ tasks.register("install") {
 }
 
 publishing {
+  @Suppress("UNCHECKED_CAST")
+  (rootProject.ext["publishRepositories"] as (Project, PublishingExtension) -> Unit)(project, this)
   publications {
     create<MavenPublication>("maven") {
       groupId = project.group.toString()
