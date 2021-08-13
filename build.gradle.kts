@@ -16,17 +16,35 @@ ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
   }
 }
 ext["publishRepositories"] = { project: Project, p: PublishingExtension ->
-  val artifactoryUser: String by rootProject
-  val artifactoryPassword: String by rootProject
   p.repositories {
-    maven {
-      val releasesRepoUrl = uri("https://nvm.tursom.cn/repository/maven-releases/")
-      val snapshotRepoUrl = uri("https://nvm.tursom.cn/repository/maven-snapshots/")
-      url = if (project.version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
-      credentials {
-        username = artifactoryUser
-        password = artifactoryPassword
+    try {
+      val artifactoryUser: String by rootProject
+      val artifactoryPassword: String by rootProject
+      maven {
+        val releasesRepoUrl = uri("https://nvm.tursom.cn/repository/maven-releases/")
+        val snapshotRepoUrl = uri("https://nvm.tursom.cn/repository/maven-snapshots/")
+        url = if (project.version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
+        credentials {
+          username = artifactoryUser
+          password = artifactoryPassword
+        }
       }
+    } catch (e: Exception) {
+      System.err.println("无法将包推送到tursom仓库上")
+    }
+    try {
+      maven {
+        val githubUser: String by rootProject
+        val githubToken: String by rootProject
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/$githubUser/TursomServer")
+        credentials {
+          username = githubUser
+          password = githubToken
+        }
+      }
+    } catch (e: Exception) {
+      System.err.println("无法将包推送到github仓库上")
     }
   }
 }
@@ -47,11 +65,11 @@ plugins {
 
 allprojects {
   group = "cn.tursom"
-  version = "1.0"
+  version = "1.0-SNAPSHOT"
 
   repositories {
     // mavenLocal()
-    // mavenCentral()
+    mavenCentral()
     maven {
       url = uri("https://nvm.tursom.cn/repository/maven-public/")
     }
@@ -96,20 +114,20 @@ tasks.register("install") {
   finalizedBy(tasks["publishToMavenLocal"])
 }
 
-publishing {
-  @Suppress("UNCHECKED_CAST")
-  (rootProject.ext["publishRepositories"] as (Project, PublishingExtension) -> Unit)(project, this)
-  publications {
-    create<MavenPublication>("maven") {
-      groupId = project.group.toString()
-      artifactId = project.name
-      version = project.version.toString()
-
-      from(components["java"])
-      try {
-        artifact(tasks["kotlinSourcesJar"])
-      } catch (e: Exception) {
-      }
-    }
-  }
-}
+//publishing {
+//  @Suppress("UNCHECKED_CAST")
+//  (rootProject.ext["publishRepositories"] as (Project, PublishingExtension) -> Unit)(project, this)
+//  publications {
+//    create<MavenPublication>("maven") {
+//      groupId = project.group.toString()
+//      artifactId = project.name
+//      version = project.version.toString()
+//
+//      from(components["java"])
+//      try {
+//        artifact(tasks["kotlinSourcesJar"])
+//      } catch (e: Exception) {
+//      }
+//    }
+//  }
+//}
