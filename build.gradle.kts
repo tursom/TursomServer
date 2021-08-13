@@ -4,7 +4,7 @@ import java.util.*
 ext["netty.version"] = "4.1.59.Final"
 ext["excludeTest"] = { project: Project, tasks: TaskContainer ->
   if (project.gradle.startParameter.taskNames.firstOrNull { taskName ->
-      taskName.endsWith(":test")
+      ":test" in taskName
     } == null) {
     tasks {
       test { enabled = false }
@@ -50,8 +50,11 @@ allprojects {
   version = "1.0"
 
   repositories {
-    mavenLocal()
-    mavenCentral()
+    // mavenLocal()
+    // mavenCentral()
+    maven {
+      url = uri("https://nvm.tursom.cn/repository/maven-public/")
+    }
   }
 
   tasks.withType<JavaCompile> {
