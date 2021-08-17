@@ -1,3 +1,4 @@
+import cn.tursom.core.usingNanoTime
 import org.junit.Test
 
 data class Flow(
@@ -61,6 +62,13 @@ class Edge {
     return false
   }
 
+  fun clear() {
+    repeat(2) {
+      flow[it] = 0
+      flowCache[it] = 0
+    }
+  }
+
   override fun toString(): String {
     return "Edge(flow=${flow.contentToString()}, flowCache=${flowCache.contentToString()})"
   }
@@ -74,6 +82,9 @@ class Graphic(
       builder: GraphicBuilder.() -> Unit,
     ) = GraphicBuilder().also(builder).build()
   }
+
+  @DslMarker
+  annotation class Builder
 
   private val edgeList = ArrayList<Edge>()
   var input: Int = 0
@@ -109,12 +120,19 @@ class Graphic(
     }
   }
 
+  fun clear() {
+    edgeList.forEach { edge ->
+      edge.clear()
+    }
+  }
+
   fun result(): List<Pair<Int, Int>> {
     return edgeList.map { it[FlowChannel.A] to it[FlowChannel.B] }
   }
 
   override fun iterator(): Iterator<Edge> = edgeList.iterator()
 
+  @Builder
   class GraphicBuilder {
     var precision: Int = 8
     val edgeMap = ArrayList<EdgeBuilder>()
@@ -134,6 +152,7 @@ class Graphic(
     }
   }
 
+  @Builder
   class EdgeBuilder(private val id: Int) {
     private val flowList = ArrayList<FlowBuilder>()
     fun init(graphic: Graphic) {
@@ -156,6 +175,7 @@ class Graphic(
     }
   }
 
+  @Builder
   data class FlowBuilder(
     val source: Int,
     val sourceFlowChannel: Int,
@@ -171,14 +191,55 @@ class FlowExample {
     graphic.precision = 8
 
     var changed = true
-    var it = 0
+    var step = 0
     while (changed) {
-      it++
+      step++
       graphic.calc()
       changed = graphic.changed()
-      println("step $it changed $changed")
+      println("step $step changed $changed")
       graphic.finishCalc()
       println(graphic.result())
+    }
+  }
+
+  /**
+   * 性能测试
+   */
+  @Test
+  fun testPerformance() {
+    val graphic = getTestGraphic()
+
+    // 热车
+    graphic.precision = 30
+    repeat(1000) {
+      graphic.clear()
+      var changed = true
+      while (changed) {
+        graphic.calc()
+        changed = graphic.changed()
+        graphic.finishCalc()
+      }
+    }
+
+    // 测试
+    repeat(5) {
+      intArrayOf(8, 12, 16, 20, 24, 28).forEach { precision ->
+        graphic.clear()
+        graphic.precision = precision
+
+        var step = 0
+        var changed = true
+        val usingTime = usingNanoTime {
+          while (changed) {
+            step++
+            graphic.calc()
+            changed = graphic.changed()
+            graphic.finishCalc()
+          }
+        }
+
+        println("precision $precision step $step using $usingTime us")
+      }
     }
   }
 
