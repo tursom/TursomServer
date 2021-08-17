@@ -218,7 +218,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
 
   companion object {
     private val threadId = AtomicInteger()
-    private val group: EventLoopGroup = NioEventLoopGroup(0, ThreadFactory {
+    val group: EventLoopGroup = NioEventLoopGroup(0, ThreadFactory {
       val thread = Thread(it, "WebSocketClient-${threadId.incrementAndGet()}")
       thread.isDaemon = true
       thread

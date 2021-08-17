@@ -9,6 +9,7 @@ dependencies {
   compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
   compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
   compileOnly(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
+  testImplementation(group = "junit", name = "junit", version = "4.12")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
