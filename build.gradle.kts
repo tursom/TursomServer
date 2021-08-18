@@ -129,9 +129,9 @@ allprojects {
 (rootProject.ext["excludeTest"] as (Project, TaskContainer) -> Unit)(project, tasks)
 
 dependencies {
-  api(kotlin("stdlib-jdk8"))
-  api(kotlin("reflect"))
-  testImplementation(group = "junit", name = "junit", version = "4.12")
+  api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
+  api("org.jetbrains.kotlin:kotlin-reflect:1.5.21")
+  testImplementation(group = "junit", name = "junit", version = "4.13.2")
 }
 
 artifacts {

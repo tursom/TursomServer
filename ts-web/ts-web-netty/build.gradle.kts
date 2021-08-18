@@ -8,8 +8,8 @@ dependencies {
   api(project(":ts-core:ts-buffer"))
   api(project(":ts-core:ts-log"))
   api(project(":ts-web"))
-  api(group = "io.netty", name = "netty-all", version = "4.1.43.Final")
-  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
+  api(group = "io.netty", name = "netty-all", version = "4.1.67.Final")
+  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.32")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

@@ -6,11 +6,11 @@ plugins {
 dependencies {
   implementation(project(":ts-core"))
   implementation(project(":ts-core:ts-delegation"))
-  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.29")
-  api(group = "ch.qos.logback", name = "logback-core", version = "1.2.3")
-  api(group = "ch.qos.logback", name = "logback-classic", version = "1.2.3")
+  api(group = "org.slf4j", name = "slf4j-api", version = "1.7.32")
+  api(group = "ch.qos.logback", name = "logback-core", version = "1.2.5")
+  api(group = "ch.qos.logback", name = "logback-classic", version = "1.2.5")
 
-  compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.6")
+  compileOnly(group = "com.google.code.gson", name = "gson", version = "2.8.7")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

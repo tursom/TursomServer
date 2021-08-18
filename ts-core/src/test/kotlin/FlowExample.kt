@@ -185,6 +185,22 @@ class Graphic(
 }
 
 class FlowExample {
+  init {
+    val graphic = getTestGraphic()
+
+    // 热车
+    graphic.precision = 30
+    repeat(10000) {
+      graphic.clear()
+      var changed = true
+      while (changed) {
+        graphic.calc()
+        changed = graphic.changed()
+        graphic.finishCalc()
+      }
+    }
+  }
+
   @Test
   fun test() {
     val graphic = getTestGraphic()
@@ -209,20 +225,8 @@ class FlowExample {
   fun testPerformance() {
     val graphic = getTestGraphic()
 
-    // 热车
-    graphic.precision = 30
-    repeat(1000) {
-      graphic.clear()
-      var changed = true
-      while (changed) {
-        graphic.calc()
-        changed = graphic.changed()
-        graphic.finishCalc()
-      }
-    }
-
     // 测试
-    repeat(5) {
+    repeat(10000) {
       intArrayOf(8, 12, 16, 20, 24, 28).forEach { precision ->
         graphic.clear()
         graphic.precision = precision

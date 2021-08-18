@@ -7,7 +7,7 @@ dependencies {
   api(project(":"))
   implementation(project(":ts-core"))
   implementation(project(":ts-core:ts-log"))
-  api(group = "redis.clients", name = "jedis", version = "3.3.0")
+  api(group = "redis.clients", name = "jedis", version = "3.6.3")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")

@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   implementation(project(":"))
-  implementation(group = "com.sun.mail", name = "javax.mail", version = "1.5.1")
+  implementation(group = "com.sun.mail", name = "javax.mail", version = "1.6.2")
 }
 
 @kotlin.Suppress("UNCHECKED_CAST")
