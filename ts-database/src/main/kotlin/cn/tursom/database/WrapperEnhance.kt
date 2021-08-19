@@ -31,7 +31,7 @@ import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
 
-val logger = Slf4jImpl.getLogger("com.ddbes.pan.kit.jdbc")
+val logger = Slf4jImpl.getLogger("cn.tursom.database")
 
 val select: Query<*, *, Any>.(Array<out Any>) -> Any = Query<*, *, Any>::select
 
@@ -284,9 +284,9 @@ inline fun <reified T : Any, Children : Wrapper<T>> Update<Children, String>.set
     .uncheckedCast<Collection<KProperty1<T, *>>>()
     .filter {
       it.javaField != null &&
-        it.findAnnotation() ?: it.javaField?.getAnnotation(Transient::class.java) == null &&
-        !Modifier.isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT) &&
-        it.javaField?.getAnnotation(TableField::class.java)?.exist != false
+          (it.findAnnotation() ?: it.javaField?.getAnnotation(Transient::class.java)) == null &&
+          !Modifier.isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT) &&
+          it.javaField?.getAnnotation(TableField::class.java)?.exist != false
     }
     .forEach { property ->
       property.isAccessible = true
