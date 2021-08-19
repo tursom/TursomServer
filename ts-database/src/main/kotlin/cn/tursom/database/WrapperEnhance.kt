@@ -214,29 +214,29 @@ inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.notInSql(
 ): Children = notInSql(column.directTableField, value)
 
 
-val groupBy: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::groupBy
+// val groupBy: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::groupBy
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.groupBy(column: KProperty1<T, *>): Children =
   groupBy(column.directTableField)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.groupBy(vararg column: KProperty1<T, *>): Children =
-  groupBy(column.directTableField) as Children
+  groupBy(column.directTableField.asList()) as Children
 
-val orderByAsc: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::orderByAsc
+// val orderByAsc: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::orderByAsc
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.orderByAsc(column: KProperty1<T, *>): Children =
   orderByAsc(column.directTableField)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.orderByAsc(vararg column: KProperty1<T, *>): Children =
-  orderByAsc(column.directTableField) as Children
+  orderByAsc(column.directTableField.asList()) as Children
 
-val orderByDesc: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::orderByDesc
+// val orderByDesc: Func<*, String>.(Array<out String>) -> Any = Func<*, String>::orderByDesc
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.orderByDesc(column: KProperty1<T, *>): Children =
   orderByDesc(column.directTableField)
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T, Children : Wrapper<T>> Func<Children, String>.orderByDesc(vararg column: KProperty1<T, *>): Children =
-  orderByDesc(column.directTableField) as Children
+  orderByDesc(column.directTableField.asList()) as Children
 
 
 /**
@@ -314,7 +314,7 @@ object WrapperEnhance : AbstractWrapper<Any, String, WrapperEnhance>() {
     wrapper.expression.add(ISqlSegment { columnToString(column) }, Regexp, ISqlSegment {
       val genParamName = Constants.WRAPPER_PARAM + (paramNameSeqField.get(wrapper) as AtomicInteger).incrementAndGet()
       wrapper.paramNameValuePairs[genParamName] = value
-      String.format(Constants.WRAPPER_PARAM_FORMAT, Constants.WRAPPER, genParamName)
+      "#{${Constants.WRAPPER}${Constants.WRAPPER_PARAM_MIDDLE}$genParamName}"
     })
     return wrapper
   }

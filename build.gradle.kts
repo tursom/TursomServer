@@ -30,7 +30,7 @@ ext["publishRepositories"] = { project: Project, p: PublishingExtension ->
         }
       }
     } catch (e: Exception) {
-      System.err.println("cannot push to repository tursom")
+      println("cannot push to repository tursom")
     }
     try {
       maven {
@@ -44,7 +44,7 @@ ext["publishRepositories"] = { project: Project, p: PublishingExtension ->
         }
       }
     } catch (e: Exception) {
-      System.err.println("cannot push to repository github")
+      println("cannot push to repository github")
     }
 
     val repositoriesRegex = "repositories\\.[a-zA-z]*".toRegex()
@@ -71,7 +71,7 @@ ext["publishRepositories"] = { project: Project, p: PublishingExtension ->
           }
         }
       } catch (e: Exception) {
-        System.err.println("cannot push to repository $repositoryName")
+        println("cannot push to repository $repositoryName")
       }
     }
   }
