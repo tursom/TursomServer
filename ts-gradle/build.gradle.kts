@@ -1,4 +1,4 @@
-import java.text.SimpleDateFormat
+//import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
@@ -21,7 +21,8 @@ try {
 }
 
 group = "cn.tursom"
-version = SimpleDateFormat("yy.MM.dd-HH.mm").format(Date())
+//version = SimpleDateFormat("yy.MM.dd-HH.mm").format(Date())
+version = "1.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
@@ -105,19 +106,15 @@ publishing {
     }
   }
   publications {
-    create<MavenPublication>("maven") {
+    create<MavenPublication>("plugin") {
       groupId = project.group.toString()
       artifactId = project.name
       version = project.version.toString()
 
       from(components["java"])
       try {
-        artifact(tasks["sourcesJar"])
+        artifact(tasks["kotlinSourcesJar"])
       } catch (e: Exception) {
-        try {
-          artifact(tasks["kotlinSourcesJar"])
-        } catch (e: Exception) {
-        }
       }
     }
   }
