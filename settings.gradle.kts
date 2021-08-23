@@ -1,4 +1,5 @@
 rootProject.name = "TursomServer"
+includeBuild("ts-gradle")
 include("ts-core")
 include("ts-core:ts-encrypt")
 include("ts-core:ts-buffer")
