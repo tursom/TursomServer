@@ -20,7 +20,7 @@ try {
 } catch (e: Exception) {
 }
 
-group = "com.ddbes"
+group = "cn.tursom"
 version = SimpleDateFormat("yy.MM.dd-HH.mm").format(Date())
 
 repositories {
@@ -34,11 +34,11 @@ dependencies {
 
 gradlePlugin {
   plugins {
-    create("ddbes-gradle") {
+    create("ts-gradle") {
       // 在 app 模块需要通过 id 引用这个插件
-      id = "ddbes-gradle"
+      id = "ts-gradle"
       // 实现这个插件的类的路径
-      implementationClass = "DdbesGradlePlugin"
+      implementationClass = "cn.tursom.gradle.TursomGradlePlugin"
     }
   }
 }
@@ -46,13 +46,14 @@ gradlePlugin {
 publishing {
   repositories {
     try {
-      val artifactoryUser: String = rootProject.ext["tursom.artifactoryUser"] as String
-      val artifactoryPassword: String = rootProject.ext["tursom.artifactoryPassword"] as String
       maven {
+        name = "tursom"
         val releasesRepoUrl = uri("https://nvm.tursom.cn/repository/maven-releases/")
         val snapshotRepoUrl = uri("https://nvm.tursom.cn/repository/maven-snapshots/")
         url = if (project.version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
         credentials {
+          val artifactoryUser: String = rootProject.ext["tursom.artifactoryUser"] as String
+          val artifactoryPassword: String = rootProject.ext["tursom.artifactoryPassword"] as String
           username = artifactoryUser
           password = artifactoryPassword
         }
@@ -62,9 +63,9 @@ publishing {
     }
     try {
       maven {
-        val githubUser: String by rootProject
-        val githubToken: String by rootProject
         name = "GitHubPackages"
+        val githubUser: String = rootProject.ext["github.artifactoryUser"] as String
+        val githubToken: String = rootProject.ext["github.artifactoryPassword"] as String
         url = uri("https://maven.pkg.github.com/$githubUser/TursomServer")
         credentials {
           username = githubUser

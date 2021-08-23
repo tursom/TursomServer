@@ -1,6 +1,7 @@
 plugins {
   kotlin("jvm")
   `maven-publish`
+  id("ts-gradle")
 }
 
 dependencies {
@@ -18,33 +19,4 @@ dependencies {
 
 
   testImplementation(project(":ts-core:ts-coroutine"))
-}
-
-@kotlin.Suppress("UNCHECKED_CAST")
-(rootProject.ext["excludeTest"] as (Project, TaskContainer) -> Unit)(project, tasks)
-
-tasks.register("install") {
-  finalizedBy(tasks["publishToMavenLocal"])
-}
-
-artifacts {
-  archives(tasks["kotlinSourcesJar"])
-}
-
-publishing {
-  @Suppress("UNCHECKED_CAST")
-  (rootProject.ext["publishRepositories"] as (Project, PublishingExtension) -> Unit)(project, this)
-  publications {
-    create<MavenPublication>("maven") {
-      groupId = project.group.toString()
-      artifactId = project.name
-      version = project.version.toString()
-
-      from(components["java"])
-      try {
-        artifact(tasks["kotlinSourcesJar"])
-      } catch (e: Exception) {
-      }
-    }
-  }
 }
