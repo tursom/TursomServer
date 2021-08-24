@@ -7,4 +7,5 @@ build
 */build/
 #gradle.properties
 local.yml
+ts-gradle/local.properties
 !.idea/codeStyles

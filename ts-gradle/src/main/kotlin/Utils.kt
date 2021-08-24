@@ -1,5 +1,6 @@
+import org.gradle.api.DomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import java.util.concurrent.TimeUnit
@@ -45,7 +46,7 @@ fun Project.publish(publish: PublishingExtension) {
       println("cannot publish to repository tursom:\n${e.javaClass}: ${e.message}")
     }
 
-    val repositoriesRegex = "repositories\\.[a-zA-z][a-zA-z0-9]*".toRegex()
+    val repositoriesRegex = "publishRepositories\\.[a-zA-z][a-zA-z0-9]*".toRegex()
     properties.keys.asSequence().filter {
       it matches repositoriesRegex
     }.forEach { repositoryName ->
@@ -102,7 +103,7 @@ fun Project.publish(publish: PublishingExtension) {
   }
 }
 
-fun ConfigurationContainer.noExpire() {
+fun DomainObjectCollection<Configuration>.noExpire() {
   all {
     it.resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
     it.resolutionStrategy.cacheDynamicVersionsFor(0, TimeUnit.SECONDS)
@@ -128,5 +129,9 @@ fun Project.userTursomRepositories(
         it.url = uri("https://nvm.tursom.cn/repository/maven-public")
       }
     }
+  }
+  try {
+    configurations.noExpire()
+  } catch (e: Exception) {
   }
 }
