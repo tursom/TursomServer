@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
   kotlin("jvm")
   `maven-publish`
@@ -14,4 +16,8 @@ dependencies {
 
 artifacts {
   archives(tasks["kotlinSourcesJar"])
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+  kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }

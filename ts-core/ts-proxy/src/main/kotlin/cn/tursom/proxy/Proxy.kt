@@ -2,7 +2,7 @@ package cn.tursom.proxy
 
 import cn.tursom.core.uncheckedCast
 
-interface Proxy<T : ProxyMethod> : Iterable<T> {
+interface Proxy<out T : ProxyMethod> : Iterable<T> {
   data class Result<out R>(
     val result: R,
     val success: Boolean = false,
