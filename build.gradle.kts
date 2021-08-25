@@ -11,7 +11,7 @@ allprojects {
   version = "1.0-SNAPSHOT"
 
   repositories {
-    mavenCentral()
+    //mavenCentral()
     maven {
       url = uri("https://nvm.tursom.cn/repository/maven-public/")
     }
@@ -49,4 +49,8 @@ dependencies {
 
 artifacts {
   archives(tasks["kotlinSourcesJar"])
+}
+
+publishing {
+  publish(this)
 }
