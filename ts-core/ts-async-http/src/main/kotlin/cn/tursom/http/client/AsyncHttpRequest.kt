@@ -1,6 +1,7 @@
-package cn.tursom.utils
+package cn.tursom.http.client
 
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.io.File
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -10,7 +11,6 @@ import java.net.URLEncoder
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object AsyncHttpRequest {
@@ -106,7 +106,7 @@ object AsyncHttpRequest {
     client: OkHttpClient = defaultClient
   ) = post(
     url,
-    RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -118,7 +118,7 @@ object AsyncHttpRequest {
     client: OkHttpClient = defaultClient
   ) = post(
     url,
-    RequestBody.create(MediaType.parse("application/octet-stream"), body),
+    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -130,7 +130,7 @@ object AsyncHttpRequest {
     client: OkHttpClient = defaultClient
   ) = post(
     url,
-    RequestBody.create(MediaType.parse("application/octet-stream"), body),
+    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -151,7 +151,7 @@ object AsyncHttpRequest {
     client: OkHttpClient
   ): String {
     val response = get(url, param, headers, client)
-    return response.body()!!.string()
+    return response.body!!.string()
   }
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -160,7 +160,7 @@ object AsyncHttpRequest {
     body: RequestBody,
     headers: Map<String, String>? = null,
     client: OkHttpClient
-  ): String = post(url, body, headers, client).body()!!.string()
+  ): String = post(url, body, headers, client).body!!.string()
 
   suspend fun postStr(
     url: String,
@@ -196,7 +196,7 @@ object AsyncHttpRequest {
     client: OkHttpClient
   ): String = postStr(
     url,
-    RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -215,7 +215,7 @@ object AsyncHttpRequest {
     client: OkHttpClient
   ): String = postStr(
     url,
-    RequestBody.create(MediaType.parse("application/octet-stream"), body),
+    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -237,7 +237,7 @@ object AsyncHttpRequest {
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
     client: OkHttpClient
-  ): ByteArray = get(url, param, headers, client).body()!!.bytes()
+  ): ByteArray = get(url, param, headers, client).body!!.bytes()
 
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -246,7 +246,7 @@ object AsyncHttpRequest {
     body: RequestBody,
     headers: Map<String, String>? = null,
     client: OkHttpClient
-  ): ByteArray = post(url, body, headers, client).body()!!.bytes()
+  ): ByteArray = post(url, body, headers, client).body!!.bytes()
 
 
   suspend fun postByteArray(
@@ -291,7 +291,7 @@ object AsyncHttpRequest {
     client: OkHttpClient
   ): ByteArray = postByteArray(
     url,
-    RequestBody.create(MediaType.parse("text/plain;charset=utf-8"), body),
+    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
     headers,
     client
   )
@@ -314,7 +314,7 @@ object AsyncHttpRequest {
     client: OkHttpClient
   ): ByteArray = postByteArray(
     url,
-    RequestBody.create(MediaType.parse("application/octet-stream"), body),
+    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
     headers,
     client
   )

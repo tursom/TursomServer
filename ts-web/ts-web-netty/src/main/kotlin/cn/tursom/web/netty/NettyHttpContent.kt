@@ -150,8 +150,10 @@ open class NettyHttpContent(
     if (log.traceEnabled) {
       log?.trace("write {}", message)
     }
-    getResponseBodyBuf().addComponent(Unpooled.wrappedBuffer(message.toByteArray()))
-    //responseBody.write(message.toByteArray())
+    val compositeByteBuf = getResponseBodyBuf()
+    val bytes = message.toByteArray()
+    compositeByteBuf.addComponent(Unpooled.wrappedBuffer(bytes))
+    compositeByteBuf.writerIndex(compositeByteBuf.writerIndex() + bytes.size)
   }
 
   override fun write(byte: Byte) {
