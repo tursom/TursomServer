@@ -5,7 +5,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import java.util.concurrent.TimeUnit
 
-var nettyVersion = "4.1.67.Final"
+var nettyVersion = "4.1.68.Final"
 
 fun Project.excludeTest() {
   if (gradle.startParameter.taskNames.firstOrNull { taskName ->
