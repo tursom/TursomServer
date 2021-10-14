@@ -618,3 +618,7 @@ fun ByteArray.deflate(): ByteArray {
   }
   return bos.toByteArray()
 }
+
+fun StringBuilder.removeLastChars(count: Int) {
+  setLength(length - count)
+}
