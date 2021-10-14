@@ -1,6 +1,6 @@
-package com.ddbes.kotlin
+package cn.tursom.core.curry
 
-import com.ddbes.kotlin.util.removeLastChars
+import cn.tursom.core.removeLastChars
 import org.junit.Test
 
 class CurryBuilder {
@@ -17,6 +17,18 @@ class CurryBuilder {
     @Test
     fun buildMethodInvoker() {
         (4..20).forEach(::buildMethodInvoker)
+    }
+
+    @Test
+    fun buildObjectI() {
+        println(
+            "package com.ddbes.kotlin.util\n" +
+              "\n" +
+              "import com.ddbes.kotlin.util.curry.*\n"
+        )
+        println(buildObjectI(20, "I", extensionLambda = false, extensionCurry = false))
+        println(buildObjectI(20, "F", extensionLambda = true, extensionCurry = false))
+        //println(buildObjectI(20, "C", extensionLambda = false, extensionCurry = true))
     }
 
     fun args(index: Int) = buildString {
@@ -52,6 +64,50 @@ class CurryBuilder {
             append("a${it + 1}: T${it + 1}, ")
         }
         removeLastChars(2)
+    }
+
+    fun argsWithType(fromIndex: Int, toIndex: Int) = buildString {
+        (fromIndex..toIndex).forEach {
+            append("a$it: T$it, ")
+        }
+        removeLastChars(2)
+    }
+
+    fun buildObjectI(
+        index: Int,
+        objectName: String = "I",
+        extensionLambda: Boolean = true,
+        extensionCurry: Boolean = true,
+    ) = buildString {
+        append("object $objectName {\n")
+        append("    inline operator fun <R> invoke(f: () -> R) = f()\n")
+        if (extensionLambda || extensionCurry) append("\n")
+        (1..index).forEach {
+            append(
+                "    inline operator fun <${types(it)}, R> invoke(f: (${types(it)}) -> R, ${
+                    argsWithType(it)
+                }) = f(${args(it)})\n"
+            )
+            if (extensionCurry) append(
+                "operator fun <${types(it)}, R> invoke(f: Curry${it}<${types(it)}, R>, ${
+                    argsWithType(it)
+                }) = f(${args(it)})\n"
+            )
+            repeat(it - 1) { curry ->
+                if (extensionLambda) append(
+                    "operator fun <${types(it)}, R> invoke(f: (${types(it)}) -> R, ${
+                        argsWithType(it - curry - 1)
+                    }) = f(${args(it - curry - 1)})\n"
+                )
+                if (extensionCurry) append(
+                    "operator fun <${types(it)}, R> invoke(f: Curry${it}<${types(it)}, R>, ${
+                        argsWithType(it - curry - 1)
+                    }) = f(${args(it - curry - 1)})\n"
+                )
+            }
+            if (extensionLambda || extensionCurry) append("\n")
+        }
+        append("}\n")
     }
 
     fun buildCurryClass(index: Int) {
@@ -119,13 +175,14 @@ class CurryBuilder {
 
     fun buildMethodInvoker(index: Int) {
         val args = args(index)
-        val argsWithType = argsWithType(index)
         val types = types(index)
 
-        println("operator fun <$types, R> (($types) -> R).invoke() = curry(this)")
+        println("operator fun <$types, R> (($types) -> R).invoke() = this")
         (1 until index).forEach { argCount ->
-            println("operator fun <$types, R> (($types) -> R).invoke(${argsWithType(argCount)}) = " +
-                "curry(this)(${args(argCount)})")
+            println(
+                "operator fun <$types, R> (($types) -> R).invoke(${argsWithType(argCount)}) = " +
+                  "{ ${argsWithType(argCount + 1, index)} -> this(${args}) }"
+            )
         }
         println()
     }
