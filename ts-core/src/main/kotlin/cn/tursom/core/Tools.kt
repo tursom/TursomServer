@@ -622,3 +622,10 @@ fun ByteArray.deflate(): ByteArray {
 fun StringBuilder.removeLastChars(count: Int) {
   setLength(length - count)
 }
+
+inline operator fun <reified T> Array<out T>.plus(other: Array<out T>): Array<T> {
+  val array = arrayOfNulls<T>(size + other.size)
+  System.arraycopy(this, 0, array, 0, size)
+  System.arraycopy(other, 0, array, size, other.size)
+  return array.uncheckedCast()
+}
