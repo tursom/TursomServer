@@ -21,7 +21,8 @@ class VarargCurrying<A, R>(
     }
 
     constructor(
-        func: (Array<out A>) -> R, componentType: Class<A> = func.javaClass.allMethods.find {
+        func: (Array<out A>) -> R,
+        componentType: Class<A> = func.javaClass.allMethods.find {
             it.name == "invoke" &&
               it.parameterTypes.size == 1 &&
               it.parameterTypes[0].isArray
