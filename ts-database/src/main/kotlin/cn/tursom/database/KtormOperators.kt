@@ -10,187 +10,187 @@ import kotlin.reflect.KProperty1
 inline fun <reified T : Any> KProperty1<T, *>.isNull(): UnaryExpression<Boolean> = sql.isNull()
 inline fun <reified T : Any> KProperty1<T, *>.isNotNull(): UnaryExpression<Boolean> = sql.isNotNull()
 inline operator fun <reified C : Any, T : Number> KProperty1<C, T?>.unaryMinus(): UnaryExpression<T> =
-  table[this].unaryMinus()
+  sql.unaryMinus()
 
 inline operator fun <reified C : Any, T : Number> KProperty1<C, T?>.unaryPlus(): UnaryExpression<T> =
-  table[this].unaryPlus()
+  sql.unaryPlus()
 
-inline operator fun <reified T : Any> KProperty1<T, Boolean>.not(): UnaryExpression<Boolean> = table[this].not()
+inline operator fun <reified T : Any> KProperty1<T, Boolean?>.not(): UnaryExpression<Boolean> = sql.not()
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> KProperty1<C, T?>.plus(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  table[this].plus(expr.table[expr])
+  sql.plus(expr.sql)
 
 inline infix operator fun <reified C : Any, T : Number> KProperty1<C, T?>.plus(value: T): BinaryExpression<T> =
-  table[this].plus(value)
+  sql.plus(value)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> T.plus(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  plus(expr.table[expr])
+  plus(expr.sql)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> KProperty1<C, T?>.minus(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  table[this].minus(expr.table[expr])
+  sql.minus(expr.sql)
 
 inline infix operator fun <reified C : Any, T : Number> KProperty1<C, T?>.minus(value: T): BinaryExpression<T> =
-  table[this].minus(value)
+  sql.minus(value)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> T.minus(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  minus(expr.table[expr])
+  minus(expr.sql)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> KProperty1<C, T?>.times(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  table[this].times(expr.table[expr])
+  sql.times(expr.sql)
 
 inline infix operator fun <reified C : Any, T : Number> KProperty1<C, T?>.times(value: T): BinaryExpression<T> =
-  table[this].times(value)
+  sql.times(value)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> T.times(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  times(expr.table[expr])
+  times(expr.sql)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> KProperty1<C, T?>.div(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  table[this].div(expr.table[expr])
+  sql.div(expr.sql)
 
 inline infix operator fun <reified C : Any, T : Number> KProperty1<C, T?>.div(value: T): BinaryExpression<T> =
-  table[this].div(value)
+  sql.div(value)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> T.div(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  div(expr.table[expr])
+  div(expr.sql)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> KProperty1<C, T?>.rem(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  table[this].rem(expr.table[expr])
+  sql.rem(expr.sql)
 
 inline infix operator fun <reified C : Any, T : Number> KProperty1<C, T?>.rem(value: T): BinaryExpression<T> =
-  table[this].rem(value)
+  sql.rem(value)
 
 inline infix operator fun <reified C : Any, reified C2 : Any, T : Number> T.rem(expr: KProperty1<C2, T?>): BinaryExpression<T> =
-  rem(expr.table[expr])
+  rem(expr.sql)
 
-inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, *>.like(expr: KProperty1<T2, String>): BinaryExpression<Boolean> =
-  table[this].like(expr.table[expr])
+inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, *>.like(expr: KProperty1<T2, String?>): BinaryExpression<Boolean> =
+  sql.like(expr.sql)
 
 inline infix fun <reified T : Any> KProperty1<T, *>.like(value: String): BinaryExpression<Boolean> =
-  table[this].like(value)
+  sql.like(value)
 
-inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, *>.notLike(expr: KProperty1<T2, String>): BinaryExpression<Boolean> =
-  table[this].notLike(expr.table[expr])
+inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, *>.notLike(expr: KProperty1<T2, String?>): BinaryExpression<Boolean> =
+  sql.notLike(expr.sql)
 
 inline infix fun <reified T : Any> KProperty1<T, *>.notLike(value: String): BinaryExpression<Boolean> =
-  table[this].notLike(value)
+  sql.notLike(value)
 
-inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean>.and(expr: KProperty1<T2, Boolean>): BinaryExpression<Boolean> =
-  table[this].and(expr.table[expr])
+inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean?>.and(expr: KProperty1<T2, Boolean?>): BinaryExpression<Boolean> =
+  sql.and(expr.sql)
 
-inline infix fun <reified T : Any> KProperty1<T, Boolean>.and(value: Boolean): BinaryExpression<Boolean> =
-  table[this].and(value)
+inline infix fun <reified T : Any> KProperty1<T, Boolean?>.and(value: Boolean): BinaryExpression<Boolean> =
+  sql.and(value)
 
-inline infix fun <reified T : Any> Boolean.and(expr: KProperty1<T, Boolean>): BinaryExpression<Boolean> =
-  and(expr.table[expr])
+inline infix fun <reified T : Any> Boolean.and(expr: KProperty1<T, Boolean?>): BinaryExpression<Boolean> =
+  and(expr.sql)
 
-inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean>.or(expr: KProperty1<T2, Boolean>): BinaryExpression<Boolean> =
-  table[this].or(expr.table[expr])
+inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean?>.or(expr: KProperty1<T2, Boolean?>): BinaryExpression<Boolean> =
+  sql.or(expr.sql)
 
-inline infix fun <reified T : Any> KProperty1<T, Boolean>.or(value: Boolean): BinaryExpression<Boolean> =
-  table[this].or(value)
+inline infix fun <reified T : Any> KProperty1<T, Boolean?>.or(value: Boolean): BinaryExpression<Boolean> =
+  sql.or(value)
 
-inline infix fun <reified T : Any> Boolean.or(expr: KProperty1<T, Boolean>): BinaryExpression<Boolean> =
-  or(expr.table[expr])
+inline infix fun <reified T : Any> Boolean.or(expr: KProperty1<T, Boolean?>): BinaryExpression<Boolean> =
+  or(expr.sql)
 
-inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean>.xor(expr: KProperty1<T2, Boolean>): BinaryExpression<Boolean> =
-  table[this].xor(expr.table[expr])
+inline infix fun <reified T : Any, reified T2 : Any> KProperty1<T, Boolean?>.xor(expr: KProperty1<T2, Boolean?>): BinaryExpression<Boolean> =
+  sql.xor(expr.sql)
 
-inline infix fun <reified T : Any> KProperty1<T, Boolean>.xor(value: Boolean): BinaryExpression<Boolean> =
-  table[this].xor(value)
+inline infix fun <reified T : Any> KProperty1<T, Boolean?>.xor(value: Boolean): BinaryExpression<Boolean> =
+  sql.xor(value)
 
-inline infix fun <reified T : Any> Boolean.xor(expr: KProperty1<T, Boolean>): BinaryExpression<Boolean> =
-  xor(expr.table[expr])
+inline infix fun <reified T : Any> Boolean.xor(expr: KProperty1<T, Boolean?>): BinaryExpression<Boolean> =
+  xor(expr.sql)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> KProperty1<C, T?>.less(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].less(expr.table[expr])
+  sql.less(expr.sql)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.less(value: T): BinaryExpression<Boolean> =
-  table[this].less(value)
+  sql.less(value)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> T.less(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  less(expr.table[expr])
+  less(expr.sql)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> KProperty1<C, T?>.lessEq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].lessEq(expr.table[expr])
+  sql.lessEq(expr.sql)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.lessEq(value: T): BinaryExpression<Boolean> =
-  table[this].lessEq(value)
+  sql.lessEq(value)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> T.lessEq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  lessEq(expr.table[expr])
+  lessEq(expr.sql)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> KProperty1<C, T?>.greater(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].greater(expr.table[expr])
+  sql.greater(expr.sql)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.greater(value: T): BinaryExpression<Boolean> =
-  table[this].greater(value)
+  sql.greater(value)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> T.greater(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  greater(expr.table[expr])
+  greater(expr.sql)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> KProperty1<C, T?>.greaterEq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].greaterEq(expr.table[expr])
+  sql.greaterEq(expr.sql)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.greaterEq(value: T): BinaryExpression<Boolean> =
-  table[this].greaterEq(value)
+  sql.greaterEq(value)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Comparable<T>> T.greaterEq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  greaterEq(expr.table[expr])
+  greaterEq(expr.sql)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Any> KProperty1<C, T?>.eq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].eq(expr.table[expr])
+  sql.eq(expr.sql)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.eq(value: T): BinaryExpression<Boolean> =
-  table[this].eq(value)
+  sql.eq(value)
 
 inline infix fun <reified C : Any, reified C2 : Any, T : Any> KProperty1<C, T?>.notEq(expr: KProperty1<C2, T?>): BinaryExpression<Boolean> =
-  table[this].notEq(expr.table[expr])
+  sql.notEq(expr.sql)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.notEq(value: T): BinaryExpression<Boolean> =
-  table[this].notEq(value)
+  sql.notEq(value)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.between(range: ClosedRange<T>): BetweenExpression<T> =
-  table[this].between(range)
+  sql.between(range)
 
 inline infix fun <reified C : Any, T : Comparable<T>> KProperty1<C, T?>.notBetween(range: ClosedRange<T>): BetweenExpression<T> =
-  table[this].notBetween(range)
+  sql.notBetween(range)
 
 inline fun <reified C : Any, T : Any> KProperty1<C, T?>.inList(vararg list: T): InListExpression<T> =
-  table[this].inList(list = list)
+  sql.inList(list = list)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.inList(list: Collection<T>): InListExpression<T> =
-  table[this].inList(list)
+  sql.inList(list)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.inList(query: Query): InListExpression<T> =
-  table[this].inList(query)
+  sql.inList(query)
 
 inline fun <reified C : Any, T : Any> KProperty1<C, T?>.notInList(vararg list: T): InListExpression<T> =
-  table[this].notInList(list = list)
+  sql.notInList(list = list)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.notInList(list: Collection<T>): InListExpression<T> =
-  table[this].notInList(list)
+  sql.notInList(list)
 
 inline infix fun <reified C : Any, T : Any> KProperty1<C, T?>.notInList(query: Query): InListExpression<T> =
-  table[this].notInList(query)
+  sql.notInList(query)
 
-inline fun <reified C : Any> KProperty1<C, Number>.toDouble(): CastingExpression<Double> =
-  table[this].toDouble()
+inline fun <reified C : Any> KProperty1<C, Number?>.toDouble(): CastingExpression<Double> =
+  sql.toDouble()
 
-inline fun <reified C : Any> KProperty1<C, Number>.toFloat(): CastingExpression<Float> =
-  table[this].toFloat()
+inline fun <reified C : Any> KProperty1<C, Number?>.toFloat(): CastingExpression<Float> =
+  sql.toFloat()
 
-inline fun <reified C : Any> KProperty1<C, Number>.toInt(): CastingExpression<Int> =
-  table[this].toInt()
+inline fun <reified C : Any> KProperty1<C, Number?>.toInt(): CastingExpression<Int> =
+  sql.toInt()
 
-inline fun <reified C : Any> KProperty1<C, Number>.toShort(): CastingExpression<Short> =
-  table[this].toShort()
+inline fun <reified C : Any> KProperty1<C, Number?>.toShort(): CastingExpression<Short> =
+  sql.toShort()
 
-inline fun <reified C : Any> KProperty1<C, Number>.toLong(): CastingExpression<Long> =
-  table[this].toLong()
+inline fun <reified C : Any> KProperty1<C, Number?>.toLong(): CastingExpression<Long> =
+  sql.toLong()
 
 @JvmName("booleanToInt")
-inline fun <reified C : Any> KProperty1<C, Boolean>.toInt(): CastingExpression<Int> =
-  table[this].toInt()
+inline fun <reified C : Any> KProperty1<C, Boolean?>.toInt(): CastingExpression<Int> =
+  sql.toInt()
 
 inline fun <reified C : Any, T : Any> KProperty1<C, *>.cast(sqlType: SqlType<T>): CastingExpression<T> =
-  table[this].cast(sqlType)
+  sql.cast(sqlType)
