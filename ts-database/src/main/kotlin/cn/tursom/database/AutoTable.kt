@@ -50,7 +50,7 @@ open class AutoTable<T : Any>(
     return instance
   }
 
-  operator fun <R : Any> get(property: KProperty1<T, R?>): Column<R> = fieldColumns[property].uncheckedCast()
+  operator fun <R : Any> get(property: KProperty1<in T, R?>): Column<R> = fieldColumns[property].uncheckedCast()
   //operator fun <R : Any> get(property: KProperty1<T, R?>): Column<R> = this[property.simpTableField].cast()
 
   fun <V : Any> field(): FieldProxy<T, V> = fieldProxyInstance.uncheckedCast()

@@ -64,7 +64,7 @@ val <T> Iterable<Pair<KProperty1<T, *>, *>>.filterNotExists
 val Iterable<KProperty<*>>.filterNotExists
   get() = filter {
     it.javaField != null &&
-      it.findAnnotation() ?: it.javaField?.getAnnotation(Transient::class.java) == null &&
+      (it.findAnnotation() ?: it.javaField?.getAnnotation(Transient::class.java)) == null &&
       !Modifier.isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT) &&
       it.javaField?.getAnnotation(com.baomidou.mybatisplus.annotation.TableField::class.java)?.exist != false
   }

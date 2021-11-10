@@ -5,8 +5,8 @@ package cn.tursom.database
 import cn.tursom.core.Utils
 import cn.tursom.core.uncheckedCast
 import com.google.gson.Gson
-import org.ktorm.dsl.Query
-import org.ktorm.dsl.QueryRowSet
+import org.ktorm.database.Database
+import org.ktorm.dsl.*
 import org.ktorm.schema.*
 import java.math.BigDecimal
 import java.sql.Date
@@ -20,15 +20,18 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaType
 
+inline fun <reified T : Any> Database.from(): QuerySource = from(AutoTable[T::class])
+fun QuerySource.select(): Query = select(sourceTable.columns)
+
 val KProperty<*>.table
   get() = AutoTable[javaField!!.declaringClass].uncheckedCast<AutoTable<Any>>()
 val <T : Any> KProperty<T>.sql
   get() = table[this.uncheckedCast<KProperty1<Any, T>>()]
 
-inline val <reified T : Any> KProperty1<T, *>.table
+inline val <reified T : Any> KProperty1<in T, *>.table
   get() = AutoTable[T::class.java]
 
-inline val <reified T : Any, R : Any> KProperty1<T, R?>.sql
+inline val <reified T : Any, R : Any> KProperty1<in T, R?>.sql
   get() = table[this]
 
 fun <T> Query.getOne(transform: (rowSet: QueryRowSet) -> T): T? = if (rowSet.next()) {
