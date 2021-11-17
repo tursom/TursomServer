@@ -12,7 +12,7 @@ import kotlin.reflect.jvm.isAccessible
 
 @Suppress("unused")
 @MybatisPlusEnhanceDslMaker
-interface CompareEnhance<T, out W : AbstractWrapper<T, String, out W>, Children : Wrapper<T>> :
+interface EnhanceCompare<T, out W : AbstractWrapper<T, String, out W>, Children : Wrapper<T>> :
   EnhanceEntityClassEnhance<T>,
   RegexAbstractWrapperEnhance<T, W, Children> {
   val compare: Compare<Children, String> get() = uncheckedCast()

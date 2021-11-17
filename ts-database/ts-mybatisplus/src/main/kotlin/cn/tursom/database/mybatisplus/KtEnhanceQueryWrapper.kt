@@ -2,17 +2,17 @@ package cn.tursom.database.mybatisplus
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 
-class DdbesQueryWrapper<T>(
+class KtEnhanceQueryWrapper<T>(
   override var enhanceEntityClass: Class<T>
 ) : QueryWrapper<T>(),
-  QueryEnhance<T, DdbesQueryWrapper<T>>,
-  DdbesWrapperEnhance<T, QueryWrapper<T>, DdbesQueryWrapper<T>> {
+  EnhanceQuery<T, KtEnhanceQueryWrapper<T>>,
+  KtEnhanceWrapper<T, QueryWrapper<T>, KtEnhanceQueryWrapper<T>> {
   init {
     this.entityClass = enhanceEntityClass
   }
 
   companion object {
-    inline operator fun <reified T> invoke() = DdbesQueryWrapper(T::class.java)
+    inline operator fun <reified T> invoke() = KtEnhanceQueryWrapper(T::class.java)
   }
 }
 

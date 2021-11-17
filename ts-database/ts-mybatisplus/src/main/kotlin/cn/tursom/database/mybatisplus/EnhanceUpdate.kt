@@ -9,7 +9,7 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaField
 
 @MybatisPlusEnhanceDslMaker
-interface UpdateEnhance<T, out Children : Wrapper<T>> {
+interface EnhanceUpdate<T, out Children : Wrapper<T>> {
   val update: Update<out Children, String> get() = uncheckedCast()
 
   infix fun KProperty1<T, *>.set(

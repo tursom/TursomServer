@@ -8,7 +8,7 @@ import kotlin.reflect.KProperty1
 
 @Suppress("unused")
 @MybatisPlusEnhanceDslMaker
-interface QueryEnhance<T, out Children : Wrapper<T>> : EnhanceEntityClassEnhance<T> {
+interface EnhanceQuery<T, out Children : Wrapper<T>> : EnhanceEntityClassEnhance<T> {
   val query: Query<out Children, T, out Any> get() = uncheckedCast()
 
   fun select(

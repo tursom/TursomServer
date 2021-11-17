@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.core.conditions.interfaces.Join
 import com.baomidou.mybatisplus.core.conditions.interfaces.Nested
 
 @MybatisPlusEnhanceDslMaker
-interface DdbesWrapperEnhance<T, W : AbstractWrapper<T, String, out W>, EnhanceWrapper : Wrapper<T>> :
-  CompareEnhance<T, W, EnhanceWrapper>,
+interface KtEnhanceWrapper<T, W : AbstractWrapper<T, String, out W>, EnhanceWrapper : Wrapper<T>> :
+  EnhanceCompare<T, W, EnhanceWrapper>,
   JoinEnhance<EnhanceWrapper>,
   FuncEnhance<T, EnhanceWrapper>,
   Compare<W, String>,
