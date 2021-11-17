@@ -6,6 +6,7 @@ import cn.tursom.core.isStatic
 import cn.tursom.core.uncheckedCast
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.util.*
 
 inline fun <reified T : Annotation> Class<*>.getAnnotation(): T? = getAnnotation(T::class.java)
 inline fun <reified T : Annotation> Field.getAnnotation(): T? = getAnnotation(T::class.java)
@@ -40,7 +41,7 @@ fun <T : Enum<out T>> Class<out T>.valueOf(value: String): T? {
     valueOf.invoke(null, value) as T
   } catch (e: Exception) {
     try {
-      valueOf?.invoke(null, value.toUpperCase()) as? T?
+      valueOf?.invoke(null, value.uppercase(Locale.getDefault())) as? T?
     } catch (e: Exception) {
       null
     }

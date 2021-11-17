@@ -34,7 +34,7 @@ object Parser {
       clazz.isInstance(yaml) -> yaml.cast()
       clazz.isInheritanceFrom(Enum::class.java) -> try {
         val valueOf = clazz.getDeclaredMethod("valueOf", String::class.java)
-        valueOf.invoke(null, yaml.toString().toUpperCase()).cast<T?>()
+        valueOf.invoke(null, yaml.toString().uppercase(Locale.getDefault())).cast<T?>()
       } catch (e: Exception) {
         null
       }

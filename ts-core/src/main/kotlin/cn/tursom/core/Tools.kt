@@ -629,3 +629,17 @@ inline operator fun <reified T> Array<out T>.plus(other: Array<out T>): Array<T>
   System.arraycopy(other, 0, array, size, other.size)
   return array.uncheckedCast()
 }
+
+val <T : Any> KClass<T>.allMemberPropertiesSequence: Sequence<KProperty1<T, *>>
+  get() = sequence {
+    yieldAll(memberProperties)
+    var superClass = superclasses.firstOrNull {
+      !it.java.isInterface
+    }
+    while (superClass != null) {
+      yieldAll(superClass.memberProperties.uncheckedCast<Collection<KProperty1<T, *>>>())
+      superClass = superClass.superclasses.firstOrNull {
+        !it.java.isInterface
+      }
+    }
+  }
