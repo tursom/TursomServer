@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
   implementation(project(":"))
-  implementation(group = "com.sun.mail", name = "javax.mail", version = "1.6.2")
+  api(group = "com.sun.mail", name = "javax.mail", version = "1.6.2")
 }
 
 
