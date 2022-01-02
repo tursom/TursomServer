@@ -1,5 +1,6 @@
 package cn.tursom.web.router
 
+import cn.tursom.core.allMethodsSequence
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.json.JsonWorkerImpl
 import cn.tursom.core.lambda
@@ -55,7 +56,9 @@ open class RoutedHttpHandler(
     if ((target.isEmpty())) {
       addRouter(this)
     } else {
-      target.forEach(::addRouter)
+      target.forEach {
+        addRouter(it)
+      }
     }
   }
 
@@ -90,9 +93,8 @@ open class RoutedHttpHandler(
 
   open fun addRouter(handler: Any) {
     log?.info("add router {}", handler)
-    @Suppress("LeakingThis")
-    val clazz = handler.javaClass
-    clazz.methods.forEach { method ->
+    handler.javaClass.allMethodsSequence.forEach { method ->
+      method.isAccessible = true
       method.parameterTypes.let {
         if (!(it.size == 1 && HttpContent::class.java.isAssignableFrom(it[0])) && it.isNotEmpty()) {
           return@forEach
@@ -134,7 +136,7 @@ open class RoutedHttpHandler(
     val mapping = obj::class.java.getAnnotation(Mapping::class.java)?.route ?: arrayOf("")
     method.annotations.forEach { annotation ->
       val (routes, router) = getRoutes(annotation) ?: return@forEach
-      log?.info("mapping {} => {}", routes, method)
+      log?.info("mapping {} {} => {}", getRouteMethod(annotation), routes, method)
       routes.forEach { route ->
         if (mapping.isEmpty()) {
           addRouter(obj, method, route, router)
@@ -211,7 +213,7 @@ open class RoutedHttpHandler(
     method.annotations.forEach { annotation ->
       val (routes, router) = getRoutes(annotation) ?: return@forEach
       routes.forEach { route ->
-        log?.info("delete route {} => {}", route, method)
+        log?.info("delete route {} {} => {}", getRouteMethod(annotation), route, method)
         if (mapping.isEmpty()) {
           deleteMapping(obj, route, router)
         } else mapping.forEach {
@@ -228,8 +230,22 @@ open class RoutedHttpHandler(
     }
   }
 
+  protected fun getRouteMethod(annotation: Annotation): String? = when (annotation) {
+    is Mapping -> annotation.method.ifEmpty { annotation.methodEnum.method }
+    is GetMapping -> "GET"
+    is PostMapping -> "POST"
+    is PutMapping -> "PUT"
+    is DeleteMapping -> "DELETE"
+    is PatchMapping -> "PATCH"
+    is TraceMapping -> "TRACE"
+    is HeadMapping -> "HEAD"
+    is OptionsMapping -> "OPTIONS"
+    is ConnectMapping -> "CONNECT"
+    else -> null
+  }
+
   protected fun getRoutes(annotation: Annotation) = when (annotation) {
-    is Mapping -> annotation.route to getRouter(annotation.method.let { if (it.isEmpty()) annotation.methodEnum.method else it })
+    is Mapping -> annotation.route to getRouter(annotation.method.ifEmpty { annotation.methodEnum.method })
     is GetMapping -> annotation.route to getRouter("GET")
     is PostMapping -> annotation.route to getRouter("POST")
     is PutMapping -> annotation.route to getRouter("PUT")
@@ -245,7 +261,7 @@ open class RoutedHttpHandler(
   protected fun getRouter(method: String): Router<Pair<Any?, (HttpContent) -> Any?>> = when {
     method.isEmpty() -> router
     else -> {
-      val upperCaseMethod = method.toUpperCase()
+      val upperCaseMethod = method.uppercase()
       var router = routerMap[upperCaseMethod]
       if (router == null) {
         router = routerMaker()

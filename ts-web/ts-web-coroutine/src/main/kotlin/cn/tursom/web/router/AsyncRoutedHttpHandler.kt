@@ -1,5 +1,6 @@
 package cn.tursom.web.router
 
+import cn.tursom.core.allMethodsSequence
 import cn.tursom.web.HttpContent
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*
@@ -11,16 +12,18 @@ import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.util.*
 import kotlin.reflect.KCallable
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.jvm.kotlinFunction
 
 @Suppress("ProtectedInFinal", "unused", "MemberVisibilityCanBePrivate")
 open class AsyncRoutedHttpHandler(
   vararg target: Any,
   routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() },
   val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() }
-) : RoutedHttpHandler(target, routerMaker) {
+) : RoutedHttpHandler(target = target, routerMaker = routerMaker) {
   protected val asyncRouter: Router<Pair<Any?, suspend (HttpContent) -> Unit>> = asyncRouterMaker()
   protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
 
@@ -82,15 +85,21 @@ open class AsyncRoutedHttpHandler(
 
   override fun addRouter(handler: Any) {
     super.addRouter(handler)
-    handler::class.members.forEach { member ->
-      if (member.isSuspend) {
-        member.parameters.let {
+    handler.javaClass.allMethodsSequence.forEach { method ->
+      val function = try {
+        method.kotlinFunction ?: return@forEach
+      } catch (e: Exception) {
+        return@forEach
+      }
+      method.isAccessible = true
+      if (function.isSuspend) {
+        function.parameters.let {
           if (it.size != 1 && !(it.size == 2 && HttpContent::class.java.isAssignableFrom(it[1].type.jvmErasure.java))) {
             return@forEach
           }
         }
-        log?.trace("mapping {} {}", member, member.parameters)
-        insertMapping(handler, member)
+        log?.trace("mapping {} {}", function, function.parameters)
+        insertMapping(handler, function)
       }
     }
   }
@@ -100,7 +109,7 @@ open class AsyncRoutedHttpHandler(
     method.annotations.forEach { annotation ->
       val (routes, router) = getAsyncRoutes(annotation) ?: return@forEach
       @Suppress("DuplicatedCode")
-      log?.info("mapping {} => {}", routes, method)
+      log?.info("mapping {} {} => {}", getRouteMethod(annotation), routes, method)
       routes.forEach { route ->
         if (mapping.isEmpty()) {
           addRouter(obj, method, route, router)
@@ -174,7 +183,7 @@ open class AsyncRoutedHttpHandler(
   protected fun getAsyncRouter(method: String): Router<Pair<Any?, suspend (HttpContent) -> Unit>> = when {
     method.isEmpty() -> asyncRouter
     else -> {
-      val upperCaseMethod = method.toUpperCase()
+      val upperCaseMethod = method.uppercase(Locale.getDefault())
       var router = asyncRouterMap[upperCaseMethod]
       if (router == null) {
         router = asyncRouterMaker()

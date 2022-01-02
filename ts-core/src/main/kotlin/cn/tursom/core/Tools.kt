@@ -618,3 +618,28 @@ fun ByteArray.deflate(): ByteArray {
   }
   return bos.toByteArray()
 }
+
+fun StringBuilder.removeLastChars(count: Int) {
+  setLength(length - count)
+}
+
+inline operator fun <reified T> Array<out T>.plus(other: Array<out T>): Array<T> {
+  val array = arrayOfNulls<T>(size + other.size)
+  System.arraycopy(this, 0, array, 0, size)
+  System.arraycopy(other, 0, array, size, other.size)
+  return array.uncheckedCast()
+}
+
+val <T : Any> KClass<T>.allMemberPropertiesSequence: Sequence<KProperty1<T, *>>
+  get() = sequence {
+    yieldAll(memberProperties)
+    var superClass = superclasses.firstOrNull {
+      !it.java.isInterface
+    }
+    while (superClass != null) {
+      yieldAll(superClass.memberProperties.uncheckedCast<Collection<KProperty1<T, *>>>())
+      superClass = superClass.superclasses.firstOrNull {
+        !it.java.isInterface
+      }
+    }
+  }
