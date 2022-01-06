@@ -77,6 +77,9 @@ fun <T, V : Any> DelegatedField<T, V?>.notNull(ifNull: () -> Nothing): Delegated
 fun <T, V : Any> MutableDelegatedField<T, out V?>.notNull(ifNull: () -> Nothing): MutableDelegatedField<T, V> =
   NotNullMutableDelegatedField(uncheckedCast(), ifNull)
 
+fun <T, V> MutableDelegatedField<T, V>.objectLocked(lock: Any): MutableDelegatedField<T, V> =
+  ObjectLockMutableDelegatedField(this, lock)
+
 val <T, V> MutableDelegatedField<T, V>.locked: MutableDelegatedField<T, V> get() = LockMutableDelegatedField(this)
 fun <T, V> MutableDelegatedField<T, V>.locked(lock: Lock = ReentrantLock()): MutableDelegatedField<T, V> =
   LockMutableDelegatedField(this, lock)

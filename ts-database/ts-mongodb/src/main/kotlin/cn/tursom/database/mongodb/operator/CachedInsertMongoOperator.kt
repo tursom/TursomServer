@@ -59,7 +59,8 @@ class CachedInsertMongoOperator<T : Any>(
         @Suppress("EXPERIMENTAL_API_USAGE")
         while (!documentChannel.isClosedForReceive) {
           try {
-            list.add(documentChannel.poll() ?: withTimeout(maxDelayTimeMS) { documentChannel.receive() })
+            list.add(
+              documentChannel.tryReceive().getOrNull() ?: withTimeout(maxDelayTimeMS) { documentChannel.receive() })
             received.incrementAndGet()
           } catch (e: TimeoutCancellationException) {
           } catch (e: ClosedReceiveChannelException) {
