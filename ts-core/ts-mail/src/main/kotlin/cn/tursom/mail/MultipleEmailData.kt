@@ -4,6 +4,7 @@ import com.sun.mail.util.MailSSLSocketFactory
 import java.util.*
 import javax.mail.Address
 import javax.mail.Session
+import javax.mail.event.TransportListener
 import javax.mail.internet.InternetAddress
 
 data class MultipleEmailData(
@@ -12,9 +13,9 @@ data class MultipleEmailData(
   var name: String?,
   var password: String?,
   var from: String?,
-  var to: Collection<MailStructure>?
-) {
-  fun send() {
+  var to: Collection<MailStructure>?,
+) : Mail {
+  override fun send(transportListener: TransportListener?) {
     val from = from ?: return
     val props = Properties()
 //		props["mail.debug"] = "true"  // 开启debug调试
@@ -32,6 +33,7 @@ data class MultipleEmailData(
     //发送邮件
     val transport = session.transport
     transport.connect(host, name, password)
+    transportListener?.apply { transport.addTransportListener(this) }
     to?.forEach { (to, subject, html, text, image, attachment) ->
       //邮件内容部分
       val msg = EmailData.getMsg(session, from, subject, html, text, image, attachment)

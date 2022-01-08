@@ -30,12 +30,12 @@ import javax.mail.internet.MimeMultipart
 data class EmailData(
   var host: String?, var port: Int?, var name: String?, var password: String?, var from: String?,
   var to: String?, var subject: String?, var html: String? = null, var text: String? = null,
-  var image: Collection<Image>? = null, var attachment: Collection<DataSource>? = null
-) {
+  var image: Collection<Image>? = null, var attachment: Collection<DataSource>? = null,
+) : Mail {
   /**
    * 发送邮件
    */
-  fun send(transportListener: TransportListener? = null) {
+  override fun send(transportListener: TransportListener?) {
     if (host == null || port == null || name == null || password == null || from == null || to == null || subject == null) return
     val props = Properties()
 //		props["mail.debug"] = "true"  // 开启debug调试
@@ -69,7 +69,7 @@ data class EmailData(
       html: String?,
       text: String?,
       image: Collection<Image>?,
-      attachment: Collection<DataSource>?
+      attachment: Collection<DataSource>?,
     ): MimeMessage {
       //邮件内容部分
       val msg = MimeMessage(session)

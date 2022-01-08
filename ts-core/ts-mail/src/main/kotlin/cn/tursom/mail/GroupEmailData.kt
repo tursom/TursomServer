@@ -15,9 +15,8 @@ data class GroupEmailData(
   var host: String?, var port: Int?, var name: String?, var password: String?, var from: String?,
   var to: Collection<String>?, var subject: String?, var html: String? = null, var text: String? = null,
   var image: Collection<Image>? = null, var attachment: Collection<DataSource>? = null,
-) {
-  fun send() = send(null)
-  fun send(transportListener: TransportListener?) {
+) : Mail {
+  override fun send(transportListener: TransportListener?) {
     if (host == null || port == null || name == null || password == null || from == null || to?.isEmpty() != false || subject == null) return
     val props = Properties()
     // props["mail.debug"] = "true"  // 开启debug调试
