@@ -5,9 +5,7 @@ package cn.tursom.core
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import sun.reflect.Reflection
-import java.io.ByteArrayOutputStream
-import java.io.ObjectOutputStream
-import java.io.Serializable
+import java.io.*
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -18,6 +16,8 @@ import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import java.util.zip.Inflater
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -643,3 +643,51 @@ val <T : Any> KClass<T>.allMemberPropertiesSequence: Sequence<KProperty1<T, *>>
       }
     }
   }
+
+fun createFolderIfNotExists(path: String) {
+  File(path).mkdirs()
+}
+
+fun File.gz(): File {
+  if (!isFile) {
+    throw UnsupportedOperationException("$name is not file")
+  }
+  val gzFile = File("$name.gz")
+  GZIPOutputStream(gzFile.outputStream()).use { os ->
+    inputStream().use { inputStream ->
+      inputStream.copyTo(os)
+    }
+  }
+  return gzFile
+}
+
+@Suppress("SpellCheckingInspection")
+fun File.ungz(): File {
+  if (!isFile) {
+    throw UnsupportedOperationException("$name is not file")
+  }
+  val ungzFile = File(if (name.endsWith(".gz")) {
+    name.dropLast(3)
+  } else {
+    "$name.ungz"
+  })
+  ungzFile.outputStream().use { os ->
+    GZIPInputStream(inputStream()).use { inputStream ->
+      inputStream.copyTo(os)
+    }
+  }
+  return ungzFile
+}
+
+fun ByteArray.gz(): ByteArray {
+  val os = ByteArrayOutputStream()
+  GZIPOutputStream(os).use { gzipOutputStream ->
+    gzipOutputStream.write(this)
+  }
+  return os.toByteArray()
+}
+
+@Suppress("SpellCheckingInspection")
+fun ByteArray.ungz(): ByteArray {
+  return GZIPInputStream(ByteArrayInputStream(this)).readBytes()
+}
