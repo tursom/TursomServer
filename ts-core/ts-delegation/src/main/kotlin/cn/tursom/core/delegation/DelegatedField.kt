@@ -27,6 +27,9 @@ interface DelegatedField<in T, out V> {
       null
     }
 
+  operator fun <K> get(key: DefaultDelegatedFieldAttachmentKey<K>): K =
+    get(key as DelegatedFieldAttachmentKey<K>) ?: key.default
+
   operator fun <V> set(key: DelegatedFieldAttachmentKey<V>, value: V): Boolean =
     if (this is DecoratorDelegatedField<*, *>) {
       delegatedField.set(key, value)
