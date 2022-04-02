@@ -6,13 +6,13 @@ import org.gradle.api.Action
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 
-var commonVersion = "1.1-SNAPSHOT"
+var defaultVersion = "1.0-SNAPSHOT"
 
 private fun DependencyHandler.add(
   configurationName: String,
   name: String,
   group: String = "cn.tursom",
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -33,7 +33,7 @@ private fun DependencyHandler.add(
 
 fun DependencyHandler.tursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -42,7 +42,7 @@ fun DependencyHandler.tursomServer(
 
 fun DependencyHandler.implementationTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -51,7 +51,7 @@ fun DependencyHandler.implementationTursomServer(
 
 fun DependencyHandler.testImplementationTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -60,7 +60,7 @@ fun DependencyHandler.testImplementationTursomServer(
 
 fun DependencyHandler.apiTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -69,7 +69,7 @@ fun DependencyHandler.apiTursomServer(
 
 fun DependencyHandler.testApiTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -78,7 +78,7 @@ fun DependencyHandler.testApiTursomServer(
 
 fun DependencyHandler.compileOnlyTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -87,7 +87,7 @@ fun DependencyHandler.compileOnlyTursomServer(
 
 fun DependencyHandler.testCompileOnlyTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -96,7 +96,7 @@ fun DependencyHandler.testCompileOnlyTursomServer(
 
 fun DependencyHandler.runtimeOnlyTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
@@ -105,7 +105,7 @@ fun DependencyHandler.runtimeOnlyTursomServer(
 
 fun DependencyHandler.testRuntimeOnlyTursomServer(
   name: String,
-  version: String = commonVersion,
+  version: String = defaultVersion,
   configuration: String? = null,
   classifier: String? = null,
   ext: String? = null,
