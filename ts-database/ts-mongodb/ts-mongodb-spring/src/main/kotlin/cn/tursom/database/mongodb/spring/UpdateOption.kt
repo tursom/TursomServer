@@ -8,7 +8,8 @@ import org.bson.conversions.Bson
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class UpdateOption {
   companion object {
-    operator fun invoke(builder: UpdateOption.() -> Unit): UpdateOptions = UpdateOption().apply(builder).updateOptions
+    inline operator fun invoke(builder: UpdateOption.() -> Unit): UpdateOptions =
+      UpdateOption().apply(builder).updateOptions
   }
 
   val updateOptions = UpdateOptions()

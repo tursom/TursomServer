@@ -19,11 +19,12 @@ class SortBuilder : MongoName, BsonConverter {
 
   operator fun invoke(action: SortBuilder.() -> Unit) = this.action()
 
-  infix fun String.order(direction: Sort.Direction): Sort = Sort.by(Sort.Order(direction, this)).apply {
+  infix fun String.order(direction: Sort.Direction) = Sort.by(direction, this).apply {
     updateSort(this) { this.and(it) }
   }
 
   infix fun KProperty<*>.order(direction: Sort.Direction) = mongoName order direction
+  infix fun StringBuilder.order(direction: Sort.Direction) = toString() order direction
 
   fun by(property: String) = Sort.by(property).apply {
     updateSort(this) { this.and(it) }

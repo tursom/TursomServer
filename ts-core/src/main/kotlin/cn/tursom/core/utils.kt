@@ -691,3 +691,9 @@ fun ByteArray.gz(): ByteArray {
 fun ByteArray.ungz(): ByteArray {
   return GZIPInputStream(ByteArrayInputStream(this)).readBytes()
 }
+
+fun StringBuilder(vararg strings: String): StringBuilder {
+  val builder = kotlin.text.StringBuilder(strings.sumOf { it.length })
+  builder.append(value = strings)
+  return builder
+}

@@ -29,5 +29,5 @@ interface BsonConverter {
     }
   }
 
-  fun Any.bsonValue(): Any = bsonValue(this)
+  fun Any.bsonValue(): Any = Companion.bsonValue(this)
 }

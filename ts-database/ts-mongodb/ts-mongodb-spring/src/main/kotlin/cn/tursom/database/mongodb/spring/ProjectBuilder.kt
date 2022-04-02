@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object ProjectBuilder : MongoName, BsonConverter {
   inline infix operator fun invoke(
-    operator: ProjectBuilder.() -> ProjectionOperation
+    operator: ProjectBuilder.() -> ProjectionOperation,
   ): ProjectionOperation = this.operator()
 
   fun project(): ProjectionOperation = Aggregation.project()
@@ -19,6 +19,7 @@ object ProjectBuilder : MongoName, BsonConverter {
     Aggregation.project(*fields.map { it.mongoName }.toTypedArray())
 
   infix fun ProjectionOperation.and(name: String): ProjectionOperationBuilder = and(name)
+  infix fun ProjectionOperation.and(name: StringBuilder): ProjectionOperationBuilder = and(name.toString())
   infix fun ProjectionOperation.and(name: KProperty<*>): ProjectionOperationBuilder = and(name.mongoName)
 
   infix fun ProjectionOperation.andExclude(fields: KProperty<*>): ProjectionOperation = andExclude(listOf(fields))
@@ -28,8 +29,14 @@ object ProjectBuilder : MongoName, BsonConverter {
 
   infix fun ProjectionOperation.andInclude(fields: KProperty<*>): ProjectionOperation = andInclude(listOf(fields))
   fun ProjectionOperation.andInclude(vararg fields: KProperty<*>): ProjectionOperation = andInclude(fields.asList())
+
+  @JvmName("andIncludeKProperty")
   infix fun ProjectionOperation.andInclude(fields: Collection<KProperty<*>>): ProjectionOperation =
     andInclude(*fields.map { it.mongoName }.toTypedArray())
+
+  @JvmName("andIncludeString")
+  infix fun ProjectionOperation.andInclude(fields: Collection<String>): ProjectionOperation =
+    andInclude(*fields.toTypedArray())
 
 
   infix fun ProjectionOperationBuilder.nested(fields: Fields): ProjectionOperation = nested(fields)
@@ -106,7 +113,9 @@ object ProjectBuilder : MongoName, BsonConverter {
 
   infix fun ProjectionOperationBuilder.log(base: Number): ProjectionOperationBuilder = log(base)
 
-  infix fun ProjectionOperationBuilder.pow(exponentFieldRef: String): ProjectionOperationBuilder = pow(exponentFieldRef)
+  infix fun ProjectionOperationBuilder.pow(exponentFieldRef: String): ProjectionOperationBuilder =
+    pow(exponentFieldRef)
+
   infix fun ProjectionOperationBuilder.pow(exponentFieldRef: KProperty<*>): ProjectionOperationBuilder =
     pow(exponentFieldRef.mongoName)
 
@@ -204,7 +213,9 @@ object ProjectBuilder : MongoName, BsonConverter {
 
   infix fun String.log(base: Number): ProjectionOperationBuilder = project() and this log (base)
 
-  infix fun String.pow(exponentFieldRef: String): ProjectionOperationBuilder = project() and this pow (exponentFieldRef)
+  infix fun String.pow(exponentFieldRef: String): ProjectionOperationBuilder =
+    project() and this pow (exponentFieldRef)
+
   infix fun String.pow(exponentFieldRef: KProperty<*>): ProjectionOperationBuilder =
     project() and this pow (exponentFieldRef.mongoName)
 
@@ -215,7 +226,6 @@ object ProjectBuilder : MongoName, BsonConverter {
 
   infix fun String.strCaseCmpValueOf(fieldRef: KProperty<*>): ProjectionOperationBuilder =
     project() and this strCaseCmpValueOf (fieldRef.mongoName)
-
 
   infix fun KProperty<*>.nested(fields: Fields): ProjectionOperation = project() and this nested (fields)
   infix fun KProperty<*>.`as`(alias: String): ProjectionOperation = project() and this `as` (alias)
@@ -235,7 +245,9 @@ object ProjectBuilder : MongoName, BsonConverter {
   infix operator fun KProperty<*>.plus(fieldReference: KProperty<*>): ProjectionOperationBuilder =
     project() and this plus (fieldReference.mongoName)
 
-  infix operator fun KProperty<*>.minus(number: Number): ProjectionOperationBuilder = project() and this minus (number)
+  infix operator fun KProperty<*>.minus(number: Number): ProjectionOperationBuilder =
+    project() and this minus (number)
+
   infix operator fun KProperty<*>.minus(fieldReference: String): ProjectionOperationBuilder =
     project() and this minus (fieldReference)
 
@@ -310,6 +322,102 @@ object ProjectBuilder : MongoName, BsonConverter {
 
   infix fun KProperty<*>.strCaseCmpValueOf(fieldRef: KProperty<*>): ProjectionOperationBuilder =
     project() and this strCaseCmpValueOf (fieldRef.mongoName)
+
+
+  infix fun StringBuilder.nested(fields: Fields): ProjectionOperation = project() and this nested fields
+  infix fun StringBuilder.`as`(alias: String): ProjectionOperation = project() and this `as` alias
+  infix fun StringBuilder.alias(alias: String): ProjectionOperation = project() and this `as` alias
+  infix fun StringBuilder.`as`(alias: KProperty<*>): ProjectionOperation = project() and this `as` alias.mongoName
+  infix fun StringBuilder.alias(alias: KProperty<*>): ProjectionOperation = project() and this `as` alias.mongoName
+  infix fun StringBuilder.applyCondition(cond: ConditionalOperators.Cond): ProjectionOperation =
+    project() and this applyCondition cond
+
+  infix fun StringBuilder.applyCondition(ifNull: ConditionalOperators.IfNull): ProjectionOperation =
+    project() and this applyCondition ifNull
+
+  infix operator fun StringBuilder.plus(number: Number): ProjectionOperationBuilder = project() and this plus number
+  infix operator fun StringBuilder.plus(fieldReference: String): ProjectionOperationBuilder =
+    project() and this plus fieldReference
+
+  infix operator fun StringBuilder.plus(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this plus fieldReference.mongoName
+
+  infix operator fun StringBuilder.minus(number: Number): ProjectionOperationBuilder = project() and this minus number
+  infix operator fun StringBuilder.minus(fieldReference: String): ProjectionOperationBuilder =
+    project() and this minus fieldReference
+
+  infix operator fun StringBuilder.minus(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this minus fieldReference.mongoName
+
+  infix fun StringBuilder.multiply(number: Number): ProjectionOperationBuilder = project() and this multiply number
+  infix fun StringBuilder.multiply(fieldReference: String): ProjectionOperationBuilder =
+    project() and this multiply fieldReference
+
+  infix fun StringBuilder.multiply(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this multiply fieldReference.mongoName
+
+  infix operator fun StringBuilder.times(number: Number): ProjectionOperationBuilder =
+    project() and this multiply number
+
+  infix operator fun StringBuilder.times(fieldReference: String): ProjectionOperationBuilder =
+    project() and this multiply fieldReference
+
+  infix operator fun StringBuilder.times(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this multiply fieldReference.mongoName
+
+  infix fun StringBuilder.divide(number: Number): ProjectionOperationBuilder = project() and this divide number
+  infix fun StringBuilder.divide(fieldReference: String): ProjectionOperationBuilder =
+    project() and this divide fieldReference
+
+  infix fun StringBuilder.divide(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this divide fieldReference.mongoName
+
+  infix operator fun StringBuilder.div(number: Number): ProjectionOperationBuilder = project() and this divide number
+  infix operator fun StringBuilder.div(fieldReference: String): ProjectionOperationBuilder =
+    project() and this divide fieldReference
+
+  infix operator fun StringBuilder.div(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this divide fieldReference.mongoName
+
+  infix fun StringBuilder.mod(number: Number): ProjectionOperationBuilder = project() and this mod number
+  infix fun StringBuilder.mod(fieldReference: String): ProjectionOperationBuilder =
+    project() and this mod fieldReference
+
+  infix fun StringBuilder.mod(fieldReference: KProperty<*>): ProjectionOperationBuilder =
+    project() and this mod fieldReference.mongoName
+
+  infix fun StringBuilder.cmp(compareValue: Any): ProjectionOperationBuilder = project() and this cmp compareValue
+  infix fun StringBuilder.eq(compareValue: Any): ProjectionOperationBuilder = project() and this eq compareValue
+  infix fun StringBuilder.gt(compareValue: Any): ProjectionOperationBuilder = project() and this gt compareValue
+  infix fun StringBuilder.gte(compareValue: Any): ProjectionOperationBuilder = project() and this gte compareValue
+  infix fun StringBuilder.lt(compareValue: Any): ProjectionOperationBuilder = project() and this lt compareValue
+  infix fun StringBuilder.lte(compareValue: Any): ProjectionOperationBuilder = project() and this lte compareValue
+  infix fun StringBuilder.ne(compareValue: Any): ProjectionOperationBuilder = project() and this ne compareValue
+
+  infix fun StringBuilder.slice(count: Int): ProjectionOperationBuilder = project() and this slice count
+  fun StringBuilder.slice(count: Int, offset: Int): ProjectionOperationBuilder =
+    (project() and this).slice(count, offset)
+
+  infix fun StringBuilder.log(baseFieldRef: String): ProjectionOperationBuilder = project() and this log baseFieldRef
+  infix fun StringBuilder.log(baseFieldRef: KProperty<*>): ProjectionOperationBuilder =
+    project() and this log baseFieldRef.mongoName
+
+  infix fun StringBuilder.log(base: Number): ProjectionOperationBuilder = project() and this log base
+
+  infix fun StringBuilder.pow(exponentFieldRef: String): ProjectionOperationBuilder =
+    project() and this pow exponentFieldRef
+
+  infix fun StringBuilder.pow(exponentFieldRef: KProperty<*>): ProjectionOperationBuilder =
+    project() and this pow exponentFieldRef.mongoName
+
+  infix fun StringBuilder.pow(exponent: Number): ProjectionOperationBuilder = project() and this pow exponent
+
+  infix fun StringBuilder.strCaseCmpValueOf(fieldRef: String): ProjectionOperationBuilder =
+    project() and this strCaseCmpValueOf fieldRef
+
+  infix fun StringBuilder.strCaseCmpValueOf(fieldRef: KProperty<*>): ProjectionOperationBuilder =
+    project() and this strCaseCmpValueOf fieldRef.mongoName
+
 
   @JvmName("concatArrays_")
   fun String.concatArrays(fields: Collection<String>): ProjectionOperationBuilder =
