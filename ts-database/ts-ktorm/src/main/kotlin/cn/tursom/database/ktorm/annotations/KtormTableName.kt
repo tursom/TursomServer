@@ -1,8 +1,8 @@
 package cn.tursom.database.ktorm.annotations
 
 @MustBeDocumented
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.FIELD, AnnotationTarget.ANNOTATION_CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS)
 annotation class KtormTableName(
   val name: String = "",
 )
