@@ -265,6 +265,7 @@ fun bufferTicker(
 fun fastSlowTicker(
   fastTicker: ReceiveChannel<Unit>,
   slowTicker: ReceiveChannel<Unit>,
+  maxFailure: Int = 5,
 ) = GlobalScope.produce {
   var failure = 0
   while (true) {
@@ -276,7 +277,7 @@ fun fastSlowTicker(
     }
 
     failure++
-    if (failure < 5) {
+    if (failure < maxFailure) {
       send(fastTicker.receive())
       continue
     }
