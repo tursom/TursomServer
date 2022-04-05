@@ -4,6 +4,7 @@ package cn.tursom.core
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import sun.reflect.Reflection
 import java.io.*
 import java.lang.reflect.Field
@@ -303,6 +304,7 @@ suspend fun <T> Executor.runWith(action: () -> T): T = suspendCoroutine { cont -
 }
 
 inline fun <reified T : Any> Gson.fromJson(json: String): T = fromJson(json, T::class.java)
+inline fun <reified T : Any> Gson.fromJsonTyped(json: String): T = fromJson(json, object : TypeToken<T>() {}.type)
 
 inline fun usingTime(action: () -> Unit): Long {
   val t1 = System.currentTimeMillis()

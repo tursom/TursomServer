@@ -132,6 +132,7 @@ val DependencyHandler.`ts-xml` get() = tursomServer("ts-xml")
 val DependencyHandler.`ts-yaml` get() = tursomServer("ts-yaml")
 
 val DependencyHandler.`ts-database` get() = tursomServer("ts-database")
+val DependencyHandler.`ts-ktorm` get() = tursomServer("ts-ktorm")
 val DependencyHandler.`ts-mongodb` get() = tursomServer("ts-mongodb")
 val DependencyHandler.`ts-mongodb-spring` get() = tursomServer("ts-mongodb-spring")
 val DependencyHandler.`ts-redis` get() = tursomServer("ts-redis")
@@ -222,6 +223,10 @@ fun DependencyHandler.`ts-database`(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-database", dependencyConfiguration = dependencyConfiguration)
 
+fun DependencyHandler.`ts-ktorm`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-ktorm", dependencyConfiguration = dependencyConfiguration)
+
 fun DependencyHandler.`ts-mongodb`(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-mongodb", dependencyConfiguration = dependencyConfiguration)
@@ -254,5 +259,156 @@ fun DependencyHandler.`ts-web-coroutine`(
 ) = tursomServer("ts-web-coroutine", dependencyConfiguration = dependencyConfiguration)
 
 fun DependencyHandler.`ts-web-netty`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-netty", dependencyConfiguration = dependencyConfiguration)
+
+
+val DependencyHandler.ts_core get() = tursomServer("ts-core")
+val DependencyHandler.ts_async_http get() = tursomServer("ts-async-http")
+val DependencyHandler.ts_buffer get() = tursomServer("ts-buffer")
+val DependencyHandler.ts_clone get() = tursomServer("ts-clone")
+val DependencyHandler.ts_coroutine get() = tursomServer("ts-coroutine")
+val DependencyHandler.ts_coroutine_lock get() = tursomServer("ts-coroutine-lock")
+val DependencyHandler.ts_datastruct get() = tursomServer("ts-datastruct")
+val DependencyHandler.ts_delegation get() = tursomServer("ts-delegation")
+val DependencyHandler.ts_observer get() = tursomServer("ts-observer")
+val DependencyHandler.ts_encrypt get() = tursomServer("ts-encrypt")
+val DependencyHandler.ts_hash get() = tursomServer("ts-hash")
+val DependencyHandler.ts_json get() = tursomServer("ts-json")
+val DependencyHandler.ts_log get() = tursomServer("ts-log")
+val DependencyHandler.ts_mail get() = tursomServer("ts-mail")
+val DependencyHandler.ts_pool get() = tursomServer("ts-pool")
+val DependencyHandler.ts_ws_client get() = tursomServer("ts-ws-client")
+val DependencyHandler.ts_xml get() = tursomServer("ts-xml")
+val DependencyHandler.ts_yaml get() = tursomServer("ts-yaml")
+
+val DependencyHandler.ts_database get() = tursomServer("ts-database")
+val DependencyHandler.ts_ktorm get() = tursomServer("ts-ktorm")
+val DependencyHandler.ts_mongodb get() = tursomServer("ts-mongodb")
+val DependencyHandler.ts_mongodb_spring get() = tursomServer("ts-mongodb-spring")
+val DependencyHandler.ts_redis get() = tursomServer("ts-redis")
+
+val DependencyHandler.ts_gradle get() = tursomServer("ts-gradle")
+
+val DependencyHandler.ts_socket get() = tursomServer("ts-socket")
+
+val DependencyHandler.ts_web get() = tursomServer("ts-web")
+val DependencyHandler.ts_web_coroutine get() = tursomServer("ts-web-coroutine")
+val DependencyHandler.ts_web_netty get() = tursomServer("ts-web-netty")
+
+
+fun DependencyHandler.ts_core(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-core", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_async_http(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-async-http", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_buffer(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-buffer", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_clone(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-clone", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_coroutine(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-coroutine", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.`ts_coroutine-lock`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-coroutine-lock", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_datastruct(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-datastruct", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_delegation(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-delegation", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_observer(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-observer", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_encrypt(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-encrypt", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_hash(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-hash", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_json(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-json", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_log(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-log", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_mail(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-mail", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_pool(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-pool", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_ws_client(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-ws-client", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_xml(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-xml", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_yaml(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-yaml", dependencyConfiguration = dependencyConfiguration)
+
+
+fun DependencyHandler.ts_database(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-database", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_ktorm(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-ktorm", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_mongodb(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-mongodb", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_mongodb_spring(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-mongodb-spring", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_redis(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-redis", dependencyConfiguration = dependencyConfiguration)
+
+
+fun DependencyHandler.ts_gradle(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-gradle", dependencyConfiguration = dependencyConfiguration)
+
+
+fun DependencyHandler.ts_socket(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-socket", dependencyConfiguration = dependencyConfiguration)
+
+
+fun DependencyHandler.ts_web(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_web_coroutine(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-coroutine", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_web_netty(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-web-netty", dependencyConfiguration = dependencyConfiguration)
