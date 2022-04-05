@@ -15,14 +15,15 @@ class HashMapContextEnv : ContextEnv {
   ) : Context {
     private var map = HashMap<Int, Any?>()
 
-    override operator fun <T> get(key: ContextKey<T>): T? {
+    override fun <T> get(key: ContextKey<T>): T? {
       checkEnv(key)
       return map[key.id]?.uncheckedCast<T>()
     }
 
-    override operator fun <T> set(key: ContextKey<T>, value: T) {
+    override fun <T> set(key: ContextKey<T>, value: T): HashMapContext {
       checkEnv(key)
       map[key.id] = value
+      return this
     }
   }
 }

@@ -15,7 +15,7 @@ interface Context {
   }
 
   operator fun <T> get(key: ContextKey<T>): T?
-  operator fun <T> set(key: ContextKey<T>, value: T)
+  fun <T> set(key: ContextKey<T>, value: T): Context
 
   fun checkEnv(key: ContextKey<*>) {
     if (envId != key.envId) {
