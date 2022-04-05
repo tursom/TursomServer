@@ -8,6 +8,7 @@ interface ContextEnv {
     fun newEnvId() = contextEnvIdGenerator.incrementAndGet()
   }
 
+  fun emptyContext(): Context = newContext()
   fun newContext(): Context
   fun <T> newKey(): ContextKey<T>
 }

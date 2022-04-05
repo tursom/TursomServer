@@ -1,9 +1,11 @@
 package cn.tursom.core.context
 
-data class ContextKey<T>(
+open class ContextKey<T>(
   val envId: Int,
   val id: Int,
 ) {
+  fun withDefault(provider: () -> T) = DefaultContextKey(envId, id, provider)
+
   override fun hashCode(): Int {
     return id
   }
@@ -16,5 +18,9 @@ data class ContextKey<T>(
     if (id != other.id) return false
 
     return true
+  }
+
+  override fun toString(): String {
+    return "ContextKey(envId=$envId, id=$id)"
   }
 }
