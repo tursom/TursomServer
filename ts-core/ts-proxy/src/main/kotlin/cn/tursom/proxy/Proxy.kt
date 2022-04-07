@@ -1,46 +1,42 @@
 package cn.tursom.proxy
 
 import cn.tursom.core.uncheckedCast
+import net.sf.cglib.proxy.Enhancer
+import java.util.concurrent.ConcurrentHashMap
 
-interface Proxy<out T : ProxyMethod> : Iterable<T> {
-  data class Result<out R>(
-    val result: R,
-    val success: Boolean = false,
-  )
+object Proxy {
+  private val cache = ConcurrentHashMap<Class<*>, Class<*>>()
 
-  companion object {
-    val failed: Result<*> = Result<Any?>(null, false)
-    fun <R> of(): Result<R?> {
-      return of(null)
-    }
+  private fun <T> getTarget(clazz: Class<T>): Class<T> = cache.computeIfAbsent(clazz) {
+    val enhancer = Enhancer()
+    enhancer.setSuperclass(clazz)
+    enhancer.setCallbackType(ProxyInterceptor::class.java)
+    enhancer.setCallbackFilter { 0 }
+    enhancer.createClass()
+  }.uncheckedCast()
 
-    /**
-     * 返回一个临时使用的 Result 对象
-     * 因为是临时对象，所以不要把这个对象放到任何当前函数堆栈以外的地方
-     * 如果要长期储存对象请 new Result
-     */
-    fun <R> of(result: R): Result<R> {
-      return Result(result, true)
-    }
-
-    fun <R> failed(): Result<R> {
-      return failed.uncheckedCast()
+  operator fun <T> get(clazz: Class<T>, builder: (Class<T>) -> T): Pair<T, MutableProxyContainer> {
+    val target = getTarget(clazz)
+    val container = ListProxyContainer()
+    synchronized(target) {
+      Enhancer.registerCallbacks(target, arrayOf(ProxyInterceptor(container)))
+      return builder(target) to container
     }
   }
-}
 
-inline fun <T : ProxyMethod> Proxy<T>.forEachProxy(action: (T) -> Unit) {
-  for (t in this) {
-    action(t)
-  }
-}
+  inline fun <reified T> get() = get(T::class.java)
+  inline fun <reified T> get(
+    argumentTypes: Array<out Class<*>>,
+    arguments: Array<out Any?>,
+  ) = get(T::class.java, argumentTypes, arguments)
 
-inline fun <R, T : ProxyMethod> Proxy<T>.forFirstProxy(action: (T) -> Proxy.Result<R>?): Proxy.Result<R> {
-  for (t in this) {
-    val result = action(t)
-    if (result != null && result.success) {
-      return result
-    }
+  operator fun <T> get(clazz: Class<T>): Pair<T, MutableProxyContainer> = get(clazz, Class<T>::newInstance)
+
+  operator fun <T> get(
+    clazz: Class<T>,
+    argumentTypes: Array<out Class<*>>,
+    arguments: Array<out Any?>,
+  ): Pair<T, MutableProxyContainer> = get(clazz) {
+    it.getConstructor(*argumentTypes).newInstance(*arguments)
   }
-  return Proxy.failed()
 }

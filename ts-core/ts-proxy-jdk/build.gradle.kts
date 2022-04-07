@@ -8,8 +8,7 @@ plugins {
 }
 
 dependencies {
-  api(project(":ts-core"))
-  api("cglib", "cglib", "3.3.0")
+  api(project(":ts-core:ts-reflectasm"))
   implementation("org.apache.commons", "commons-lang3", "3.8.1")
   testApi(group = "junit", name = "junit", version = "4.13.2")
 }

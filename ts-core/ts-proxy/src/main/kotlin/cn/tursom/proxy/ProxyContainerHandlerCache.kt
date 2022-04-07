@@ -5,18 +5,21 @@ import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 object ProxyContainerHandlerCache {
-  private val handlerMap: MutableMap<Method, (Any, Method, Array<out Any?>, MethodProxy) -> Proxy.Result<Any?>> =
+  private val handlerMap: MutableMap<Method, (Any, ProxyContainer, Method, Array<out Any?>, MethodProxy) -> ProxyResult<Any?>> =
     ConcurrentHashMap()
-  val callSuper = { obj: Any, method: Method, args: Array<out Any?>, proxy: MethodProxy ->
-    Proxy.of<Any?>(proxy.invokeSuper(obj, args))
+  val callSuper = { obj: Any, _: ProxyContainer, _: Method, args: Array<out Any?>, proxy: MethodProxy ->
+    ProxyResult.of<Any?>(proxy.invokeSuper(obj, args))
   }
-  val empty = { obj: Any, method: Method, args: Array<out Any?>, proxy: MethodProxy -> Proxy.failed<Any?>() }
+  val empty = { _: Any, _: ProxyContainer, _: Method, _: Array<out Any?>, _: MethodProxy -> ProxyResult.failed<Any?>() }
 
-  fun getHandler(method: Method): ((Any, Method, Array<out Any?>, MethodProxy) -> Proxy.Result<Any?>)? {
+  fun getHandler(method: Method): ((Any, ProxyContainer, Method, Array<out Any?>, MethodProxy) -> ProxyResult<Any?>)? {
     return handlerMap[method]
   }
 
-  fun setHandler(method: Method, onProxy: ((Any, Method, Array<out Any?>, MethodProxy) -> Proxy.Result<Any?>)?) {
+  fun setHandler(
+    method: Method,
+    onProxy: ((Any, ProxyContainer, Method, Array<out Any?>, MethodProxy) -> ProxyResult<Any?>)?,
+  ) {
     handlerMap[method] = onProxy ?: callSuper
   }
 }

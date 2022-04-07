@@ -14,4 +14,8 @@ annotation class ForFirstProxy(
   val must: Boolean = false,
   val errMsg: String = "",
   val errClass: KClass<out RuntimeException> = RuntimeException::class,
-)
+) {
+  companion object {
+    val EMPTY = ForFirstProxy()
+  }
+}

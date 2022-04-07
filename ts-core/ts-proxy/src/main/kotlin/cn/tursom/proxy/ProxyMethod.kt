@@ -8,15 +8,15 @@ import java.util.concurrent.ConcurrentHashMap
 
 interface ProxyMethod {
   @Throws(Throwable::class)
-  fun onProxy(obj: Any?, method: Method, args: Array<out Any?>, proxy: MethodProxy?): Proxy.Result<*>? {
+  fun onProxy(obj: Any?, method: Method, args: Array<out Any?>, proxy: MethodProxy): ProxyResult<*>? {
     val selfMethod: Method
     val handlerCacheMap = getHandlerCacheMap(javaClass)
     val methodResult = handlerCacheMap[method]
     if (methodResult != null) {
       return if (methodResult.success) {
-        Proxy.of(methodResult.result(this, *args))
+        ProxyResult.of(methodResult.result(this, *args))
       } else {
-        Proxy.failed<Any>()
+        ProxyResult.failed<Any>()
       }
     }
     try {
@@ -36,19 +36,19 @@ interface ProxyMethod {
       }
       selfMethod = javaClass.getMethod(methodName, *method.parameterTypes)
       selfMethod.isAccessible = true
-      handlerCacheMap[method] = Proxy.Result(selfMethod, true)
+      handlerCacheMap[method] = ProxyResult(selfMethod, true)
     } catch (e: Exception) {
-      handlerCacheMap[method] = Proxy.failed()
-      return Proxy.failed<Any>()
+      handlerCacheMap[method] = ProxyResult.failed()
+      return ProxyResult.failed<Any>()
     }
-    return Proxy.of<Any>(selfMethod(this, *args))
+    return ProxyResult.of<Any>(selfMethod(this, *args))
   }
 
   companion object {
-    private val handlerCacheMapMap: MutableMap<Class<out ProxyMethod>, MutableMap<Method, Proxy.Result<Method>>> =
+    private val handlerCacheMapMap: MutableMap<Class<out ProxyMethod>, MutableMap<Method, ProxyResult<Method>>> =
       HashMap()
 
-    fun getHandlerCacheMap(type: Class<out ProxyMethod>): MutableMap<Method, Proxy.Result<Method>> {
+    fun getHandlerCacheMap(type: Class<out ProxyMethod>): MutableMap<Method, ProxyResult<Method>> {
       var handlerCacheMap = handlerCacheMapMap[type]
       if (handlerCacheMap == null) synchronized(handlerCacheMapMap) {
         handlerCacheMap = handlerCacheMapMap[type]

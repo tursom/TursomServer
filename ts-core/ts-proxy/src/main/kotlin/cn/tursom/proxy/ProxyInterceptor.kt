@@ -6,7 +6,9 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.*
 
-class ProxyInterceptor : MethodInterceptor {
+class ProxyInterceptor(
+  private val container: ProxyContainer = ListProxyContainer(),
+) : MethodInterceptor {
   companion object {
     private val HANDLE_DEQUE_THREAD_LOCAL = ThreadLocal<ArrayDeque<Any>>()
     private val parameterTypes = arrayOf(Method::class.java, Array<Any>::class.java, MethodProxy::class.java)
@@ -23,47 +25,19 @@ class ProxyInterceptor : MethodInterceptor {
       return method.name == name && parameterTypes.contentEquals(getParameterTypes(method))
     }
 
-    private fun isOnProxyMethod(method: Method): Boolean {
+    fun isOnProxyMethod(method: Method): Boolean {
       return equalsMethod(method, "onProxy", parameterTypes)
-    }
-
-    private val handleDeque: ArrayDeque<Any>
-      get() {
-        var objectArrayDeque = HANDLE_DEQUE_THREAD_LOCAL.get()
-        if (objectArrayDeque == null) {
-          objectArrayDeque = ArrayDeque()
-          HANDLE_DEQUE_THREAD_LOCAL.set(objectArrayDeque)
-        }
-        return objectArrayDeque
-      }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T> getHandle(): T {
-      return handleDeque.first as T
-    }
-
-    private fun push(obj: Any) {
-      handleDeque.push(obj)
-    }
-
-    private fun pop() {
-      handleDeque.pop()
     }
   }
 
   @Throws(Throwable::class)
   override fun intercept(obj: Any, method: Method, args: Array<out Any?>, proxy: MethodProxy): Any? {
-    push(obj)
-    return try {
-      if (obj is ProxyContainer<*> && !isOnProxyMethod(method)) {
-        val result = obj.onProxy(method, args, proxy)
-        if (result != null && result.success) {
-          return result.result
-        }
+    if (!isOnProxyMethod(method)) {
+      val result = ProxyRunner.onProxy(obj, container, method, args, proxy)
+      if (result != null && result.success) {
+        return result.result
       }
-      proxy.invokeSuper(obj, args)
-    } finally {
-      pop()
     }
+    return proxy.invokeSuper(obj, args)
   }
 }
