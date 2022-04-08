@@ -2,14 +2,13 @@ package cn.tursom.web
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.urlDecode
-import cn.tursom.web.utils.Chunked
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.net.SocketAddress
 
-interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
+interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter, ChunkedMessage {
   val requestSendFully: Boolean
   val finished: Boolean
   val uri: String
@@ -132,18 +131,12 @@ interface HttpContent : ResponseHeaderAdapter, RequestHeaderAdapter {
   fun deleteCookie(name: String, path: String = "/") =
     addCookie(name, "deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT", path = path)
 
-  fun writeChunkedHeader()
-  fun addChunked(buffer: ByteBuffer) = addChunked { buffer }
-  fun addChunked(buffer: () -> ByteBuffer)
-  fun finishChunked()
-  fun finishChunked(chunked: Chunked)
-
   fun finishFile(file: File, chunkSize: Int = 8192)
   fun finishFile(
     file: RandomAccessFile,
     offset: Long = 0,
     length: Long = file.length() - offset,
-    chunkSize: Int = 8192
+    chunkSize: Int = 8192,
   )
 
   fun jump(url: String) = temporaryMoved(url)

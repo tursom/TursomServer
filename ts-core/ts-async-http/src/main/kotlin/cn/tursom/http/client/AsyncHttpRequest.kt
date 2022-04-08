@@ -1,321 +1,192 @@
 package cn.tursom.http.client
 
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody
+import okhttp3.Response
 import java.io.File
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.SocketAddress
-import java.net.URLEncoder
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
+@Deprecated("this object is deprecated. it will be removed on 2022/5")
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object AsyncHttpRequest {
-  val defaultClient: OkHttpClient = OkHttpClient().newBuilder()
-    .retryOnConnectionFailure(true)
-    .build()
-  val socketClient: OkHttpClient = proxyClient()
-  val httpProxyClient: OkHttpClient =
-    proxyClient(port = 8080, type = Proxy.Type.HTTP)
+  @Deprecated("it should replace by Okhttp.defaultClient",
+    ReplaceWith("Okhttp.default"))
+  var defaultClient: OkHttpClient by Okhttp::default
 
-  fun proxyClient(
-    host: String = "127.0.0.1",
-    port: Int = 1080,
-    type: Proxy.Type = Proxy.Type.SOCKS
-  ): OkHttpClient = OkHttpClient().newBuilder()
-    .proxy(Proxy(type, InetSocketAddress(host, port) as SocketAddress))
-    .retryOnConnectionFailure(true)
-    .build()
+  @Deprecated("it should replace by Okhttp.socket",
+    ReplaceWith("Okhttp.socket"))
+  val socketClient: OkHttpClient by Okhttp::socket
 
-  suspend fun sendRequest(call: Call): Response = suspendCoroutine {
-    call.enqueue(object : Callback {
-      override fun onFailure(call: Call, e: IOException) {
-        it.resumeWithException(e)
-      }
+  @Deprecated("it should replace by Okhttp.httpProxy",
+    ReplaceWith("Okhttp.httpProxy"))
+  val httpProxyClient: OkHttpClient by Okhttp::httpProxy
 
-      override fun onResponse(call: Call, response: Response) {
-        it.resume(response)
-      }
-    })
-  }
+  @Deprecated("it should replace by call.sendRequest()",
+    ReplaceWith("call.sendRequest()"))
+  suspend fun sendRequest(call: Call): Response = call.sendRequest()
 
+  @JvmOverloads
+  @Deprecated("it should replace by client.get()",
+    ReplaceWith("client.get(url, param, headers)"))
   suspend fun get(
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ): Response {
-    val paramSB = StringBuilder()
-    param?.forEach {
-      paramSB.append("${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}&")
-    }
-    if (paramSB.isNotEmpty())
-      paramSB.deleteCharAt(paramSB.length - 1)
+    client: OkHttpClient = defaultClient,
+  ): Response = client.get(url, param, headers)
 
-    val requestBuilder = Request.Builder().get()
-      .url("$url?$paramSB")
-
-    headers?.forEach { t, u ->
-      requestBuilder.addHeader(t, u)
-    }
-
-    return sendRequest(
-      client.newCall(
-        requestBuilder.build()
-      )
-    )
-  }
-
-  private suspend fun post(
+  @JvmOverloads
+  @Deprecated("it should replace by client.post()",
+    ReplaceWith("client.post(url, body, headers)"))
+  suspend fun post(
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ): Response {
-    val requestBuilder = Request.Builder()
-      .post(body)
-      .url(url)
+    client: OkHttpClient = defaultClient,
+  ): Response = client.post(url, body, headers)
 
-    headers?.forEach { t, u ->
-      requestBuilder.addHeader(t, u)
-    }
-
-    return sendRequest(client.newCall(requestBuilder.build()))
-  }
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.post()",
+    ReplaceWith("client.post(url, param, headers)"))
   suspend fun post(
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ): Response {
-    val formBuilder = FormBody.Builder()
-    param.forEach { (t, u) ->
-      formBuilder.add(t, u)
-    }
-    return post(url, formBuilder.build(), headers, client)
-  }
+    client: OkHttpClient = defaultClient,
+  ): Response = client.post(url, param, headers)
 
+  @JvmOverloads
+  @Deprecated("it should replace by client.post()",
+    ReplaceWith("client.post(url, body, headers)"))
   suspend fun post(
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ) = post(
-    url,
-    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
+    client: OkHttpClient = defaultClient,
+  ) = client.post(url, body, headers)
 
+  @JvmOverloads
+  @Deprecated("it should replace by client.post()",
+    ReplaceWith("client.post(url, body, headers)"))
   suspend fun post(
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ) = post(
-    url,
-    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
+    client: OkHttpClient = defaultClient,
+  ) = client.post(url, body, headers)
 
+  @JvmOverloads
+  @Deprecated("it should replace by client.post()",
+    ReplaceWith("client.post(url, body, headers)"))
   suspend fun post(
     url: String,
     body: ByteArray,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient
-  ) = post(
-    url,
-    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
-
-  suspend fun getStr(
-    url: String,
-    param: Map<String, String>? = null,
-    headers: Map<String, String>? = null
-  ): String {
-    return getStr(url, param, headers, defaultClient)
-  }
+    client: OkHttpClient = defaultClient,
+  ) = client.post(url, body, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
+  @JvmOverloads
+  @Deprecated("it should replace by client.getStr()",
+    ReplaceWith("client.getStr(url, param, headers)"))
   suspend fun getStr(
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): String {
-    val response = get(url, param, headers, client)
-    return response.body!!.string()
-  }
+    client: OkHttpClient = defaultClient,
+  ): String = client.getStr(url, param, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
-  private suspend fun postStr(
+  @JvmOverloads
+  @Deprecated("it should replace by client.postStr()",
+    ReplaceWith("client.postStr(url, body, headers)"))
+  suspend fun postStr(
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): String = post(url, body, headers, client).body!!.string()
+    client: OkHttpClient = defaultClient,
+  ): String = client.postStr(url, body, headers)
 
-  suspend fun postStr(
-    url: String,
-    param: Map<String, String>,
-    headers: Map<String, String>? = null
-  ): String =
-    postStr(url, param, headers, defaultClient)
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postStr()",
+    ReplaceWith("client.postStr(url, param, headers)"))
   suspend fun postStr(
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): String {
-    val formBuilder = FormBody.Builder()
-    param.forEach { (t, u) ->
-      formBuilder.add(t, u)
-    }
-    return postStr(url, formBuilder.build(), headers, client)
-  }
+    client: OkHttpClient = defaultClient,
+  ): String = client.postStr(url, param, headers)
 
-  suspend fun postStr(
-    url: String,
-    body: String,
-    headers: Map<String, String>? = null
-  ): String =
-    postStr(url, body, headers, defaultClient)
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postStr()",
+    ReplaceWith("client.postStr(url, body, headers)"))
   suspend fun postStr(
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): String = postStr(
-    url,
-    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
+    client: OkHttpClient = defaultClient,
+  ): String = client.postStr(url, body, headers)
 
-  suspend fun postStr(
-    url: String,
-    body: File,
-    headers: Map<String, String>? = null
-  ): String =
-    postStr(url, body, headers, defaultClient)
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postStr()",
+    ReplaceWith("client.postStr(url, body, headers)"))
   suspend fun postStr(
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): String = postStr(
-    url,
-    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
-
-  suspend fun getByteArray(
-    url: String,
-    param: Map<String, String>? = null,
-    headers: Map<String, String>? = null
-  ): ByteArray = getByteArray(
-    url,
-    param,
-    headers,
-    defaultClient
-  )
+    client: OkHttpClient = defaultClient,
+  ): String = client.postStr(url, body, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
+  @JvmOverloads
+  @Deprecated("it should replace by client.getByteArray()",
+    ReplaceWith("client.getByteArray(url, param, headers)"))
   suspend fun getByteArray(
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): ByteArray = get(url, param, headers, client).body!!.bytes()
+    client: OkHttpClient = defaultClient,
+  ): ByteArray = client.getByteArray(url, param, headers)
 
 
   @Suppress("BlockingMethodInNonBlockingContext")
-  private suspend fun postByteArray(
+  @JvmOverloads
+  @Deprecated("it should replace by client.postByteArray()",
+    ReplaceWith("client.postByteArray(url, body, headers)"))
+  suspend fun postByteArray(
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): ByteArray = post(url, body, headers, client).body!!.bytes()
+    client: OkHttpClient = defaultClient,
+  ): ByteArray = client.postByteArray(url, body, headers)
 
-
-  suspend fun postByteArray(
-    url: String,
-    param: Map<String, String>,
-    headers: Map<String, String>? = null
-  ): ByteArray = postByteArray(
-    url,
-    param,
-    headers,
-    defaultClient
-  )
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postByteArray()",
+    ReplaceWith("client.postByteArray(url, param, headers)"))
   suspend fun postByteArray(
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): ByteArray {
-    val formBuilder = FormBody.Builder()
-    param.forEach { (t, u) ->
-      formBuilder.add(t, u)
-    }
-    return postByteArray(url, formBuilder.build(), headers, client)
-  }
+    client: OkHttpClient = defaultClient,
+  ): ByteArray = client.postByteArray(url, param, headers)
 
-  suspend fun postByteArray(
-    url: String,
-    body: String,
-    headers: Map<String, String>? = null
-  ): ByteArray = postByteArray(
-    url,
-    body,
-    headers,
-    defaultClient
-  )
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postByteArray()",
+    ReplaceWith("client.postByteArray(url, body, headers)"))
   suspend fun postByteArray(
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): ByteArray = postByteArray(
-    url,
-    RequestBody.create("text/plain;charset=utf-8".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
+    client: OkHttpClient = defaultClient,
+  ): ByteArray = client.postByteArray(url, body, headers)
 
-  suspend fun postByteArray(
-    url: String,
-    body: File,
-    headers: Map<String, String>? = null
-  ): ByteArray = postByteArray(
-    url,
-    body,
-    headers,
-    defaultClient
-  )
-
+  @JvmOverloads
+  @Deprecated("it should replace by client.postByteArray()",
+    ReplaceWith("client.postByteArray(url, body, headers)"))
   suspend fun postByteArray(
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient
-  ): ByteArray = postByteArray(
-    url,
-    RequestBody.create("application/octet-stream".toMediaTypeOrNull(), body),
-    headers,
-    client
-  )
+    client: OkHttpClient = defaultClient,
+  ): ByteArray = client.postByteArray(url, body, headers)
 }

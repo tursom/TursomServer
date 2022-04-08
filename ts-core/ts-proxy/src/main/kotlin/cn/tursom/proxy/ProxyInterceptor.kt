@@ -8,9 +8,10 @@ import java.util.*
 
 class ProxyInterceptor(
   private val container: ProxyContainer = ListProxyContainer(),
+  private val supportCallSuper: Boolean = true,
 ) : MethodInterceptor {
   companion object {
-    private val HANDLE_DEQUE_THREAD_LOCAL = ThreadLocal<ArrayDeque<Any>>()
+    val callSuper = ThreadLocal<Boolean?>()
     private val parameterTypes = arrayOf(Method::class.java, Array<Any>::class.java, MethodProxy::class.java)
     private val parameterTypesField: Field = Method::class.java.getDeclaredField("parameterTypes").apply {
       isAccessible = true
@@ -26,18 +27,22 @@ class ProxyInterceptor(
     }
 
     fun isOnProxyMethod(method: Method): Boolean {
-      return equalsMethod(method, "onProxy", parameterTypes)
+      //return callSuper.get() == true || equalsMethod(method, "onProxy", parameterTypes)
+      return callSuper.get() == true
     }
   }
 
-  @Throws(Throwable::class)
   override fun intercept(obj: Any, method: Method, args: Array<out Any?>, proxy: MethodProxy): Any? {
-    if (!isOnProxyMethod(method)) {
-      val result = ProxyRunner.onProxy(obj, container, method, args, proxy)
-      if (result != null && result.success) {
-        return result.result
-      }
+    if (supportCallSuper && callSuper.get() == true) {
+      callSuper.remove()
+      return proxy.invokeSuper(obj, args)
     }
-    return proxy.invokeSuper(obj, args)
+
+    val result = ProxyRunner.onProxy(obj, container, method, args, proxy)
+    return if (result.success) {
+      result.result
+    } else {
+      proxy.invokeSuper(obj, args)
+    }
   }
 }

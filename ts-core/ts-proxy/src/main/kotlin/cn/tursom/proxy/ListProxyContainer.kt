@@ -1,27 +1,32 @@
 package cn.tursom.proxy
 
+import cn.tursom.core.context.Context
 
-class ListProxyContainer : MutableProxyContainer {
-  private val proxyList: MutableList<ProxyMethod> = ArrayList()
 
-  override fun addProxy(proxy: ProxyMethod): Int {
+class ListProxyContainer(
+  private val proxyList: MutableCollection<ProxyMethod> = ArrayList(),
+) : MutableProxyContainer {
+  override var lastModify: Long = System.currentTimeMillis()
+    private set
+  override val context: Context = ProxyContainer.contextEnv.newContext()
+
+  override fun addProxy(proxy: ProxyMethod) {
+    lastModify = System.currentTimeMillis()
     proxyList.add(proxy)
-    return proxyList.size - 1
   }
 
   override fun addAllProxy(proxy: Collection<ProxyMethod>?): Boolean {
+    lastModify = System.currentTimeMillis()
     return proxyList.addAll(proxy!!)
   }
 
   override fun removeProxy(proxy: ProxyMethod) {
+    lastModify = System.currentTimeMillis()
     proxyList.remove(proxy)
   }
 
-  override fun removeProxy(index: Int) {
-    proxyList.removeAt(index)
-  }
-
   override fun iterator(): MutableIterator<ProxyMethod> {
+    lastModify = System.currentTimeMillis()
     return proxyList.iterator()
   }
 }

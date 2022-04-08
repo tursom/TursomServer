@@ -20,16 +20,16 @@ class ArrayContextEnv : ContextEnv {
 
     override operator fun <T> get(key: ContextKey<T>): T? {
       checkEnv(key)
-      return if (array.size < key.id) {
-        null
-      } else {
+      return if (array.size > key.id) {
         array[key.id]?.uncheckedCast<T>()
+      } else {
+        null
       }
     }
 
     override fun <T> set(key: ContextKey<T>, value: T): ArrayContext {
       checkEnv(key)
-      if (array.size < key.id) {
+      if (array.size <= key.id) {
         array = array.copyOf(idGenerator.get())
       }
       array[key.id] = value
