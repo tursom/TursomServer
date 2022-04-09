@@ -5,7 +5,7 @@ import cn.tursom.core.uncheckedCast
 data class ProxyResult<out R>(
   val result: R,
   val success: Boolean = false,
-  val cache: Boolean = false,
+  val cache: Boolean = true,
 ) {
   companion object {
     val success: ProxyResult<*> = ProxyResult<Any?>(null, true)

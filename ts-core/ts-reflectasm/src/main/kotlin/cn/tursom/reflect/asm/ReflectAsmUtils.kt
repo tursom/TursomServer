@@ -91,41 +91,54 @@ object ReflectAsmUtils {
     returnType = method.returnType,
   )
 
-  inline fun <reified T, reified R> getMethod0(methodName: String): (T.() -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java, methodName, returnType = R::class.java)
+  inline fun <reified T, reified R> getMethod0(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.() -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, returnType = returnType)
       ?: return null
     return {
       methodAccess.invoke(this, index) as R
     }
   }
 
-  inline fun <reified T, reified A1, reified R> getMethod1(methodName: String): (T.(A1) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java, methodName, A1::class.java, returnType = R::class.java)
+  inline fun <reified T, reified A1, reified R> getMethod1(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, returnType = returnType)
       ?: return null
     return { a1 ->
       methodAccess.invoke(this, index, a1) as R
     }
   }
 
-  inline fun <reified T, reified A1, reified A2, reified R> getMethod2(methodName: String): (T.(A1, A2) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java,
-      methodName,
-      A1::class.java,
-      A2::class.java,
-      returnType = R::class.java)
+  inline fun <reified T, reified A1, reified A2, reified R> getMethod2(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1, A2) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, returnType = returnType)
       ?: return null
     return { a1, a2 ->
       methodAccess.invoke(this, index, a1, a2) as R
     }
   }
 
-  inline fun <reified T, reified A1, reified A2, reified A3, reified R> getMethod3(methodName: String): (T.(A1, A2, A3) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java,
-      methodName,
-      A1::class.java,
-      A2::class.java,
-      A3::class.java,
-      returnType = R::class.java)
+  inline fun <reified T, reified A1, reified A2, reified A3, reified R> getMethod3(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1, A2, A3) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, returnType = returnType)
       ?: return null
     return { a1, a2, a3 ->
       methodAccess.invoke(this, index, a1, a2, a3) as R
@@ -133,14 +146,16 @@ object ReflectAsmUtils {
   }
 
   inline fun <reified T, reified A1, reified A2, reified A3, reified A4, reified R>
-    getMethod4(methodName: String): (T.(A1, A2, A3, A4) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java,
-      methodName,
-      A1::class.java,
-      A2::class.java,
-      A3::class.java,
-      A4::class.java,
-      returnType = R::class.java)
+    getMethod4(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1, A2, A3, A4) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, returnType = returnType)
       ?: return null
     return { a1, a2, a3, a4 ->
       methodAccess.invoke(this, index, a1, a2, a3, a4) as R
@@ -148,15 +163,17 @@ object ReflectAsmUtils {
   }
 
   inline fun <reified T, reified A1, reified A2, reified A3, reified A4, reified A5, reified R>
-    getMethod5(methodName: String): (T.(A1, A2, A3, A4, A5) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java,
-      methodName,
-      A1::class.java,
-      A2::class.java,
-      A3::class.java,
-      A4::class.java,
-      A5::class.java,
-      returnType = R::class.java)
+    getMethod5(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    ta5: Class<A5> = A5::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1, A2, A3, A4, A5) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, ta5, returnType = returnType)
       ?: return null
     return { a1, a2, a3, a4, a5 ->
       methodAccess.invoke(this, index, a1, a2, a3, a4, a5) as R
@@ -164,19 +181,126 @@ object ReflectAsmUtils {
   }
 
   inline fun <reified T, reified A1, reified A2, reified A3, reified A4, reified A5, reified A6, reified R>
-    getMethod6(methodName: String): (T.(A1, A2, A3, A4, A5, A6) -> R)? {
-    val (methodAccess, index) = getMethod(T::class.java,
-      methodName,
-      A1::class.java,
-      A2::class.java,
-      A3::class.java,
-      A4::class.java,
-      A5::class.java,
-      A6::class.java,
-      returnType = R::class.java)
+    getMethod6(
+    methodName: String,
+    type: Class<T> = T::class.java,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    ta5: Class<A5> = A5::class.java,
+    ta6: Class<A6> = A6::class.java,
+    returnType: Class<R> = R::class.java,
+  ): (T.(A1, A2, A3, A4, A5, A6) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, ta5, ta6, returnType = returnType)
       ?: return null
     return { a1, a2, a3, a4, a5, a6 ->
       methodAccess.invoke(this, index, a1, a2, a3, a4, a5, a6) as R
+    }
+  }
+
+  inline fun <reified R> getStaticMethod0(
+    type: Class<*>,
+    methodName: String,
+    returnType: Class<R> = R::class.java,
+  ): (() -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, returnType = returnType)
+      ?: return null
+    return {
+      methodAccess.invoke(null, index) as R
+    }
+  }
+
+  inline fun <reified A1, reified R> getStaticMethod1(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, returnType = returnType)
+      ?: return null
+    return { a1 ->
+      methodAccess.invoke(null, index, a1) as R
+    }
+  }
+
+  inline fun <reified A1, reified A2, reified R> getStaticMethod2(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1, A2) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, returnType = returnType)
+      ?: return null
+    return { a1, a2 ->
+      methodAccess.invoke(null, index, a1, a2) as R
+    }
+  }
+
+  inline fun <reified A1, reified A2, reified A3, reified R> getStaticMethod3(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1, A2, A3) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, returnType = returnType)
+      ?: return null
+    return { a1, a2, a3 ->
+      methodAccess.invoke(null, index, a1, a2, a3) as R
+    }
+  }
+
+  inline fun <reified A1, reified A2, reified A3, reified A4, reified R> getStaticMethod4(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1, A2, A3, A4) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, returnType = returnType)
+      ?: return null
+    return { a1, a2, a3, a4 ->
+      methodAccess.invoke(null, index, a1, a2, a3, a4) as R
+    }
+  }
+
+  inline fun <reified A1, reified A2, reified A3, reified A4, reified A5, reified R> getStaticMethod5(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    ta5: Class<A5> = A5::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1, A2, A3, A4, A5) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, ta5, returnType = returnType)
+      ?: return null
+    return { a1, a2, a3, a4, a5 ->
+      methodAccess.invoke(null, index, a1, a2, a3, a4, a5) as R
+    }
+  }
+
+  inline fun <reified A1, reified A2, reified A3, reified A4, reified A5, reified A6, reified R> getStaticMethod6(
+    type: Class<*>,
+    methodName: String,
+    ta1: Class<A1> = A1::class.java,
+    ta2: Class<A2> = A2::class.java,
+    ta3: Class<A3> = A3::class.java,
+    ta4: Class<A4> = A4::class.java,
+    ta5: Class<A5> = A5::class.java,
+    ta6: Class<A6> = A6::class.java,
+    returnType: Class<R> = R::class.java,
+  ): ((A1, A2, A3, A4, A5, A6) -> R)? {
+    val (methodAccess, index) = getMethod(type, methodName, ta1, ta2, ta3, ta4, ta5, ta6, returnType = returnType)
+      ?: return null
+    return { a1, a2, a3, a4, a5, a6 ->
+      methodAccess.invoke(null, index, a1, a2, a3, a4, a5, a6) as R
     }
   }
 }

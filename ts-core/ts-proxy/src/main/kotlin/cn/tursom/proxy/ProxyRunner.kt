@@ -12,10 +12,8 @@ import java.util.*
 
 object ProxyRunner {
   private val errMsgSearchList = arrayOf("%M", "%B", "%A")
-  private val forFirstProxyCacheKey =
-    ProxyContainer.contextEnv.newKey<ProxyMethodCache>().withDefault { ProxyMethodCache() }
-  private val forEachProxyCacheKey =
-    ProxyContainer.contextEnv.newKey<ProxyMethodCache>().withDefault { ProxyMethodCache() }
+  private val proxyMethodCacheKey = ProxyContainer.contextEnv.newKey<ProxyMethodCache>()
+    .withDefault { ProxyMethodCache() }
 
   /**
    * will be call when proxy method invoke.
@@ -23,10 +21,12 @@ object ProxyRunner {
    */
   @Throws(Throwable::class)
   fun onProxy(obj: Any, c: ProxyContainer, method: Method, args: Array<out Any?>, proxy: MethodProxy): ProxyResult<*> {
-    var handler = ProxyContainerHandlerCache.getHandler(proxy)
-    if (handler != null) {
-      return handler(obj, c, method, args, proxy)
+    val cache = c.context[proxyMethodCacheKey]
+    cache(c.lastModify, obj, c, method, args, proxy)?.let {
+      return it
     }
+
+    var handler: ProxyMethodCacheFunction? = null
     for (annotation in method.annotations) when (annotation) {
       is ForEachProxy -> {
         handler = onForeachProxy(annotation)
@@ -41,18 +41,17 @@ object ProxyRunner {
       //handler = ProxyContainerHandlerCache.callSuper
       handler = onForFirstProxy(ForFirstProxy.EMPTY)
     }
-    ProxyContainerHandlerCache.setHandler(proxy, handler)
     return handler(obj, c, method, args, proxy)
   }
 
-  private fun onForFirstProxy(forFirstProxy: ForFirstProxy): (Any, ProxyContainer, Method, Array<out Any?>, MethodProxy) -> ProxyResult<*> {
-    return { o: Any, c: ProxyContainer, m: Method, a: Array<out Any?>, p: MethodProxy ->
-      c.context[forFirstProxyCacheKey](c.lastModify, o, m, a, p) ?: onForFirstProxy(o, c, m, a, p, forFirstProxy,
-        when (forFirstProxy.value.size) {
-          0 -> emptyList()
-          1 -> listOf(forFirstProxy.value[0].java)
-          else -> forFirstProxy.value.asSequence().map { it.java }.toSet()
-        })
+  fun onForFirstProxy(forFirstProxy: ForFirstProxy): ProxyMethodCacheFunction {
+    val classes = when (forFirstProxy.value.size) {
+      0 -> emptyList()
+      1 -> listOf(forFirstProxy.value[0].java)
+      else -> forFirstProxy.value.asSequence().map { it.java }.toSet()
+    }
+    return { o, c, m: Method, a, p ->
+      onForFirstProxy(o, c, m, a, p, forFirstProxy, classes)
     }
   }
 
@@ -65,12 +64,11 @@ object ProxyRunner {
     forFirstProxy: ForFirstProxy,
     classes: Collection<Class<*>>,
   ): ProxyResult<*> {
-    val cache = container.context[forFirstProxyCacheKey]
     val result = container.forFirstProxy { p ->
       if (classes.isEmpty() || classes.stream().anyMatch { c: Class<*> -> c.isInstance(p) }) {
-        val result = p.onProxy(obj, method, args, proxy)
+        val result = p.onProxy(obj, container, method, args, proxy)
         if (forFirstProxy.cache && result.success && result.cache) {
-          cache.update(container.lastModify, p::onProxy)
+          container.context[proxyMethodCacheKey].update(container.lastModify, proxy, p::onProxy)
         }
         return@forFirstProxy result
       } else {
@@ -103,34 +101,48 @@ object ProxyRunner {
       errMsg = StringUtils.replaceEach(errMsg, errMsgSearchList, replacementList)
       val exceptionConstructor = forFirstProxy.errClass.java.getConstructor(String::class.java)
       if (forFirstProxy.cache) {
-        cache.update(container.lastModify) { _, _, _, _ ->
+        container.context[proxyMethodCacheKey].update(container.lastModify, proxy) { _, _, _, _, _ ->
           throw exceptionConstructor.newInstance(errMsg)
         }
       }
       throw exceptionConstructor.newInstance(errMsg)
     }
     if (forFirstProxy.cache) {
-      cache.update(container.lastModify)
+      container.context[proxyMethodCacheKey].update(container.lastModify, proxy)
     }
     return ProxyResult.failed
   }
 
-  private fun onForeachProxy(forEachProxy: ForEachProxy) = onForeachProxy(when (forEachProxy.value.size) {
+  fun onForeachProxy(forEachProxy: ForEachProxy) = onForeachProxy(when (forEachProxy.value.size) {
     0 -> emptyList()
     1 -> listOf(forEachProxy.value[0].java)
     else -> forEachProxy.value.asSequence().map { it.java }.toSet()
-  })
+  }, forEachProxy.cache)
 
+  private val emptyProxyList = ArrayList<ProxyMethod>()
   private fun onForeachProxy(
     classes: Collection<Class<*>>,
-  ): (Any, ProxyContainer, Method, Array<out Any?>, MethodProxy) -> ProxyResult<Any?> {
-    return (label@{ o: Any, c: ProxyContainer, m: Method, a: Array<out Any?>, proxy1: MethodProxy ->
-      c.forEachProxy { p ->
-        if (classes.isEmpty() || classes.any { c: Class<*> -> c.isInstance(p) }) {
-          p.onProxy(o, m, a, proxy1)
+    cache: Boolean,
+  ): ProxyMethodCacheFunction = { o, c, m, a, proxy ->
+    val proxyList = if (cache) ArrayList<ProxyMethod>() else emptyProxyList
+    c.forEachProxy { p ->
+      if (classes.isEmpty() || classes.any { c: Class<*> -> c.isInstance(p) }) {
+        val result = p.onProxy(o, c, m, a, proxy)
+        if (cache && result.success) {
+          proxyList.add(p)
         }
       }
-      ProxyResult.failed<Any?>()
-    })
+    }
+    if (cache) {
+      c.context[proxyMethodCacheKey].update(c.lastModify, proxy, onCachedForeachProxy((proxyList)))
+    }
+    ProxyResult.failed<Any?>()
+  }
+
+  private fun onCachedForeachProxy(proxyList: List<ProxyMethod>): ProxyMethodCacheFunction = { o, c, m, a, proxy ->
+    proxyList.forEach { p ->
+      p.onProxy(o, c, m, a, proxy)
+    }
+    ProxyResult.failed<Any?>()
   }
 }

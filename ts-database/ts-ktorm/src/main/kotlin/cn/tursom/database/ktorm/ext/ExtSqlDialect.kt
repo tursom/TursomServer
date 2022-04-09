@@ -13,7 +13,7 @@ class ExtSqlDialect(
 ) : SqlDialect by sqlDialect {
   override fun createSqlFormatter(database: Database, beautifySql: Boolean, indentSize: Int): SqlFormatter {
     val formatter = sqlDialect.createSqlFormatter(database, beautifySql, indentSize)
-    val (proxyFormatter, container) = Proxy[formatter.javaClass, InstantAllocator::get]
+    val (proxyFormatter, container) = Proxy.get(formatter.javaClass) { InstantAllocator(it) }
     run {
       val extSqlFormatter = ExtSqlFormatter(formatter)
       extSqlFormatter.registerVisitor(DirectSqlExpression.visitor)

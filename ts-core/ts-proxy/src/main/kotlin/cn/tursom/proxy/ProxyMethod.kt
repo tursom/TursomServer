@@ -9,12 +9,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 interface ProxyMethod {
   @Throws(Throwable::class)
-  fun onProxy(obj: Any?, method: Method, args: Array<out Any?>, proxy: MethodProxy): ProxyResult<*> {
+  fun onProxy(obj: Any, c: ProxyContainer, method: Method, args: Array<out Any?>, proxy: MethodProxy): ProxyResult<*> {
     val handlerCacheMap = getHandlerCacheMap(javaClass)
     val methodResult = handlerCacheMap[method]
     if (methodResult != null) {
       return if (methodResult.success) {
-        ProxyResult.of(methodResult.result(this, args))
+        methodResult.result(this, args)
       } else {
         ProxyResult.failed<Any>()
       }
@@ -34,7 +34,7 @@ interface ProxyMethod {
     if (reflectAsmMethod != null) {
       val (methodAccess, index) = reflectAsmMethod
       handlerCacheMap[method] = ProxyResult({ p, a ->
-        methodAccess.invoke(p, index, *a)
+        ProxyResult.of(methodAccess.invoke(p, index, *a))
       }, true)
       return ProxyResult.of(methodAccess.invoke(this, index, *args))
     }
@@ -58,7 +58,7 @@ interface ProxyMethod {
       selfMethod = javaClass.getMethod(methodName, *method.parameterTypes)
       selfMethod.isAccessible = true
       handlerCacheMap[method] = ProxyResult({ p, a ->
-        selfMethod(p, *a)
+        ProxyResult.of(selfMethod(p, *a))
       }, true)
       return ProxyResult.of<Any>(selfMethod(this, *args))
     } catch (_: Exception) {
@@ -70,11 +70,11 @@ interface ProxyMethod {
 
   companion object {
     private val handlerCacheMapMap: MutableMap<
-        Class<out ProxyMethod>,
-        MutableMap<Method, ProxyResult<(proxy: ProxyMethod, args: Array<out Any?>) -> Any?>>> =
+      Class<out ProxyMethod>,
+      MutableMap<Method, ProxyResult<(proxy: ProxyMethod, args: Array<out Any?>) -> ProxyResult<*>>>> =
       HashMap()
 
-    fun getHandlerCacheMap(type: Class<out ProxyMethod>): MutableMap<Method, ProxyResult<(proxy: ProxyMethod, args: Array<out Any?>) -> Any?>> {
+    fun getHandlerCacheMap(type: Class<out ProxyMethod>): MutableMap<Method, ProxyResult<(proxy: ProxyMethod, args: Array<out Any?>) -> ProxyResult<*>>> {
       var handlerCacheMap = handlerCacheMapMap[type]
       if (handlerCacheMap == null) synchronized(handlerCacheMapMap) {
         handlerCacheMap = handlerCacheMapMap[type]
