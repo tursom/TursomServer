@@ -5,7 +5,7 @@ import cn.tursom.web.client.HttpRequest
 import java.net.URI
 
 open class NettyHttpClient : HttpClient {
-  override suspend fun request(method: String, url: String, ssl: Boolean?): HttpRequest {
+  override suspend fun request(method: String, url: String): HttpRequest {
     val uri = URI.create(url)
     val port = if (uri.port < 0) {
       when (uri.scheme ?: "http") {
@@ -16,7 +16,6 @@ open class NettyHttpClient : HttpClient {
     } else {
       uri.port
     }
-
     val pool = HttpConnectionPool.poolOf(uri.host, port, uri.scheme == "https")
     val request = NettyHttpRequest(pool)
     request.method = method

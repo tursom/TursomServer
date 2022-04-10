@@ -2,10 +2,15 @@ package cn.tursom.web.client
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
+import cn.tursom.core.fromJson
+import cn.tursom.core.fromJsonTyped
+import cn.tursom.core.toUTF8String
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 
 interface HttpResponseStream : Closeable {
-  suspend fun skip(n: Long)
+  suspend fun buffer(): ByteBuffer?
+  suspend fun skip(n: Long): Long
   suspend fun read(): Int
   suspend fun read(buffer: ByteBuffer)
   suspend fun read(
@@ -18,4 +23,19 @@ interface HttpResponseStream : Closeable {
     read(byteBuffer)
     return byteBuffer.writePosition
   }
+
+  suspend fun readBytes(): ByteArray {
+    val os = ByteArrayOutputStream()
+    val buffer = ByteArray(1024)
+    do {
+      val read = read(buffer)
+      os.write(buffer, 0, read)
+    } while (read != 0)
+    return os.toByteArray()
+  }
+
+  suspend fun string() = readBytes().toUTF8String()
 }
+
+suspend inline fun <reified T : Any> HttpResponseStream.json(): T = string().fromJson()
+suspend inline fun <reified T : Any> HttpResponseStream.jsonGeneric(): T = string().fromJsonTyped()

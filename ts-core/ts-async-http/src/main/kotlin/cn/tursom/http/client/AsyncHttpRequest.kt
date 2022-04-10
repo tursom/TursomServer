@@ -32,7 +32,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): Response = client.get(url, param, headers)
 
   @JvmOverloads
@@ -42,7 +42,7 @@ object AsyncHttpRequest {
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): Response = client.post(url, body, headers)
 
   @JvmOverloads
@@ -52,7 +52,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): Response = client.post(url, param, headers)
 
   @JvmOverloads
@@ -62,7 +62,7 @@ object AsyncHttpRequest {
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ) = client.post(url, body, headers)
 
   @JvmOverloads
@@ -72,7 +72,7 @@ object AsyncHttpRequest {
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ) = client.post(url, body, headers)
 
   @JvmOverloads
@@ -82,7 +82,7 @@ object AsyncHttpRequest {
     url: String,
     body: ByteArray,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ) = client.post(url, body, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -93,7 +93,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): String = client.getStr(url, param, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -104,7 +104,7 @@ object AsyncHttpRequest {
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): String = client.postStr(url, body, headers)
 
   @JvmOverloads
@@ -114,7 +114,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): String = client.postStr(url, param, headers)
 
   @JvmOverloads
@@ -124,7 +124,7 @@ object AsyncHttpRequest {
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): String = client.postStr(url, body, headers)
 
   @JvmOverloads
@@ -134,7 +134,7 @@ object AsyncHttpRequest {
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): String = client.postStr(url, body, headers)
 
   @Suppress("BlockingMethodInNonBlockingContext")
@@ -145,7 +145,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>? = null,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): ByteArray = client.getByteArray(url, param, headers)
 
 
@@ -157,7 +157,7 @@ object AsyncHttpRequest {
     url: String,
     body: RequestBody,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): ByteArray = client.postByteArray(url, body, headers)
 
   @JvmOverloads
@@ -167,7 +167,7 @@ object AsyncHttpRequest {
     url: String,
     param: Map<String, String>,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): ByteArray = client.postByteArray(url, param, headers)
 
   @JvmOverloads
@@ -177,7 +177,7 @@ object AsyncHttpRequest {
     url: String,
     body: String,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): ByteArray = client.postByteArray(url, body, headers)
 
   @JvmOverloads
@@ -187,6 +187,6 @@ object AsyncHttpRequest {
     url: String,
     body: File,
     headers: Map<String, String>? = null,
-    client: OkHttpClient = defaultClient,
+    client: OkHttpClient = Okhttp.default,
   ): ByteArray = client.postByteArray(url, body, headers)
 }

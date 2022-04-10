@@ -182,8 +182,9 @@ interface ByteBuffer : Closeable {
       val buffer = buffer ?: bufferThreadLocal.get()
       read {
         while (it.remaining() > 0) {
-          it.put(buffer)
-          os.write(buffer)
+          val min = min(it.remaining(), buffer.size)
+          it.get(buffer, 0, min)
+          os.write(buffer, 0, min)
         }
       }
     }

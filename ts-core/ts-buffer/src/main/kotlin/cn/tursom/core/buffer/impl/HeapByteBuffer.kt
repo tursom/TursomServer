@@ -1,6 +1,6 @@
 package cn.tursom.core.buffer.impl
 
-import cn.tursom.core.HeapByteBufferUtil
+import cn.tursom.core.ByteBufferUtil
 import cn.tursom.core.buffer.ByteBuffer
 
 class HeapByteBuffer(
@@ -11,7 +11,19 @@ class HeapByteBuffer(
   constructor(size: Int) : this(java.nio.ByteBuffer.allocate(size))
   constructor(string: String) : this(string.toByteArray())
   constructor(bytes: ByteArray, offset: Int = 0, size: Int = bytes.size - offset)
-    : this(HeapByteBufferUtil.wrap(bytes, offset, size), offset, offset + size)
+    : this(ByteBufferUtil.wrap(bytes, offset, size), offset, offset + size)
+
+  constructor(buffer: java.nio.ByteBuffer, write: Boolean) : this(
+    buffer,
+    if (write) 0 else buffer.position(),
+    if (write) buffer.position() else buffer.limit()
+  )
+
+  constructor(bytes: ByteArray, write: Boolean) : this(
+    java.nio.ByteBuffer.wrap(bytes),
+    0,
+    if (write) 0 else bytes.size
+  )
 
   init {
     assert(buffer.hasArray())

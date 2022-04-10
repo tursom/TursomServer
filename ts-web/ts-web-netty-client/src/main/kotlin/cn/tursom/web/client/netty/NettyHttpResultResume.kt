@@ -11,7 +11,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import java.util.concurrent.atomic.AtomicInteger
 
 @ChannelHandler.Sharable
-object NettyHttpResultResume : SimpleChannelInboundHandler<HttpObject>() {
+object NettyHttpResultResume : SimpleChannelInboundHandler<HttpObject>(false) {
   val recvChannelKey = AttributeKey.newInstance<SendChannel<HttpObject>>("recvChannelKey")!!
   val countKey = AttributeKey.newInstance<AtomicInteger>("countKey")!!
   override fun channelRead0(ctx: ChannelHandlerContext, msg: HttpObject) {

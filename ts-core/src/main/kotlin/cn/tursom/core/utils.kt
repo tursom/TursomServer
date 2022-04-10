@@ -430,7 +430,8 @@ fun String.base62Decode(): Long {
 fun Any.toJson(): String = Utils.gson.toJson(this)
 fun Any.toPrettyJson(): String = Utils.prettyGson.toJson(this)
 
-inline fun <reified T : Any> String.fromJson(): T = Utils.gson.fromJson(this, T::class.java)
+inline fun <reified T : Any> String.fromJson(): T = Utils.gson.fromJson(this)
+inline fun <reified T : Any> String.fromJsonTyped(): T = Utils.gson.fromJsonTyped(this)
 
 fun Any.serialize(): ByteArray {
   val outputStream = ByteArrayOutputStream()

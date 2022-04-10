@@ -7,6 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.HttpClientCodec
+import io.netty.handler.codec.http.HttpContentDecompressor
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 
@@ -35,6 +36,7 @@ object HttpExecutor {
               addLast(sslCtx.newHandler(ch.alloc(), host, port))
             }
             addLast(HttpClientCodec())
+            addLast(HttpContentDecompressor())
           }
           initChannel(ch)
         }

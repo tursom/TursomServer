@@ -43,8 +43,9 @@ class NettyHttpRequest(
   override val headers: Iterable<Map.Entry<String, String>>
     get() = request.headers()
 
-  override fun addHeader(key: String, value: Any) {
+  override fun addHeader(key: String, value: Any): NettyHttpRequest {
     request.headers().add(key, value)
+    return this
   }
 
   override fun body(data: ByteBuffer) {

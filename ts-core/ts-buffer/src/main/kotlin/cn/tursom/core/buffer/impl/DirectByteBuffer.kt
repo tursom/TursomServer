@@ -9,6 +9,12 @@ class DirectByteBuffer(
 ) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocateDirect(size))
 
+  constructor(buffer: java.nio.ByteBuffer, write: Boolean) : this(
+    buffer,
+    if (write) 0 else buffer.position(),
+    if (write) buffer.position() else buffer.limit()
+  )
+
   override val hasArray: Boolean = false
   override val array: ByteArray get() = buffer.array()
   override val capacity: Int get() = buffer.capacity()

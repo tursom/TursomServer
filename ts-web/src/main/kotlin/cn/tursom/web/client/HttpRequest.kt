@@ -14,9 +14,10 @@ interface HttpRequest {
   }
 
   val headers: Iterable<Map.Entry<String, String>>
-  fun addHeader(key: String, value: Any)
-  fun addHeaders(headers: Map<String, Any>) {
+  fun addHeader(key: String, value: Any): HttpRequest
+  fun addHeaders(headers: Map<String, Any>): HttpRequest {
     headers.forEach(::addHeader)
+    return this
   }
 
   fun body(data: ByteBuffer)
