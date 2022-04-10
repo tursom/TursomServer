@@ -1,4 +1,4 @@
-@file:Suppress("unused", "ObjectPropertyName", "FunctionName")
+@file:Suppress("unused", "ObjectPropertyName", "FunctionName", "HasPlatformType", "HasPlatformType")
 
 package cn.tursom.gradle
 
@@ -144,6 +144,8 @@ val DependencyHandler.`ts-socket` get() = tursomServer("ts-socket")
 val DependencyHandler.`ts-web` get() = tursomServer("ts-web")
 val DependencyHandler.`ts-web-coroutine` get() = tursomServer("ts-web-coroutine")
 val DependencyHandler.`ts-web-netty` get() = tursomServer("ts-web-netty")
+val DependencyHandler.`ts-web-netty-client` get() = tursomServer("ts-web-netty-client")
+val DependencyHandler.`ts-web-okhttp` get() = tursomServer("ts-web-okhttp")
 
 
 fun DependencyHandler.`ts-core`(
@@ -262,6 +264,14 @@ fun DependencyHandler.`ts-web-netty`(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-web-netty", dependencyConfiguration = dependencyConfiguration)
 
+fun DependencyHandler.`ts-web-netty-client`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-netty-client", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.`ts-web-okhttp`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-okhttp", dependencyConfiguration = dependencyConfiguration)
+
 
 val DependencyHandler.ts_core get() = tursomServer("ts-core")
 val DependencyHandler.ts_async_http get() = tursomServer("ts-async-http")
@@ -295,6 +305,8 @@ val DependencyHandler.ts_socket get() = tursomServer("ts-socket")
 val DependencyHandler.ts_web get() = tursomServer("ts-web")
 val DependencyHandler.ts_web_coroutine get() = tursomServer("ts-web-coroutine")
 val DependencyHandler.ts_web_netty get() = tursomServer("ts-web-netty")
+val DependencyHandler.ts_web_netty_client get() = tursomServer("ts-web-netty-client")
+val DependencyHandler.ts_web_okhttp get() = tursomServer("ts-web-okhttp")
 
 
 fun DependencyHandler.ts_core(
@@ -412,3 +424,11 @@ fun DependencyHandler.ts_web_coroutine(
 fun DependencyHandler.ts_web_netty(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-web-netty", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_web_netty_client(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-netty-client", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_web_okhttp(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-web-okhttp", dependencyConfiguration = dependencyConfiguration)
