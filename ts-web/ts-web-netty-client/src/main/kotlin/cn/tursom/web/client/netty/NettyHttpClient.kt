@@ -17,9 +17,8 @@ open class NettyHttpClient : HttpClient {
       uri.port
     }
     val pool = HttpConnectionPool.poolOf(uri.host, port, uri.scheme == "https")
-    val request = NettyHttpRequest(pool)
+    val request = NettyHttpRequest(pool, uri.scheme, uri.host, uri.port, uri.path)
     request.method = method
-    request.path = uri.path
     return request
   }
 }

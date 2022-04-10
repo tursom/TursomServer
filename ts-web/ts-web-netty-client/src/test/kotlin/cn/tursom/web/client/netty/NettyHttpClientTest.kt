@@ -13,10 +13,8 @@ internal class NettyHttpClientTest {
     runBlocking {
       val request = client.request("GET", "https://cdn.segmentfault.com/r-e032f7ee/umi.js")
         .addHeader("accept-encoding", "br")
-      request.path = "https://cdn.segmentfault.com/r-e032f7ee/umi.js"
       val response = request.send()
-      println(response.body
-        .string())
+      println(response.body.string())
     }
   }
 }
