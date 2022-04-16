@@ -44,10 +44,12 @@ class HeapByteBuffer(
     return buffer
   }
 
-  override fun finishRead(buffer: java.nio.ByteBuffer) {
+  override fun finishRead(buffer: java.nio.ByteBuffer): Int {
+    val rp = readPosition
     if (buffer === this.buffer) {
       readPosition = buffer.position()
     }
+    return readPosition - rp
   }
 
   override fun writeBuffer(): java.nio.ByteBuffer {
@@ -58,10 +60,12 @@ class HeapByteBuffer(
     return buffer
   }
 
-  override fun finishWrite(buffer: java.nio.ByteBuffer) {
+  override fun finishWrite(buffer: java.nio.ByteBuffer): Int {
+    val wp = writePosition
     if (buffer === this.buffer) {
       writePosition = buffer.position()
     }
+    return writePosition - wp
   }
 
   override fun reset() {

@@ -41,7 +41,7 @@ class CurlyBracesRouter<T> : Router<T> {
 @Suppress("MemberVisibilityCanBePrivate")
 class RouteContext(
   val nodeList: List<String>,
-  var location: Int = 0
+  var location: Int = 0,
 ) {
   constructor(route: String) : this(route.substringBefore('?').split('/').filter { it.isNotEmpty() })
 

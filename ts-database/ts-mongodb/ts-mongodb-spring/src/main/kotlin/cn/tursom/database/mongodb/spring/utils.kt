@@ -42,7 +42,7 @@ internal val criteriaChainField: java.lang.reflect.Field? = try {
 }
 
 fun List<Criteria>.toAndCriteria(
-  uniqueField: Boolean = toSetNotNull { it.key }.size == size
+  uniqueField: Boolean = toSetNotNull { it.key }.size == size,
 ) = when (size) {
   0 -> Criteria()
   1 -> first()

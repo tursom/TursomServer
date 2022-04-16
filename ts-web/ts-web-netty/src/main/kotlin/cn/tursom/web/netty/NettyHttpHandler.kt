@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 @ChannelHandler.Sharable
 class NettyHttpHandler(
-  private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>
+  private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
 ) : SimpleChannelInboundHandler<FullHttpRequest>() {
   override fun channelActive(ctx: ChannelHandlerContext) {
     handler.newRequest()

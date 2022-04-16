@@ -9,7 +9,7 @@ object LayoutEncoders {
   class JsonLayoutEncoder : CustomLayoutEncoder(JsonLayout())
 
   operator fun invoke(
-    layout: Layout<ILoggingEvent>
+    layout: Layout<ILoggingEvent>,
   ): Encoder<ILoggingEvent> = CustomLayoutEncoder(layout)
 
   open class CustomLayoutEncoder(

@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame
 
 class NettyWebSocketHandler(
   channel: Channel,
-  private val handler: WebSocketHandler<NettyWebSocketContent>
+  private val handler: WebSocketHandler<NettyWebSocketContent>,
 ) : SimpleChannelInboundHandler<WebSocketFrame>() {
   private val webSocketContext = NettyWebSocketContent(channel)
 

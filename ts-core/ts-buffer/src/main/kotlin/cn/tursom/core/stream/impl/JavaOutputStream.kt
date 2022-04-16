@@ -4,7 +4,7 @@ import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.stream.OutputStream
 
 class JavaOutputStream(
-  @Suppress("MemberVisibilityCanBePrivate") val outputStream: java.io.OutputStream
+  @Suppress("MemberVisibilityCanBePrivate") val outputStream: java.io.OutputStream,
 ) : OutputStream {
   override fun write(byte: Byte) {
     outputStream.write(byte.toInt())

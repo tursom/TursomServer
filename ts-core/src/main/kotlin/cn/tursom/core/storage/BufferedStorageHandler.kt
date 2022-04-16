@@ -21,7 +21,7 @@ class BufferedStorageHandler<T>(
   private val minBufTime: Long = 500,
   private val singleThreadWrite: Boolean = true,
   // 数据批量写入处理器
-  private val writeHandler: (list: Collection<T>) -> Unit
+  private val writeHandler: (list: Collection<T>) -> Unit,
 ) : StorageHandler<T> {
   private val onWrite = AtomicBoolean(false)
 

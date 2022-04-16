@@ -7,7 +7,7 @@ interface Router<T> {
   operator fun set(
     route: String,
     onDestroy: ((oldValue: T) -> Unit)? = null,
-    value: T?
+    value: T?,
   ) = addSubRoute(route, value, onDestroy)
 
   operator fun get(route: String): Pair<T?, List<Pair<String, String>>>

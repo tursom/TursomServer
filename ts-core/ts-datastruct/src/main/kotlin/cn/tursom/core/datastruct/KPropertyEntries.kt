@@ -4,7 +4,7 @@ import kotlin.reflect.KProperty1
 
 class KPropertyEntries(
   val target: Any,
-  private val propertyMap: Map<String, KProperty1<Any, *>> = KPropertyValueMap[target]
+  private val propertyMap: Map<String, KProperty1<Any, *>> = KPropertyValueMap[target],
 ) : Set<Map.Entry<String, Any?>> {
   override val size: Int = propertyMap.size
   override fun isEmpty(): Boolean = propertyMap.isEmpty()

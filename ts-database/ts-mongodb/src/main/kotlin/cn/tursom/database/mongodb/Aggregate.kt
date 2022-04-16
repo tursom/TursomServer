@@ -15,13 +15,13 @@ object Aggregate {
 
   fun <TExpression, Boundary> bucket(
     groupBy: TExpression,
-    boundaries: List<Boundary>
+    boundaries: List<Boundary>,
   ): Bson = Aggregates.bucket(groupBy, boundaries)
 
   fun <TExpression, TBoundary> bucket(
     groupBy: TExpression,
     boundaries: List<TBoundary>,
-    options: BucketOptions
+    options: BucketOptions,
   ): Bson = Aggregates.bucket(groupBy, boundaries, options)
 
 
@@ -30,7 +30,7 @@ object Aggregate {
   fun <TExpression> bucketAuto(
     groupBy: TExpression,
     buckets: Int,
-    options: BucketAutoOptions
+    options: BucketAutoOptions,
   ): Bson = Aggregates.bucketAuto(groupBy, buckets, options)
 
   fun count(): Bson = Aggregates.count()
@@ -48,7 +48,7 @@ object Aggregate {
     from: String,
     localField: String,
     foreignField: String,
-    `as`: String
+    `as`: String,
   ): Bson = Aggregates.lookup(from, localField, foreignField, `as`)
 
   fun lookup(from: String, pipeline: List<Bson?>, `as`: String): Bson = Aggregates.lookup(from, pipeline, `as`)
@@ -56,7 +56,7 @@ object Aggregate {
     from: String,
     let: List<Variable<TExpression>>? = null,
     pipeline: List<Bson>,
-    `as`: String
+    `as`: String,
   ): Bson = Aggregates.lookup(from, let, pipeline, `as`)
 
 
@@ -68,7 +68,7 @@ object Aggregate {
     startWith: TExpression,
     connectFromField: String,
     connectToField: String,
-    `as`: String
+    `as`: String,
   ): Bson = Aggregates.graphLookup(from, startWith, connectFromField, connectToField, `as`)
 
   fun <TExpression> graphLookup(
@@ -77,18 +77,18 @@ object Aggregate {
     connectFromField: String,
     connectToField: String,
     `as`: String,
-    options: GraphLookupOptions
+    options: GraphLookupOptions,
   ): Bson = Aggregates.graphLookup(from, startWith, connectFromField, connectToField, `as`, options)
 
 
   fun <TExpression> group(
     id: TExpression? = null,
-    vararg fieldAccumulators: BsonField
+    vararg fieldAccumulators: BsonField,
   ): Bson = Aggregates.group(id, fieldAccumulators.asList())
 
   fun <TExpression> group(
     id: TExpression? = null,
-    fieldAccumulators: List<BsonField>
+    fieldAccumulators: List<BsonField>,
   ): Bson = Aggregates.group(id, fieldAccumulators)
 
   fun unwind(field: KProperty1<*, *>): Bson = Aggregates.unwind(MongoUtil.fieldName(field))

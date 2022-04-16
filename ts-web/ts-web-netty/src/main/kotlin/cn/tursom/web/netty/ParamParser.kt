@@ -34,7 +34,7 @@ object ParamParser {
   fun parse(
     req: HttpRequest,
     body: HttpContent,
-    paramMap: MutableMap<String, List<String>>
+    paramMap: MutableMap<String, List<String>>,
   ): MutableMap<String, List<String>> {
     try {
       val decoder = HttpPostRequestDecoder(req)

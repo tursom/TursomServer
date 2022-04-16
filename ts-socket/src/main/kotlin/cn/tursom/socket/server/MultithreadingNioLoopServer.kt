@@ -21,10 +21,10 @@ class MultithreadingNioLoopServer(
   val workerThreads: Int = Runtime.getRuntime().availableProcessors(),
   nioThreadFactory: (
     threadName: String,
-    workLoop: (thread: NioThread, key: SelectionKey) -> Unit
+    workLoop: (thread: NioThread, key: SelectionKey) -> Unit,
   ) -> NioThread = { name, workLoop ->
     WorkerLoopNioThread(name, workLoop = workLoop, daemon = false)
-  }
+  },
 ) : SocketServer {
   private val listenChannel = ServerSocketChannel.open()
   private val workerNioThread = Array(workerThreads) {

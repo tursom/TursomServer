@@ -2,7 +2,7 @@ package cn.tursom.core
 
 class Switch(
   val value: Any? = null,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   object BreakException : Exception()
 
@@ -44,7 +44,7 @@ inline fun <T : Any?> switch(value: T, block: Switch.() -> Unit) {
 
 class ByteSwitch(
   val value: Byte,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -76,7 +76,7 @@ inline fun switch(value: Byte, block: ByteSwitch.() -> Unit) {
 
 class ShortSwitch(
   val value: Short,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -108,7 +108,7 @@ inline fun switch(value: Short, block: ShortSwitch.() -> Unit) {
 
 class IntSwitch(
   val value: Int,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -140,7 +140,7 @@ inline fun switch(value: Int, block: IntSwitch.() -> Unit) {
 
 class LongSwitch(
   val value: Long,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -172,7 +172,7 @@ inline fun switch(value: Long, block: LongSwitch.() -> Unit) {
 
 class FloatSwitch(
   val value: Float,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -204,7 +204,7 @@ inline fun switch(value: Float, block: FloatSwitch.() -> Unit) {
 
 class DoubleSwitch(
   val value: Double,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {
@@ -236,7 +236,7 @@ inline fun switch(value: Double, block: DoubleSwitch.() -> Unit) {
 
 class CharSwitch(
   val value: Char,
-  var consider: Boolean = false
+  var consider: Boolean = false,
 ) {
   inline val `break`: Unit
     inline get() {

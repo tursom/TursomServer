@@ -6,7 +6,7 @@ import cn.tursom.core.stream.IOStream
 import cn.tursom.core.stream.SuspendInputStream
 
 class BytesIOStream private constructor(
-  private val buBufferIOStream: ByteBufferIOStream
+  private val buBufferIOStream: ByteBufferIOStream,
 ) : IOStream by buBufferIOStream, SuspendInputStream {
   constructor(bytes: ByteArray) : this(ByteBufferIOStream(HeapByteBuffer(bytes).apply { clear() }))
 

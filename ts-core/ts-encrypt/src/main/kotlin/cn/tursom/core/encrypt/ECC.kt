@@ -72,7 +72,7 @@ class ECC(
     val standardCurveLineSet by lazy {
       try {
         Unsafe {
-          Class.forName("sun.security.ec.CurveDB")["nameMap"].uncheckedCast<Map<String, Any>>().keys
+          Class.forName("sun.security.ec.CurveDB").getField("nameMap").uncheckedCast<Map<String, Any>>().keys
         }
       } catch (e: Exception) {
         emptySet()

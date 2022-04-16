@@ -137,12 +137,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
 
   fun write(data: ByteBuffer): ChannelFuture {
     return ch!!.writeAndFlush(
-      BinaryWebSocketFrame(
-        when (data) {
-          is NettyByteBuffer -> data.byteBuf
-          else -> Unpooled.wrappedBuffer(data.getBytes())
-        }
-      )
+      BinaryWebSocketFrame(NettyByteBuffer.toByteBuf(data))
     )
   }
 
@@ -152,12 +147,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
 
   fun writeText(data: ByteBuffer): ChannelFuture {
     return ch!!.writeAndFlush(
-      TextWebSocketFrame(
-        when (data) {
-          is NettyByteBuffer -> data.byteBuf
-          else -> Unpooled.wrappedBuffer(data.getBytes())
-        }
-      )
+      TextWebSocketFrame(NettyByteBuffer.toByteBuf(data))
     )
   }
 
@@ -171,12 +161,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
 
   fun ping(data: ByteBuffer): ChannelFuture {
     return ch!!.writeAndFlush(
-      PingWebSocketFrame(
-        when (data) {
-          is NettyByteBuffer -> data.byteBuf
-          else -> Unpooled.wrappedBuffer(data.getBytes())
-        }
-      )
+      PingWebSocketFrame(NettyByteBuffer.toByteBuf(data))
     )
   }
 
@@ -189,14 +174,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   }
 
   fun pong(data: ByteBuffer): ChannelFuture {
-    return ch!!.writeAndFlush(
-      PongWebSocketFrame(
-        when (data) {
-          is NettyByteBuffer -> data.byteBuf
-          else -> Unpooled.wrappedBuffer(data.getBytes())
-        }
-      )
-    )
+    return ch!!.writeAndFlush(PongWebSocketFrame(NettyByteBuffer.toByteBuf(data)))
   }
 
   fun pong(data: ByteBuf): ChannelFuture {

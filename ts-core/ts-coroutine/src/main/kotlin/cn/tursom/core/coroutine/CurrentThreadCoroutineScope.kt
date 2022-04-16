@@ -25,7 +25,7 @@ object CurrentThreadCoroutineScope {
 
   suspend fun launch(
     start: CoroutineStart = CoroutineStart.DEFAULT,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
   ): Job {
     val coroutineScope = getCoroutineScope()
     //coroutineScope.launch(start = start, block = block)
@@ -58,7 +58,7 @@ object CurrentThreadCoroutineScope {
   private fun newBlockingCoroutine(
     coroutineContext: CoroutineContext,
     thread: Thread = Thread.currentThread(),
-    eventLoop: CoroutineDispatcher
+    eventLoop: CoroutineDispatcher,
   ): CoroutineScope {
     return BlockingCoroutineConstructor.newInstance(coroutineContext, thread, eventLoop).cast()
   }
@@ -66,7 +66,7 @@ object CurrentThreadCoroutineScope {
   private fun <T> CoroutineScope.start(
     start: CoroutineStart = CoroutineStart.DEFAULT,
     receiver: CoroutineScope = this,
-    block: suspend CoroutineScope.() -> T
+    block: suspend CoroutineScope.() -> T,
   ) {
     BlockingCoroutineStart.invoke(this, start, receiver, block)
   }

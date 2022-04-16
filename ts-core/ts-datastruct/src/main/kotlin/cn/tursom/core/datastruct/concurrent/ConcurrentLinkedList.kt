@@ -133,7 +133,7 @@ class ConcurrentLinkedList<T> : AbstractMutableList<T> {
 
   private inner class Iterator(
     var index: Int,
-    var p: Node = prevNodeOfIndex(index - 1)
+    var p: Node = prevNodeOfIndex(index - 1),
   ) : MutableListIterator<T> {
 
     override fun hasPrevious(): Boolean = p.prev != root

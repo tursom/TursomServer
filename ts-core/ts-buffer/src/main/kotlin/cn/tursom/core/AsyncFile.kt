@@ -3,6 +3,8 @@ package cn.tursom.core
 import cn.tursom.core.AsyncFile.Reader
 import cn.tursom.core.AsyncFile.Writer
 import cn.tursom.core.buffer.*
+import cn.tursom.core.buffer.NioBuffers.readNioBuffers
+import cn.tursom.core.buffer.NioBuffers.writeNioBuffers
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.CompletionHandler
 import java.nio.file.Files
@@ -24,26 +26,23 @@ class AsyncFile(val path: Path) {
       override val extensionClass: Class<Writer> = Writer::class.java
 
       override tailrec fun get(buffer: ByteBuffer): Writer? {
-        val sequences = buffer.getExtension(NioBuffers.Sequences)
         return when {
-          sequences != null -> Writer { file, position ->
+          buffer is MultipleByteBuffer -> Writer { file, position ->
             var writePosition = position
-            val nioBuffers = sequences.readBufferSequence().toList()
-
             run {
-              nioBuffers.forEach { readBuf ->
-                while (readBuf.position() < readBuf.limit()) {
-                  val writeSize = file.write(readBuf, writePosition)
-                  if (writeSize > 0) {
-                    writePosition += writeSize
-                  } else {
-                    return@run
+              buffer.readNioBuffers {
+                it.forEach { readBuf ->
+                  while (readBuf.position() < readBuf.limit()) {
+                    val writeSize = file.write(readBuf, writePosition)
+                    if (writeSize > 0) {
+                      writePosition += writeSize
+                    } else {
+                      return@run
+                    }
                   }
                 }
               }
             }
-
-            sequences.finishRead(nioBuffers.iterator())
             (writePosition - position).toInt()
           }
           buffer is ProxyByteBuffer -> get(buffer.agent)
@@ -60,26 +59,23 @@ class AsyncFile(val path: Path) {
       override val extensionClass: Class<Reader> = Reader::class.java
 
       override tailrec fun get(buffer: ByteBuffer): Reader? {
-        val sequences = buffer.getExtension(NioBuffers.Sequences)
         return when {
-          sequences != null -> Reader { file, position ->
+          buffer is MultipleByteBuffer -> Reader { file, position ->
             var readPosition = position
-            val nioBuffers = sequences.writeBufferSequence().toList()
-
             run {
-              nioBuffers.forEach { nioBuf ->
-                while (nioBuf.position() < nioBuf.limit()) {
-                  val readSize = file.read(nioBuf, readPosition)
-                  if (readSize > 0) {
-                    readPosition += readSize
-                  } else {
-                    return@run
+              buffer.writeNioBuffers {
+                it.forEach { nioBuf ->
+                  while (nioBuf.position() < nioBuf.limit()) {
+                    val readSize = file.read(nioBuf, readPosition)
+                    if (readSize > 0) {
+                      readPosition += readSize
+                    } else {
+                      return@run
+                    }
                   }
                 }
               }
             }
-
-            sequences.finishWrite(nioBuffers.iterator())
             (readPosition - position).toInt()
           }
           buffer is ProxyByteBuffer -> get(buffer.agent)

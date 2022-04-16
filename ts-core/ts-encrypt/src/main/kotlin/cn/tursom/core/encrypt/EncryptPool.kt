@@ -6,7 +6,7 @@ import cn.tursom.core.pool.Pool
 
 open class EncryptPool<T : Encrypt>(
   initSize: Int = 0,
-  encryptBuilder: () -> T
+  encryptBuilder: () -> T,
 ) : Pool<T> {
   private val aesPool = BlockingArrayList<T>()
 

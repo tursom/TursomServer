@@ -8,7 +8,7 @@ import java.net.SocketAddress
 
 class OkhttpHttpClient(
   private val client: OkHttpClient,
-) : HttpClient {
+) : HttpClient<OkhttpHttpRequest> {
   companion object {
     val direct = OkhttpHttpClient(OkHttpClient().newBuilder()
       .retryOnConnectionFailure(true)

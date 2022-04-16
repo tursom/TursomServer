@@ -16,7 +16,7 @@ interface ResponseHeaderAdapter {
   fun cacheControl(
     cacheControl: CacheControl,
     maxAge: Int? = null,
-    mustRevalidate: Boolean = false
+    mustRevalidate: Boolean = false,
   ) = setResponseHeader(
     "Cache-Control", "$cacheControl${
       if (maxAge != null && maxAge > 0) ", max-age=$maxAge" else ""
@@ -32,7 +32,7 @@ interface ResponseHeaderAdapter {
     maxAge: Long = 0,
     domain: String? = null,
     path: String? = null,
-    sameSite: SameSite? = null
+    sameSite: SameSite? = null,
   ) = addCookie(Cookie(name, value.toString(), maxAge = maxAge, domain = domain, path = path, sameSite = sameSite))
 
   fun setLanguage(language: String) {

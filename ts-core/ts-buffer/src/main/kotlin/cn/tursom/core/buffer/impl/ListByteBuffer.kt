@@ -6,28 +6,27 @@ import java.nio.ByteOrder
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class ListByteBuffer(
-  final override val buffers: MutableList<ByteBuffer> = ArrayList(),
+  final override val bufferIterable: MutableList<ByteBuffer> = ArrayList(),
 ) : MultipleByteBuffer {
-  var readOperator = buffers.firstOrNull()
-  var writeOperator = buffers.firstOrNull()
+  var readOperator = bufferIterable.firstOrNull()
+  var writeOperator = bufferIterable.firstOrNull()
   var readArrayPosition: Int = if (readOperator == null) -1 else 0
   var writeArrayPosition: Int = if (writeOperator == null) -1 else 0
 
   private var buffersArrayCache: Array<out ByteBuffer>? = null
-  override val buffersArray: Array<out ByteBuffer>
+  override val buffers: Array<out ByteBuffer>
     get() {
       if (buffersArrayCache == null) {
-        buffersArrayCache = buffers.toTypedArray()
+        buffersArrayCache = bufferIterable.toTypedArray()
       }
       return buffersArrayCache!!
     }
 
-  override val hasArray: Boolean get() = false
-  override val array: ByteArray get() = throw UnsupportedOperationException()
-  override val capacity: Int get() = buffers.sumOf { it.capacity }
+  final override var capacity: Int = bufferIterable.sumOf { it.capacity }
+    private set
 
-  override var writePosition: Int = buffers.sumOf { it.writePosition }
-  override var readPosition: Int = buffers.sumOf { it.readPosition }
+  override var writePosition: Int = bufferIterable.sumOf { it.writePosition }
+  override var readPosition: Int = bufferIterable.sumOf { it.readPosition }
 
   override val resized: Boolean get() = false
 
@@ -41,6 +40,8 @@ open class ListByteBuffer(
       updateWrite()
       return writeOperator?.isWriteable ?: false
     }
+
+  override val bufferSize: Int get() = bufferIterable.size
 
   override fun clear() {
     super.clear()
@@ -63,10 +64,10 @@ open class ListByteBuffer(
       n == 0 -> 0
       n > 0 -> {
         var skip = 0
-        while (skip == n) {
+        while (skip != n) {
           skip += readOperator?.skip(n - skip) ?: 0
-          if (readArrayPosition < buffers.size) {
-            readOperator = buffers[readArrayPosition++]
+          if (readArrayPosition < bufferIterable.size) {
+            readOperator = bufferIterable[readArrayPosition++]
           } else {
             break
           }
@@ -75,10 +76,10 @@ open class ListByteBuffer(
       }
       else -> {
         var fallback = 0
-        while (fallback == n) {
+        while (fallback != n) {
           fallback += readOperator?.skip(n - fallback) ?: 0
           if (readArrayPosition > 0) {
-            readOperator = buffers[--readArrayPosition]
+            readOperator = bufferIterable[--readArrayPosition]
           } else {
             break
           }
@@ -90,32 +91,65 @@ open class ListByteBuffer(
 
   override fun readBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
   override fun finishRead(buffer: java.nio.ByteBuffer) = throw UnsupportedOperationException()
+
   override fun writeBuffer(): java.nio.ByteBuffer = throw UnsupportedOperationException()
   override fun finishWrite(buffer: java.nio.ByteBuffer) = throw UnsupportedOperationException()
 
-  override fun append(buffer: ByteBuffer) {
-    val bufReadPosition = buffer.readPosition
-    val bufWritePosition = buffer.writePosition
-    buffers.add(buffer)
-    buffersArrayCache = null
-    readPosition += bufReadPosition
-    writePosition += bufWritePosition
+  override fun readBufferArray(): Array<out java.nio.ByteBuffer> {
+    val iterator = bufferIterable.iterator()
+    return Array(array.size) {
+      iterator.next().readBuffer()
+    }
   }
 
-  override fun slice(position: Int, size: Int, readPosition: Int, writePosition: Int): ByteBuffer =
-    throw UnsupportedOperationException()
+  override fun finishRead(buffers: Array<out java.nio.ByteBuffer>): Long {
+    val iterator = this.bufferIterable.iterator()
+    var readed = 0L
+    buffers.forEach { buffer ->
+      readed += iterator.next().finishRead(buffer)
+    }
+    return readed
+  }
+
+  override fun writeBufferArray(): Array<out java.nio.ByteBuffer> {
+    val iterator = bufferIterable.iterator()
+    return Array(array.size) {
+      iterator.next().writeBuffer()
+    }
+  }
+
+  override fun finishWrite(buffers: Array<out java.nio.ByteBuffer>): Long {
+    val iterator = bufferIterable.iterator()
+    var written = 0L
+    buffers.forEach { buffer ->
+      written += iterator.next().finishWrite(buffer)
+    }
+    return written
+  }
+
+  override fun append(buffer: ByteBuffer) {
+    if (buffer is MultipleByteBuffer) {
+      bufferIterable.addAll(buffer.bufferIterable)
+    } else {
+      bufferIterable.add(buffer)
+    }
+    buffersArrayCache = null
+    capacity += buffer.capacity
+    readPosition += buffer.readPosition
+    writePosition += buffer.writePosition
+  }
 
   override fun resize(newSize: Int): Boolean = throw UnsupportedOperationException()
 
   private fun updateRead() {
-    while (readArrayPosition < buffers.size && readOperator?.isReadable != true) {
-      readOperator = buffers[readArrayPosition++]
+    while (readArrayPosition < bufferIterable.size && readOperator?.isReadable != true) {
+      readOperator = bufferIterable[readArrayPosition++]
     }
   }
 
   private fun updateWrite() {
-    while (writeArrayPosition < buffers.size && writeOperator?.isWriteable != true) {
-      writeOperator = buffers[writeArrayPosition++]
+    while (writeArrayPosition < bufferIterable.size && writeOperator?.isWriteable != true) {
+      writeOperator = bufferIterable[writeArrayPosition++]
     }
   }
 

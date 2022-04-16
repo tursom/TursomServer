@@ -7,7 +7,7 @@ import java.nio.channels.SelectionKey
 
 class MultithreadingBossLoopHandler(
   protocol: NioProtocol,
-  private val workerThread: List<NioThread> = emptyList()
+  private val workerThread: List<NioThread> = emptyList(),
 ) : BossLoopHandler(protocol, null) {
   override fun invoke(nioThread: NioThread, key: SelectionKey) {
     val workerThread: NioThread = if (workerThread.isEmpty()) {

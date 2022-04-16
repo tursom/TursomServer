@@ -6,7 +6,7 @@ import cn.tursom.core.pool.ExpandableMemoryPool
 import cn.tursom.core.pool.LongBitSetDirectMemoryPool
 
 class LengthFieldPrependWriter(
-  private val prevWriter: ChannelWriter<ByteBuffer>
+  private val prevWriter: ChannelWriter<ByteBuffer>,
 ) : ChannelWriter<ByteBuffer> {
   private val bufList = ArrayList<ByteBuffer>(4)
 

@@ -12,7 +12,7 @@ interface InputStream : Closeable {
   fun read(
     buffer: ByteArray,
     offset: Int = 0,
-    len: Int = buffer.size - offset
+    len: Int = buffer.size - offset,
   ): Int {
     val byteBuffer = HeapByteBuffer(buffer, offset, len)
     byteBuffer.clear()

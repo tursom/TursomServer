@@ -3,7 +3,7 @@ package cn.tursom.core.datastruct
 class MutableSubList<T>(
   val parent: MutableList<T>,
   val fromIndex: Int,
-  val toIndex: Int
+  val toIndex: Int,
 ) : AbstractMutableList<T> {
   override val size: Int get() = toIndex - fromIndex
 

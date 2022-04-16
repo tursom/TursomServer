@@ -16,7 +16,7 @@ class EmptyHttpContent(
   override val remoteAddress: SocketAddress = InetSocketAddress(0),
   override val method: String = "GET",
   override val cookieMap: Map<String, String> = mapOf(),
-  override val requestSendFully: Boolean
+  override val requestSendFully: Boolean,
 ) : HttpContent {
   override fun getHeader(header: String): String? = null
   override fun getHeaders(header: String): List<String> = listOf()

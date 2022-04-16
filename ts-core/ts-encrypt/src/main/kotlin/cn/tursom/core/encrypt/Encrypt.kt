@@ -17,7 +17,7 @@ interface Encrypt {
     buffer: ByteArray,
     bufferOffset: Int = 0,
     offset: Int = 0,
-    size: Int = data.size - offset
+    size: Int = data.size - offset,
   ): Int
 
   fun decrypt(
@@ -25,7 +25,7 @@ interface Encrypt {
     buffer: ByteArray,
     bufferOffset: Int = 0,
     offset: Int = 0,
-    size: Int = data.size - offset
+    size: Int = data.size - offset,
   ): Int
 
   fun encrypt(data: ByteBuffer): ByteArray {

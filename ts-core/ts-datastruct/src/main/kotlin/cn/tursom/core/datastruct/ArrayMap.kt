@@ -143,7 +143,7 @@ open class ArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
 
   class Node<K, V>(
     override val key: K,
-    @Volatile override var value: V
+    @Volatile override var value: V,
   ) : MutableMap.MutableEntry<K, V>, Comparable<K> {
     override fun toString(): String = "$key=$value"
     override fun setValue(newValue: V): V = value.also { value = newValue }

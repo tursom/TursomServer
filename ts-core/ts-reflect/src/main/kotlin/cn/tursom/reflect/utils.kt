@@ -1,6 +1,6 @@
 package cn.tursom.reflect
 
-import cn.tursom.core.Unsafe.get
+import cn.tursom.core.Unsafe.getField
 import cn.tursom.core.companionObjectInstanceOrNull
 import cn.tursom.core.uncheckedCast
 import java.lang.reflect.Field
@@ -21,7 +21,7 @@ fun <T> Class<*>.getStaticField(name: String): T? {
 
   val companionObjectInstance = kotlin.companionObjectInstanceOrNull
   if (companionObjectInstance != null) {
-    return companionObjectInstance[name]?.uncheckedCast()
+    return companionObjectInstance.getField(name)?.uncheckedCast()
   }
 
   return null

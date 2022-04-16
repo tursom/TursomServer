@@ -15,10 +15,10 @@ open class LoopDatagramServer(
   protocol: NioProtocol,
   nioThreadFactory: (
     threadName: String,
-    workLoop: (thread: NioThread, key: SelectionKey) -> Unit
+    workLoop: (thread: NioThread, key: SelectionKey) -> Unit,
   ) -> NioThread = { name, workLoop ->
     WorkerLoopNioThread(name, workLoop = workLoop, daemon = false)
-  }
+  },
 ) : SocketServer {
   protected val listenChannel: DatagramChannel = DatagramChannel.open()
   val bossNioThread = nioThreadFactory("nio-boss", WorkerLoopHandler(protocol))

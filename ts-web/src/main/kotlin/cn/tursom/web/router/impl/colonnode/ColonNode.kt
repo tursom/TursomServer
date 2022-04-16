@@ -6,7 +6,7 @@ import cn.tursom.core.binarySearch
 open class ColonNode<T>(
   var routeList: List<String>,
   var index: Int,
-  override var value: T? = null
+  override var value: T? = null,
 ) : IColonNode<T> {
   val route: String = routeList[index]
   var wildSubRouter: AnyColonNode<T>? = null
@@ -24,7 +24,7 @@ open class ColonNode<T>(
 
   open fun match(
     route: List<String>,
-    startIndex: Int
+    startIndex: Int,
   ): Pair<Boolean, Int> = (route.size > startIndex && route[startIndex] == this.route) to 1
 
   fun addNode(route: List<String>, startIndex: Int, value: T? = null): Int {
@@ -95,7 +95,7 @@ open class ColonNode<T>(
   operator fun get(
     route: List<String>,
     startIndex: Int = 0,
-    routeList: java.util.AbstractList<Pair<String, String>>
+    routeList: java.util.AbstractList<Pair<String, String>>,
   ): Pair<ColonNode<T>?, Int> {
     val r = route[startIndex]
     if (r.isEmpty()) {
@@ -152,13 +152,13 @@ open class ColonNode<T>(
 
   operator fun get(
     route: List<String>,
-    routeList: java.util.AbstractList<Pair<String, String>>
+    routeList: java.util.AbstractList<Pair<String, String>>,
   ) = getRoute(route, 0, routeList)
 
   fun getRoute(
     route: List<String>,
     startIndex: Int = 0,
-    routeList: java.util.AbstractList<Pair<String, String>>
+    routeList: java.util.AbstractList<Pair<String, String>>,
   ): ColonNode<T>? {
     var index = startIndex
     var routeNode = this

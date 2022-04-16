@@ -25,7 +25,7 @@ object AsyncSocketSecurityUtil {
 
   suspend fun initPassiveAESSocket(
     socket: AsyncSocket,
-    publicKeyEncryptBuilder: (key: ByteArray) -> PublicKeyEncrypt = { RSA(it) }
+    publicKeyEncryptBuilder: (key: ByteArray) -> PublicKeyEncrypt = { RSA(it) },
   ): EnhanceChannel<ByteArray, ByteArray> {
     // 接受RSA公钥
     val rsaKey = socket.read(memoryPool)

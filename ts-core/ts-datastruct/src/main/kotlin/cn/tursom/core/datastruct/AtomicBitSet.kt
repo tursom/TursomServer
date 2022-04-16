@@ -217,7 +217,7 @@ class AtomicBitSet(beginSize: Long = 256, val defaultState: Boolean = false) : S
       startIndex: Int,
       length: Int = length(),
       asc: Boolean = true,
-      action: (index: Int, Long) -> Unit
+      action: (index: Int, Long) -> Unit,
     ) {
       repeat(length) {
         val index = if (asc) {

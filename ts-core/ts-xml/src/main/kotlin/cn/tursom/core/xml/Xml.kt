@@ -197,7 +197,7 @@ object Xml {
     elementName: String,
     builder: StringBuilder,
     indentation: String,
-    advanceIndentation: String
+    advanceIndentation: String,
   ): Boolean {
     val clazz = obj.javaClass
     getAnnotation(ToXml::class.java)?.let { getter ->
@@ -279,7 +279,7 @@ object Xml {
     obj: kotlin.Array<*>,
     rootName: String = obj.javaClass.elementName,
     indentation: String = "    ",
-    fieldName: String? = "i"
+    fieldName: String? = "i",
   ): String {
     val stringBuilder = StringBuilder()
     arrayXml(obj, rootName, stringBuilder, "", indentation, fieldName)
@@ -292,7 +292,7 @@ object Xml {
     subElementName: String,
     builder: StringBuilder,
     subIndentation: String,
-    advanceIndentation: String
+    advanceIndentation: String,
   ) {
     val type = value.javaClass
 
@@ -318,7 +318,7 @@ object Xml {
     indentation: String,
     advanceIndentation: String,
     fieldName: String? = "i",
-    multipleField: Boolean = false
+    multipleField: Boolean = false,
   ) {
     if (obj.isEmpty()) return
     val clazz = obj.javaClass
@@ -347,7 +347,7 @@ object Xml {
     obj: Iterable<*>,
     rootName: String,
     indentation: String,
-    fieldName: String? = "i"
+    fieldName: String? = "i",
   ): String {
     val stringBuilder = StringBuilder()
     iterableXml(obj, rootName, stringBuilder, "", indentation, fieldName)
@@ -360,7 +360,7 @@ object Xml {
     builder: StringBuilder,
     indentation: String,
     advanceIndentation: String,
-    fieldName: String? = "i"
+    fieldName: String? = "i",
   ) {
     val subIndentation = "$advanceIndentation$indentation"
     builder.append("$indentation<$elementName>")
@@ -388,7 +388,7 @@ object Xml {
   fun mapXml(
     obj: Map<*, *>,
     rootName: String,
-    indentation: String
+    indentation: String,
   ): String {
     val stringBuilder = StringBuilder()
     mapXml(obj, rootName, stringBuilder, "", indentation)
@@ -400,7 +400,7 @@ object Xml {
     elementName: String,
     builder: StringBuilder,
     indentation: String,
-    advanceIndentation: String
+    advanceIndentation: String,
   ) {
     val subIndentation = "$advanceIndentation$indentation"
     builder.append("$indentation<$elementName>")
@@ -429,7 +429,7 @@ object Xml {
     elementName: String,
     builder: StringBuilder,
     indentation: String,
-    advanceIndentation: String
+    advanceIndentation: String,
   ) {
     val clazz = obj.javaClass
     val textField = clazz.textField
@@ -491,7 +491,7 @@ object Xml {
     builder: StringBuilder,
     indentation: String,
     advanceIndentation: String,
-    field: Field? = null
+    field: Field? = null,
   ) {
     try {
       obj as Pair<*, *>
@@ -556,7 +556,7 @@ object Xml {
     elementName: String,
     builder: StringBuilder,
     fieldName: String? = "i",
-    multi: Boolean = false
+    multi: Boolean = false,
   ) {
     val clazz = obj.javaClass
     if (clazz.isArray) {

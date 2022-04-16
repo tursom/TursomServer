@@ -192,7 +192,7 @@ open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {
 
   class ParallelArrayMapEntry<K, V>(
     val map: ParallelArrayMap<K, V>,
-    val index: Int
+    val index: Int,
   ) : MutableMap.MutableEntry<K, V> {
     override val key: K get() = map.getKeyByIndex(index).uncheckedCast()
     override val value: V get() = map.getByIndex(index).uncheckedCast()

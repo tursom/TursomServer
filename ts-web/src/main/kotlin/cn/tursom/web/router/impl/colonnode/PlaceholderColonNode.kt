@@ -4,7 +4,7 @@ class PlaceholderColonNode<T>(
   route: List<String>,
   private val startIndex: Int = 0,
   endIndex: Int = startIndex + route.matchLength(startIndex),
-  value: T? = null
+  value: T? = null,
 ) : ColonNode<T>(route, endIndex - 1, value) {
   override val placeholderRouterList: ArrayList<PlaceholderColonNode<T>>?
     get() = null
@@ -23,7 +23,7 @@ class PlaceholderColonNode<T>(
 
   override fun match(
     route: List<String>,
-    startIndex: Int
+    startIndex: Int,
   ): Pair<Boolean, Int> =
     (size == route.matchLength(startIndex)) to size
 

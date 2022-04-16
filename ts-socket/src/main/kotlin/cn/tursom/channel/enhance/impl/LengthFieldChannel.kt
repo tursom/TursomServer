@@ -7,7 +7,7 @@ import cn.tursom.core.buffer.ByteBuffer
 
 class LengthFieldChannel(
   reader: ChannelReader<ByteBuffer>,
-  writer: ChannelWriter<ByteBuffer>
+  writer: ChannelWriter<ByteBuffer>,
 ) : EnhanceChannelImpl<ByteBuffer, ByteBuffer>(
   LengthFieldBasedFrameReader(reader),
   LengthFieldPrependWriter(writer)

@@ -12,12 +12,12 @@ object Stream {
   fun open(outputStream: java.io.OutputStream) = JavaOutputStream(outputStream)
   fun open(
     inputStream: java.io.InputStream,
-    outputStream: java.io.OutputStream
+    outputStream: java.io.OutputStream,
   ) = PairIOStream(JavaInputStream(inputStream), JavaOutputStream(outputStream))
 
   fun open(
     outputStream: java.io.OutputStream,
-    inputStream: java.io.InputStream
+    inputStream: java.io.InputStream,
   ) = PairIOStream(JavaInputStream(inputStream), JavaOutputStream(outputStream))
 
   fun open(buffer: ByteBuffer) = ByteBufferIOStream(buffer)

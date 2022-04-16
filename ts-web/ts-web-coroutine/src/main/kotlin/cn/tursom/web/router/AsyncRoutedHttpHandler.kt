@@ -1,13 +1,13 @@
 package cn.tursom.web.router
 
 import cn.tursom.core.allMethodsSequence
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.web.HttpContent
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*
 import cn.tursom.web.result.*
 import cn.tursom.web.router.impl.SimpleRouter
 import cn.tursom.web.utils.ContextTypeEnum
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
@@ -22,7 +22,7 @@ import kotlin.reflect.jvm.kotlinFunction
 open class AsyncRoutedHttpHandler(
   vararg target: Any,
   routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() },
-  val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() }
+  val asyncRouterMaker: () -> Router<Pair<Any?, suspend (HttpContent) -> Unit>> = { SimpleRouter() },
 ) : RoutedHttpHandler(target = target, routerMaker = routerMaker) {
   protected val asyncRouter: Router<Pair<Any?, suspend (HttpContent) -> Unit>> = asyncRouterMaker()
   protected val asyncRouterMap: HashMap<String, Router<Pair<Any?, suspend (HttpContent) -> Unit>>> = HashMap()
@@ -65,7 +65,7 @@ open class AsyncRoutedHttpHandler(
 
   fun getAsyncHandler(
     method: String,
-    route: String
+    route: String,
   ): Pair<Pair<Any?, suspend (HttpContent) -> Unit>?, List<Pair<String, String>>> {
     val safeRoute = safeRoute(route)
     val router = getAsyncRouter(method)[safeRoute]
@@ -126,7 +126,7 @@ open class AsyncRoutedHttpHandler(
     obj: Any,
     method: KCallable<*>,
     route: String,
-    router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>
+    router: Router<Pair<Any?, suspend (HttpContent) -> Unit>>,
   ) {
     val doLog = method.doLog
     router[safeRoute(route)] = if (method.parameters.size == 1) {

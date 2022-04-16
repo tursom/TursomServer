@@ -19,7 +19,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType: Array<Class<*>>,
     self: Any? = null,
-    handler: (Method, (Array<Any?>) -> R) -> Unit
+    handler: (Method, (Array<Any?>) -> R) -> Unit,
   ) {
     clazz.forAllMethods { method ->
       val parameterTypes = method.parameterTypes
@@ -47,7 +47,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType: Array<Class<*>>,
     self: Any? = null,
-    handler: (Method, suspend (Array<Any?>) -> R) -> Unit
+    handler: (Method, suspend (Array<Any?>) -> R) -> Unit,
   ) {
     clazz.forAllMethods { method ->
       val parameterTypes = method.parameterTypes
@@ -85,7 +85,7 @@ object MethodInspector {
     clazz: Class<*>,
     returnType: Class<out R>,
     self: Any? = null,
-    handler: (Method, () -> R) -> Unit
+    handler: (Method, () -> R) -> Unit,
   ) {
     clazz.javaClass.forAllMethods { method ->
       val parameterTypes = method.parameterTypes
@@ -106,7 +106,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType: Class<T>,
     self: Any? = null,
-    handler: (Method, (T) -> R) -> Unit
+    handler: (Method, (T) -> R) -> Unit,
   ) {
     forEachMethod(clazz, returnType, arrayOf(argumentType), self) { method: Method, m: (Array<Any?>) -> R ->
       handler(method) {
@@ -121,7 +121,7 @@ object MethodInspector {
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
     self: Any? = null,
-    handler: (Method, (T1, T2) -> R) -> Unit
+    handler: (Method, (T1, T2) -> R) -> Unit,
   ) {
     forEachMethod(
       clazz,
@@ -142,7 +142,7 @@ object MethodInspector {
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
     self: Any? = null,
-    handler: (Method, (T1, T2, T3) -> R) -> Unit
+    handler: (Method, (T1, T2, T3) -> R) -> Unit,
   ) {
     forEachMethod(
       clazz,
@@ -164,7 +164,7 @@ object MethodInspector {
     argumentType3: Class<T3>,
     argumentType4: Class<T4>,
     self: Any? = null,
-    handler: (Method, (T1, T2, T3, T4) -> R) -> Unit
+    handler: (Method, (T1, T2, T3, T4) -> R) -> Unit,
   ) {
     forEachMethod(
       clazz,
@@ -186,7 +186,7 @@ object MethodInspector {
     clazz: Class<*>,
     returnType: Class<out R>,
     self: Any? = null,
-    handler: (Method, suspend () -> R) -> Unit
+    handler: (Method, suspend () -> R) -> Unit,
   ) {
     forEachSuspendMethod(clazz, returnType, arrayOf(), self) { method: Method, m: suspend (Array<Any?>) -> R ->
       handler(method) {
@@ -200,7 +200,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType: Class<T>,
     self: Any? = null,
-    handler: (Method, suspend (T) -> R) -> Unit
+    handler: (Method, suspend (T) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       clazz,
@@ -220,7 +220,7 @@ object MethodInspector {
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
     self: Any? = null,
-    handler: (Method, suspend (T1, T2) -> R) -> Unit
+    handler: (Method, suspend (T1, T2) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       clazz,
@@ -241,7 +241,7 @@ object MethodInspector {
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
     self: Any? = null,
-    handler: (Method, suspend (T1, T2, T3) -> R) -> Unit
+    handler: (Method, suspend (T1, T2, T3) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       clazz,
@@ -263,7 +263,7 @@ object MethodInspector {
     argumentType3: Class<T3>,
     argumentType4: Class<T4>,
     self: Any? = null,
-    handler: (Method, suspend (T1, T2, T3, T4) -> R) -> Unit
+    handler: (Method, suspend (T1, T2, T3, T4) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       clazz,
@@ -282,7 +282,7 @@ object MethodInspector {
     self: Any,
     returnType: Class<out R>,
     argumentType: Array<Class<*>>,
-    handler: (Method, (Array<Any?>) -> R) -> Unit
+    handler: (Method, (Array<Any?>) -> R) -> Unit,
   ) {
     forEachMethod(self.javaClass, returnType, argumentType, self, handler)
   }
@@ -291,7 +291,7 @@ object MethodInspector {
     self: Any,
     returnType: Class<out R>,
     argumentType: Array<Class<*>>,
-    handler: (Method, suspend (Array<Any?>) -> R) -> Unit
+    handler: (Method, suspend (Array<Any?>) -> R) -> Unit,
   ) {
     forEachSuspendMethod(self.javaClass, returnType, argumentType, self, handler)
   }
@@ -308,7 +308,7 @@ object MethodInspector {
     self: Any,
     returnType: Class<out R>,
     argumentType: Class<T>,
-    handler: (Method, (T) -> R) -> Unit
+    handler: (Method, (T) -> R) -> Unit,
   ) {
     forEachMethod(self, returnType, arrayOf(argumentType)) { method: Method, m: (Array<Any?>) -> R ->
       handler(method) {
@@ -322,7 +322,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
-    handler: (Method, (T1, T2) -> R) -> Unit
+    handler: (Method, (T1, T2) -> R) -> Unit,
   ) {
     forEachMethod(
       self,
@@ -341,7 +341,7 @@ object MethodInspector {
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
-    handler: (Method, (T1, T2, T3) -> R) -> Unit
+    handler: (Method, (T1, T2, T3) -> R) -> Unit,
   ) {
     forEachMethod(
       self,
@@ -361,7 +361,7 @@ object MethodInspector {
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
     argumentType4: Class<T4>,
-    handler: (Method, (T1, T2, T3, T4) -> R) -> Unit
+    handler: (Method, (T1, T2, T3, T4) -> R) -> Unit,
   ) {
     forEachMethod(
       self,
@@ -390,7 +390,7 @@ object MethodInspector {
     self: Any,
     returnType: Class<out R>,
     argumentType: Class<T>,
-    handler: (Method, suspend (T) -> R) -> Unit
+    handler: (Method, suspend (T) -> R) -> Unit,
   ) {
     forEachSuspendMethod(self, returnType, arrayOf(argumentType)) { method: Method, m: suspend (Array<Any?>) -> R ->
       handler(method) {
@@ -404,7 +404,7 @@ object MethodInspector {
     returnType: Class<out R>,
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
-    handler: (Method, suspend (T1, T2) -> R) -> Unit
+    handler: (Method, suspend (T1, T2) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       self,
@@ -423,7 +423,7 @@ object MethodInspector {
     argumentType1: Class<T1>,
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
-    handler: (Method, suspend (T1, T2, T3) -> R) -> Unit
+    handler: (Method, suspend (T1, T2, T3) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       self,
@@ -443,7 +443,7 @@ object MethodInspector {
     argumentType2: Class<T2>,
     argumentType3: Class<T3>,
     argumentType4: Class<T4>,
-    handler: (Method, suspend (T1, T2, T3, T4) -> R) -> Unit
+    handler: (Method, suspend (T1, T2, T3, T4) -> R) -> Unit,
   ) {
     forEachSuspendMethod(
       self,

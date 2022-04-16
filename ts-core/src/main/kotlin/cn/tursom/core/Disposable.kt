@@ -3,7 +3,7 @@ package cn.tursom.core
 import java.util.concurrent.atomic.AtomicReference
 
 class Disposable<T>(
-  value: T? = null
+  value: T? = null,
 ) {
   private var value = AtomicReference<T>()
 

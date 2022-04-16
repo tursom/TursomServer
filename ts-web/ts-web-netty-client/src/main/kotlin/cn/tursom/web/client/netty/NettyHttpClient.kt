@@ -1,11 +1,10 @@
 package cn.tursom.web.client.netty
 
 import cn.tursom.web.client.HttpClient
-import cn.tursom.web.client.HttpRequest
 import java.net.URI
 
-open class NettyHttpClient : HttpClient {
-  override suspend fun request(method: String, url: String): HttpRequest {
+open class NettyHttpClient : HttpClient<NettyHttpRequest> {
+  override suspend fun request(method: String, url: String): NettyHttpRequest {
     val uri = URI.create(url)
     val port = if (uri.port < 0) {
       when (uri.scheme ?: "http") {

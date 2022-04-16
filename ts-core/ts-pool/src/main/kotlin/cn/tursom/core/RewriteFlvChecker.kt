@@ -44,7 +44,7 @@ class RewriteFlvChecker {
     inputStream: InputStream,
     outputStream: OutputStream,
     lastTimestampRead: IntArray,
-    lastTimestampWrite: IntArray
+    lastTimestampWrite: IntArray,
   ): Boolean {
     // 读取前一个tag size
     val frame = pool.get()
@@ -100,7 +100,7 @@ class RewriteFlvChecker {
     timestamp: Int,
     tagType: Int,
     lastTimestampRead: IntArray,
-    lastTimestampWrite: IntArray
+    lastTimestampWrite: IntArray,
   ) {
     // 如果是首帧
     if (lastTimestampRead[tagType] == -1) {

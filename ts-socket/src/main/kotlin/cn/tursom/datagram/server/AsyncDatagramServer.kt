@@ -1,6 +1,6 @@
 package cn.tursom.datagram.server
 
-import kotlinx.coroutines.GlobalScope
+import cn.tursom.core.coroutine.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.ref.SoftReference
 import java.net.SocketAddress
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 open class AsyncDatagramServer(
   port: Int,
-  private val handler: suspend ServerNioDatagram.() -> Unit
+  private val handler: suspend ServerNioDatagram.() -> Unit,
 ) : LoopDatagramServer(port, DatagramProtocol) {
   private val channelMap = ConcurrentHashMap<SocketAddress, SoftReference<ServerNioDatagram>>()
 

@@ -5,7 +5,7 @@ import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
 
 class StringWriter(
-  private val prevWriter: ChannelWriter<ByteBuffer>
+  private val prevWriter: ChannelWriter<ByteBuffer>,
 ) : ChannelWriter<String> {
   private val stringList = ArrayList<String>()
   override suspend fun write(value: String) {

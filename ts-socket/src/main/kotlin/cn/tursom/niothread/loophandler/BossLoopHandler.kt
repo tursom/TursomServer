@@ -7,7 +7,7 @@ import java.nio.channels.ServerSocketChannel
 
 open class BossLoopHandler(
   private val protocol: NioProtocol,
-  private val workerThread: NioThread? = null
+  private val workerThread: NioThread? = null,
 ) : (NioThread, SelectionKey) -> Unit {
   override fun invoke(nioThread: NioThread, key: SelectionKey) {
     val workerThread: NioThread = workerThread ?: nioThread

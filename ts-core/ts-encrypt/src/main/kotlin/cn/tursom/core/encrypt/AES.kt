@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec
 
 @Suppress("unused")
 class AES(
-  @Suppress("CanBeParameter") val secKey: SecretKey
+  @Suppress("CanBeParameter") val secKey: SecretKey,
 ) : Encrypt {
   private val decryptCipher = Cipher.getInstance("AES")!!
   private val encryptCipher = Cipher.getInstance("AES")!!

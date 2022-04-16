@@ -9,7 +9,7 @@ class ThreadPoolStorageHandler<T>(
   // 任务执行线程池
   private val executor: Executor,
   // 数据批量写入处理器
-  private val writeHandler: (obj: T) -> Unit
+  private val writeHandler: (obj: T) -> Unit,
 ) : StorageHandler<T> {
   /**
    * 向缓冲中添加一个写入对象

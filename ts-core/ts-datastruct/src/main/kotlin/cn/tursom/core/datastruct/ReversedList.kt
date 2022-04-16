@@ -1,7 +1,7 @@
 package cn.tursom.core.datastruct
 
 class ReversedList<E>(
-  val list: List<E>
+  val list: List<E>,
 ) : List<E> by list {
   override fun get(index: Int): E = list[size - index - 1]
 

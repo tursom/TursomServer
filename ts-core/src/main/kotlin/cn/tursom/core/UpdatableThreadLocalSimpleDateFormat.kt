@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class UpdatableThreadLocalSimpleDateFormat(
-  format: String = "YYYY-MM-dd'T'HH:mm:ssZZ"
+  format: String = "YYYY-MM-dd'T'HH:mm:ssZZ",
 ) : UpdatableThreadLocal<SimpleDateFormat>({
   SimpleDateFormat(format)
 }) {

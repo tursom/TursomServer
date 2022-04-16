@@ -7,49 +7,49 @@ import kotlin.reflect.KProperty
 @Suppress("unused")
 object AggregationBuilder : MongoName {
   inline infix operator fun invoke(
-    operatorBuilder: AggregationBuilder.(MutableList<AggregationOperation>) -> MutableList<AggregationOperation>
+    operatorBuilder: AggregationBuilder.(MutableList<AggregationOperation>) -> MutableList<AggregationOperation>,
   ): Aggregation {
     val operator = this.operatorBuilder(ArrayList())
     return Aggregation.newAggregation(operator)
   }
 
   infix operator fun MutableList<AggregationOperation>.plus(
-    operation: AggregationOperation
+    operation: AggregationOperation,
   ): MutableList<AggregationOperation> {
     add(operation)
     return this
   }
 
   infix fun MutableList<AggregationOperation>.match(
-    builder: QueryBuilder.() -> Unit
+    builder: QueryBuilder.() -> Unit,
   ): MutableList<AggregationOperation> {
     add(Aggregation.match(QueryBuilder criteria builder))
     return this
   }
 
   infix fun MutableList<AggregationOperation>.group(
-    builder: GroupBuilder.() -> AggregationOperation
+    builder: GroupBuilder.() -> AggregationOperation,
   ): MutableList<AggregationOperation> {
     add(GroupBuilder.builder())
     return this
   }
 
   infix fun MutableList<AggregationOperation>.project(
-    builder: ProjectBuilder.() -> AggregationOperation
+    builder: ProjectBuilder.() -> AggregationOperation,
   ): MutableList<AggregationOperation> {
     add(ProjectBuilder.builder())
     return this
   }
 
   infix fun MutableList<AggregationOperation>.unwind(
-    field: String
+    field: String,
   ): MutableList<AggregationOperation> {
     add(Aggregation.unwind(field))
     return this
   }
 
   infix fun MutableList<AggregationOperation>.unwind(
-    field: KProperty<*>
+    field: KProperty<*>,
   ): MutableList<AggregationOperation> {
     add(Aggregation.unwind(field.mongoName))
     return this
@@ -57,21 +57,21 @@ object AggregationBuilder : MongoName {
 
   @JvmName("unwindString")
   infix fun MutableList<AggregationOperation>.unwind(
-    field: () -> String
+    field: () -> String,
   ): MutableList<AggregationOperation> {
     add(Aggregation.unwind(field()))
     return this
   }
 
   infix fun MutableList<AggregationOperation>.unwind(
-    field: () -> KProperty<*>
+    field: () -> KProperty<*>,
   ): MutableList<AggregationOperation> {
     add(Aggregation.unwind(field().mongoName))
     return this
   }
 
   infix fun MutableList<AggregationOperation>.sort(
-    builder: SortBuilder.() -> Unit
+    builder: SortBuilder.() -> Unit,
   ): MutableList<AggregationOperation> {
     val sortBuilder = SortBuilder()
     sortBuilder.invoke(builder)
@@ -80,14 +80,14 @@ object AggregationBuilder : MongoName {
   }
 
   infix fun MutableList<AggregationOperation>.skip(
-    skip: Long
+    skip: Long,
   ): MutableList<AggregationOperation> {
     add(Aggregation.skip(skip))
     return this
   }
 
   infix fun MutableList<AggregationOperation>.limit(
-    limit: Long
+    limit: Long,
   ): MutableList<AggregationOperation> {
     add(Aggregation.limit(limit))
     return this

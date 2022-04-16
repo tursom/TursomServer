@@ -25,13 +25,13 @@ class Snowflake(
   val executorService: ScheduledExecutorService? = null,
   val updateRateMs: Long = defaultUpdateRateMs,
   val workMode: WorkMode = WorkMode.INCREMENT,
-  val incrementLength: Int = 7
+  val incrementLength: Int = 7,
 ) {
   constructor(
     workerId: String,
     executorService: ScheduledExecutorService? = null,
     updateRateMs: Long = defaultUpdateRateMs,
-    workMode: WorkMode = WorkMode.INCREMENT
+    workMode: WorkMode = WorkMode.INCREMENT,
   ) : this(parseId(workerId), executorService, updateRateMs, workMode)
 
   private var _timestamp = System.currentTimeMillis().shl(incrementLength + 13).and(0x7f_ff_ff_ff__ff_ff_ff_ff)

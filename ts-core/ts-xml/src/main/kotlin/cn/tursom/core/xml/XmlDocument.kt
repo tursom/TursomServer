@@ -29,7 +29,7 @@ object XmlDocument {
 
   fun subElement(
     name: String? = null,
-    action: (ElementContainerPotableXmlElement.() -> Unit)? = null
+    action: (ElementContainerPotableXmlElement.() -> Unit)? = null,
   ): ElementContainerXmlElement {
     val container = ElementContainer()
     if (name != null) container.name = name
@@ -42,7 +42,7 @@ object XmlDocument {
   operator fun invoke(
     advanceIndentation: String = "  ",
     indentation: String = "",
-    action: XmlDocument.() -> XmlElement
+    action: XmlDocument.() -> XmlElement,
   ): String {
     return this.action().toString(StringBuilder(), indentation, advanceIndentation)
   }

@@ -214,7 +214,7 @@ class StringRadixTree<T> {
     var str: String = "",
     var value: T? = null,
     var parent: Node<T>? = null,
-    var subNodes: SimpMap<Char, Node<T>> = ArrayMap(0)
+    var subNodes: SimpMap<Char, Node<T>> = ArrayMap(0),
   ) {
     constructor(parent: Node<T>, str: String = "", value: T? = null) : this(str, value, parent, parent.subNodes) {
       parent.subNodes = ArrayMap(1)

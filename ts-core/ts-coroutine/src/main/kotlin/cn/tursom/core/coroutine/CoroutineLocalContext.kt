@@ -5,7 +5,7 @@ import kotlinx.coroutines.ThreadContextElement
 import kotlin.coroutines.CoroutineContext
 
 open class CoroutineLocalContext(
-  private val mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) }
+  private val mapBuilder: () -> MutableMap<CoroutineLocal<*>, Any?> = { HashMap(4) },
 ) : CoroutineContext.Element, ThreadContextElement<MutableMap<CoroutineLocal<*>, Any?>>,
   MutableMap<CoroutineLocal<*>, Any?> {
   override val key: CoroutineContext.Key<*> get() = Key

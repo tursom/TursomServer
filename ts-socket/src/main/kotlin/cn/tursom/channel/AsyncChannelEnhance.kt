@@ -20,5 +20,5 @@ fun ChannelWriter<ByteBuffer>.string() = StringWriter(this)
 fun EnhanceChannel<ByteBuffer, ByteBuffer>.string() = StringChannel(this)
 
 fun ChannelWriter<String>.stringObjectWriter(
-  toString: (obj: Any) -> String = { it.toString() }
+  toString: (obj: Any) -> String = { it.toString() },
 ): StringObjectWriter = StringObjectWriter(this, toString)

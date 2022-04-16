@@ -4,7 +4,7 @@ import kotlin.reflect.KProperty1
 
 class KPropertyValueCollection(
   val target: Any,
-  private val propertyMap: Map<String, KProperty1<Any, *>> = KPropertyValueMap[target]
+  private val propertyMap: Map<String, KProperty1<Any, *>> = KPropertyValueMap[target],
 ) : Collection<Any?> {
   override val size: Int get() = propertyMap.size
   override fun isEmpty(): Boolean = propertyMap.isEmpty()

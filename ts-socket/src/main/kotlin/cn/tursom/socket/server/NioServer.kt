@@ -1,12 +1,12 @@
 package cn.tursom.socket.server
 
 import cn.tursom.channel.AsyncProtocol
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.NioThread
 import cn.tursom.socket.AsyncSocket
 import cn.tursom.socket.NioSocket
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.nio.channels.SelectionKey
 
@@ -19,7 +19,7 @@ open class NioServer(
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
   var autoCloseSocket: Boolean = true,
-  private val handler: suspend AsyncSocket.() -> Unit
+  private val handler: suspend AsyncSocket.() -> Unit,
 ) : SocketServer by NioLoopServer(port, object : NioProtocol by AsyncProtocol {
   override fun handleConnect(key: SelectionKey, nioThread: NioThread) {
     coroutineScope.launch {
@@ -29,7 +29,7 @@ open class NioServer(
       } finally {
         if (autoCloseSocket) try {
           socket.close()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
       }
     }

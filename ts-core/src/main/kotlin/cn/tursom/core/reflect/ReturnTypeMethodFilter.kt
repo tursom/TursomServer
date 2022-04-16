@@ -4,7 +4,7 @@ import cn.tursom.core.allMethodsSequence
 import java.lang.reflect.Method
 
 class ReturnTypeMethodFilter<R>(
-  val returnType: Class<R>
+  val returnType: Class<R>,
 ) : MethodFilter {
   override fun filterMethod(clazz: Class<*>): Sequence<Method> {
     return clazz.allMethodsSequence.filter { method ->

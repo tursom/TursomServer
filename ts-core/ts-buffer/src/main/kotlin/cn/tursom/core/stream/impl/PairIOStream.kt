@@ -8,11 +8,11 @@ class PairIOStream(
   @Suppress("MemberVisibilityCanBePrivate")
   val inputStream: JavaInputStream,
   @Suppress("MemberVisibilityCanBePrivate")
-  val outputStream: JavaOutputStream
+  val outputStream: JavaOutputStream,
 ) : IOStream, InputStream by inputStream, OutputStream by outputStream {
   constructor(
     outputStream: JavaOutputStream,
-    inputStream: JavaInputStream
+    inputStream: JavaInputStream,
   ) : this(inputStream, outputStream)
 
   override fun close() {

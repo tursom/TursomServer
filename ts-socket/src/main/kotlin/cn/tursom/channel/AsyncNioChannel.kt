@@ -1,6 +1,5 @@
 package cn.tursom.channel
 
-import cn.tursom.channel.AsyncChannel.Companion.emptyBufferCode
 import cn.tursom.channel.AsyncChannel.Companion.emptyBufferLongCode
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
@@ -20,13 +19,8 @@ interface AsyncNioChannel : AsyncChannel {
   val key: SelectionKey
   val nioThread: NioThread
   val channel: SelectableChannel get() = key.channel()
-
-  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long
-  override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long
-  override suspend fun write(buffer: ByteBuffer, timeout: Long): Int = write(arrayOf(buffer), timeout).toInt()
-  override suspend fun read(buffer: ByteBuffer, timeout: Long): Int = read(arrayOf(buffer), timeout).toInt()
-  //override suspend fun write(buffer: MultipleByteBuffer, timeout: Long): Long = write(buffer.buffers, timeout)
-  //override suspend fun read(buffer: MultipleByteBuffer, timeout: Long): Long = read(buffer.buffers, timeout)
+  override suspend fun write(buffer: ByteBuffer, timeout: Long): Long = write(arrayOf(buffer), timeout)
+  override suspend fun read(buffer: ByteBuffer, timeout: Long): Long = read(arrayOf(buffer), timeout)
 
   override suspend fun write(
     file: FileChannel,
@@ -46,11 +40,11 @@ interface AsyncNioChannel : AsyncChannel {
     file.transferFrom(channel as ReadableByteChannel, position, count)
   }
 
-  override suspend fun write(bytes: ByteArray, offset: Int, len: Int): Int {
+  override suspend fun write(bytes: ByteArray, offset: Int, len: Int): Long {
     return write(HeapByteBuffer(bytes, offset, len))
   }
 
-  override suspend fun write(str: String, charset: Charset): Int {
+  override suspend fun write(str: String, charset: Charset): Long {
     return write(str.toByteArray(charset))
   }
 
@@ -96,8 +90,8 @@ interface AsyncNioChannel : AsyncChannel {
   /**
    * 如果通道已断开则会抛出异常
    */
-  override suspend fun recv(buffer: ByteBuffer, timeout: Long): Int {
-    if (buffer.writeable == 0) return emptyBufferCode
+  override suspend fun recv(buffer: ByteBuffer, timeout: Long): Long {
+    if (buffer.writeable == 0) return emptyBufferLongCode
     val readSize = read(buffer, timeout)
     if (readSize < 0) {
       throw SocketException("channel closed")

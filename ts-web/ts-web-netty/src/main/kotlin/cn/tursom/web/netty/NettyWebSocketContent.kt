@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 import java.net.SocketAddress
 
 class NettyWebSocketContent(
-  val channel: Channel
+  val channel: Channel,
 ) : WebSocketContent {
   override val remoteAddress: SocketAddress get() = channel.remoteAddress()
   override fun writeText(buffer: ByteBuffer) {

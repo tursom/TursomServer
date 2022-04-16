@@ -1,9 +1,9 @@
 package cn.tursom.http
 
 import cn.tursom.core.Utils.gson
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.coroutine.MainDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jsoup.nodes.Document
 import retrofit2.Retrofit
@@ -58,13 +58,13 @@ data class RoomStatus(
   val recvCount: Int,
   val roomId: Int,
   val roomInfo: RoomInfo,
-  val totalCount: Int
+  val totalCount: Int,
 )
 
 data class LiveUser(
   val info: Info,
   val level: Level,
-  val san: Int
+  val san: Int,
 )
 
 data class RoomInfo(
@@ -104,7 +104,7 @@ data class RoomInfo(
   val uid: Int,
   val up_session: String,
   val user_cover: String,
-  val verify: String
+  val verify: String,
 )
 
 data class Info(
@@ -117,7 +117,7 @@ data class Info(
   val rank: String,
   val uid: Int,
   val uname: String,
-  val vip_type: Int
+  val vip_type: Int,
 )
 
 data class Level(
@@ -133,13 +133,13 @@ data class Level(
   val user_level: Int,
   val user_score: String,
   val vip: Int,
-  val vip_time: String
+  val vip_time: String,
 )
 
 data class OfficialVerify(
   val desc: String,
   val role: Int,
-  val type: Int
+  val type: Int,
 )
 
 data class MasterLevel(
@@ -150,25 +150,25 @@ data class MasterLevel(
   val master_level_color: Int,
   val next: List<Int>,
   val sort: String,
-  val upgrade_score: Int
+  val upgrade_score: Int,
 )
 
 data class NewPendants(
   val badge: Badge,
   val frame: Frame,
-  val mobile_frame: MobileFrame
+  val mobile_frame: MobileFrame,
 )
 
 data class StudioInfo(
   val master_list: List<Any>,
-  val status: Int
+  val status: Int,
 )
 
 data class Badge(
   val desc: String,
   val name: String,
   val position: Double,
-  val value: String
+  val value: String,
 )
 
 data class Frame(
@@ -180,7 +180,7 @@ data class Frame(
   val name: String,
   val position: Int,
   val use_old_area: Boolean,
-  val value: String
+  val value: String,
 )
 
 data class MobileFrame(
@@ -192,5 +192,5 @@ data class MobileFrame(
   val name: String,
   val position: Int,
   val use_old_area: Boolean,
-  val value: String
+  val value: String,
 )

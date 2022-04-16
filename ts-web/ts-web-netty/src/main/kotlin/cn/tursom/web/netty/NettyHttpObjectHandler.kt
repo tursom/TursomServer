@@ -11,7 +11,7 @@ import io.netty.util.AttributeKey
 
 @ChannelHandler.Sharable
 class NettyHttpObjectHandler(
-  private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>
+  private val handler: HttpHandler<NettyHttpContent, NettyExceptionContent>,
 ) : SimpleChannelInboundHandler<HttpObject>() {
   companion object {
     private val context = AttributeKey.newInstance<NettyHttpContent>("NettyHttpContent")

@@ -10,7 +10,7 @@ import java.security.spec.X509EncodedKeySpec
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class DSA(
   publicKey: DSAPublicKey,
-  privateKey: DSAPrivateKey? = null
+  privateKey: DSAPrivateKey? = null,
 ) : AbstractPublicKeyEncrypt("DSA", publicKey, privateKey) {
 
   override val decryptMaxLen = Int.MAX_VALUE

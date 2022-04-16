@@ -7,7 +7,7 @@ import cn.tursom.core.buffer.ByteBuffer
 
 class StringChannel(
   prevReader: ChannelReader<ByteBuffer>,
-  prevWriter: ChannelWriter<ByteBuffer>
+  prevWriter: ChannelWriter<ByteBuffer>,
 ) : EnhanceChannelImpl<String, String>(
   StringReader(prevReader),
   StringWriter(prevWriter)

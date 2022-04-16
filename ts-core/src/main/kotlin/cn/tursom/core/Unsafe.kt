@@ -3,11 +3,11 @@ package cn.tursom.core
 import sun.misc.Unsafe
 
 object Unsafe {
-  val unsafe: Unsafe = Unsafe::class.java["theUnsafe"] as Unsafe
+  val unsafe: Unsafe = Unsafe::class.java.getStaticField("theUnsafe") as Unsafe
 
   operator fun <T> invoke(action: cn.tursom.core.Unsafe.() -> T): T = this.action()
 
-  operator fun Any.get(name: String): Any? {
+  fun Any.getField(name: String): Any? {
     val clazz = this::class.java
     val field = try {
       clazz.getDeclaredField(name)
@@ -18,7 +18,18 @@ object Unsafe {
     return field.get(this)
   }
 
-  operator fun Class<*>.get(name: String): Any? {
+  fun Any.setField(name: String, value: Any?) {
+    val clazz = this::class.java
+    val field = try {
+      clazz.getDeclaredField(name)
+    } catch (e: Exception) {
+      return
+    }
+    field.isAccessible = true
+    field.set(this, value)
+  }
+
+  fun Class<*>.getStaticField(name: String): Any? {
     val field = try {
       getDeclaredField(name)
     } catch (e: Exception) {

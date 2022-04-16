@@ -11,12 +11,12 @@ val ClassLoader.classes: List<Class<*>>
 
 fun ClassLoader.getClassByPackage(
   packageName: String,
-  childPackage: Boolean = true
+  childPackage: Boolean = true,
 ): List<String> = ClassLoaderUtil.getClassByPackage(packageName, childPackage, this)
 
 inline fun <reified T> T.getClassByPackage(
   packageName: String,
-  childPackage: Boolean = true
+  childPackage: Boolean = true,
 ): List<String> = ClassLoaderUtil.getClassByPackage(packageName, childPackage, T::class.java.classLoader)
 
 object ClassLoaderUtil {
@@ -31,7 +31,7 @@ object ClassLoaderUtil {
   fun getClassByPackage(
     packageName: String,
     childPackage: Boolean = true,
-    loader: ClassLoader = Thread.currentThread().contextClassLoader
+    loader: ClassLoader = Thread.currentThread().contextClassLoader,
   ): List<String> {
     val packagePath = packageName.replace(".", "/")
     val url: URL? = loader.getResource(packagePath)

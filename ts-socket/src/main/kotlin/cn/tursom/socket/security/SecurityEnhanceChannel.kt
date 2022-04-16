@@ -10,7 +10,7 @@ import cn.tursom.core.pool.MemoryPool
 class SecurityEnhanceChannel(
   val preReader: ChannelReader<ByteBuffer>,
   val preWriter: ChannelWriter<ByteArray>,
-  val aes: AES
+  val aes: AES,
 ) : EnhanceChannel<ByteArray, ByteArray> {
   override val reader: ChannelReader<ByteArray> get() = this
   override val writer: ChannelWriter<ByteArray> get() = this

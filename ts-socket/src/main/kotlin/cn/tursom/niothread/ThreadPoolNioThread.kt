@@ -11,7 +11,7 @@ class ThreadPoolNioThread(
   override val selector: Selector = Selector.open(),
   override val daemon: Boolean = false,
   override val timeout: Long = 3000,
-  override val workLoop: (thread: NioThread, key: SelectionKey) -> Unit
+  override val workLoop: (thread: NioThread, key: SelectionKey) -> Unit,
 ) : NioThread {
   override lateinit var thread: Thread
   val threadPool: ExecutorService = ThreadPoolExecutor(1, 1,

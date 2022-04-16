@@ -44,7 +44,7 @@ class SynchronizedTaskQueue : TaskQueue {
     override val task: () -> Unit,
     @Volatile var prev: TaskNode?,
     @Volatile var next: TaskNode?,
-    override val createTime: Long = CurrentTimeMillisClock.now
+    override val createTime: Long = CurrentTimeMillisClock.now,
   ) : TimerTask {
     @Volatile
     override var canceled: Boolean = false

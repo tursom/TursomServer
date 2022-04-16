@@ -7,7 +7,7 @@ interface XmlElement {
   fun toString(
     builder: StringBuilder,
     indentation: String,
-    advanceIndentation: String
+    advanceIndentation: String,
   ): String {
     builder.append(indentation)
     when (this) {

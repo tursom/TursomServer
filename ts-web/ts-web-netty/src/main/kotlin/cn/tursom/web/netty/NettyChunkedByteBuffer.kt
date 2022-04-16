@@ -11,7 +11,7 @@ import io.netty.handler.stream.ChunkedInput
 import org.slf4j.LoggerFactory
 
 class NettyChunkedByteBuffer(
-  private val bufList: Iterable<() -> ByteBuffer>
+  private val bufList: Iterable<() -> ByteBuffer>,
 ) : ChunkedInput<ByteBuf> {
   constructor(vararg bufList: ByteBuffer) : this(bufList.map { { it } } as Iterable<() -> ByteBuffer>)
   constructor(vararg bufList: () -> ByteBuffer) : this(bufList.asList())

@@ -10,7 +10,7 @@ interface MethodFilter {
 
 
 class Arg1MethodFilter<R>(
-  val prevFilter: ReturnTypeMethodFilter<R>
+  val prevFilter: ReturnTypeMethodFilter<R>,
 ) : MethodFilter {
   override fun filterMethod(clazz: Class<*>): Sequence<Method> {
     return prevFilter.filterMethod(clazz).filter { method ->

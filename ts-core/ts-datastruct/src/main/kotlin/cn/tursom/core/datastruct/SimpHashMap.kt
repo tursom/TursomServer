@@ -1,7 +1,7 @@
 package cn.tursom.core.datastruct
 
 class SimpHashMap<K, V>(
-  val hashMap: java.util.AbstractMap<K, V> = HashMap()
+  val hashMap: java.util.AbstractMap<K, V> = HashMap(),
 ) : SimpMap<K, V>, MutableMap<K, V> by hashMap {
   override fun delete(key: K): V? {
     return hashMap.remove(key)

@@ -30,9 +30,9 @@ object MongoUtil {
         entity.javaClass.declaredFields.filter {
           it.isAccessible = true
           !it.isStatic()
-              && !it.isTransient()
-              //&& it.getAnnotation(Ignore::class.java) == null
-              && (it.type != Lazy::class.java || it.get(entity).uncheckedCast<Lazy<*>>().isInitialized())
+            && !it.isTransient()
+            //&& it.getAnnotation(Ignore::class.java) == null
+            && (it.type != Lazy::class.java || it.get(entity).uncheckedCast<Lazy<*>>().isInitialized())
         }.forEach {
           injectValue(bson, it.get(entity) ?: return@forEach, it)
         }

@@ -1,13 +1,12 @@
 package cn.tursom.datagram.server
 
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.buffer.NioBuffers.finishRead
-import cn.tursom.core.buffer.NioBuffers.getReadNioBufferList
 import cn.tursom.core.pool.MemoryPool
 import cn.tursom.core.timer.TimerTask
 import cn.tursom.core.timer.WheelTimer
 import cn.tursom.datagram.NioDatagram
 import cn.tursom.niothread.NioThread
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.net.SocketAddress
 import java.nio.channels.DatagramChannel
 import java.nio.channels.SelectionKey
@@ -15,14 +14,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class ServerNioDatagram(
   override val remoteAddress: SocketAddress,
   val server: AsyncDatagramServer,
   channel: DatagramChannel,
   key: SelectionKey,
-  nioThread: NioThread
+  nioThread: NioThread,
 ) : NioDatagram(channel, key, nioThread) {
   companion object {
     val timer = WheelTimer.timer
@@ -37,24 +35,8 @@ class ServerNioDatagram(
     bufferList.add(buffer)
   }
 
-  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long {
-    val nioBufferList = buffer.getReadNioBufferList()
-    buffer.finishRead(nioBufferList.iterator())
-    var write = 0L
-    nioBufferList.forEach { buf ->
-      if (buf.remaining() != 0) {
-        val send = channel.send(buf, remoteAddress)
-        if (send <= 0) {
-          return write
-        }
-        write += send
-      }
-    }
-    return write
-  }
-
   override suspend fun waitRead(timeout: Long) {
-    suspendCoroutine<Int> { cont ->
+    suspendCancellableCoroutine<Int> { cont ->
       this.cont = cont
       if (timeout > 0) {
         timeoutTask = timer.exec(timeout) {
@@ -64,22 +46,6 @@ class ServerNioDatagram(
     }
     cont = null
     timeoutTask?.cancel()
-  }
-
-  override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long {
-    if (bufferList.isEmpty()) waitRead()
-    val bufferIterator = buffer.iterator()
-    var write = 0L
-    while (bufferIterator.hasNext()) {
-      val buf = bufferIterator.next()
-      while (buf.writeable != 0) {
-        if (readBuffer == null || readBuffer?.readable == 0) {
-          readBuffer = bufferList.poll() ?: return write
-        }
-        write += buf.put(readBuffer!!)
-      }
-    }
-    return write
   }
 
   override suspend fun read(pool: MemoryPool, timeout: Long): ByteBuffer {

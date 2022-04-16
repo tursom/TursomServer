@@ -24,7 +24,7 @@ open class NonLockLinkedList<T> {
 
   private class TaskListNode<T>(
     val data: T,
-    @Volatile var next: TaskListNode<T>?
+    @Volatile var next: TaskListNode<T>?,
   )
 
   class NotSupportedException : Exception()

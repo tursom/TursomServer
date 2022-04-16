@@ -48,11 +48,15 @@ object ByteBufferUtil {
     return buffer
   }
 
+  fun wrap(bytes: ByteArray, write: Boolean = true): cn.tursom.core.buffer.ByteBuffer {
+    return HeapByteBuffer(bytes, write)
+  }
+
   fun wrap(array: ByteArray, offset: Int = 0, size: Int = array.size - offset): ByteBuffer {
     val buffer = ByteBuffer.wrap(array, 0, offset + size)
     if (offset > 0) field.set(buffer, offset)
     return buffer
   }
 
-  fun wrap(string: String) = wrap(string.toByteArray())
+  fun wrap(string: String) = wrap(string.toByteArray(), write = false)
 }

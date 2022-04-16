@@ -7,7 +7,7 @@ import cn.tursom.core.buffer.readable
 import cn.tursom.core.pool.MemoryPool
 
 class ListStringReader(
-  private val prevReader: ChannelReader<Collection<ByteBuffer>>
+  private val prevReader: ChannelReader<Collection<ByteBuffer>>,
 ) : ChannelReader<String> {
   override suspend fun read(pool: MemoryPool, timeout: Long): String {
     val read = prevReader.read(pool, timeout)

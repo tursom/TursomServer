@@ -9,7 +9,7 @@ interface RegexAbstractWrapperEnhance<T, out W : AbstractWrapper<T, String, out 
   val wrapper: W get() = uncheckedCast()
 
   infix fun String.regex(
-    value: Any
+    value: Any,
   ): Children = WrapperEnhance.regex(wrapper, this, value).uncheckedCast()
 
   infix fun KProperty1<T, *>.regex(

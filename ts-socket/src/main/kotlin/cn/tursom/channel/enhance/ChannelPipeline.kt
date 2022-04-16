@@ -1,10 +1,10 @@
 package cn.tursom.channel.enhance
 
 import cn.tursom.core.ShutdownHook
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.pool.HeapMemoryPool
 import cn.tursom.core.pool.MemoryPool
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.Closeable
 import kotlin.coroutines.CoroutineContext

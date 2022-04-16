@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class RoutedHttpHandler(
   vararg target: Any,
-  val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() }
+  val routerMaker: () -> Router<Pair<Any?, (HttpContent) -> Any?>> = { SimpleRouter() },
 ) : HttpHandler<HttpContent, ExceptionContent> {
   protected val router: Router<Pair<Any?, (HttpContent) -> Any?>> = routerMaker()
   protected val routerMap: HashMap<String, Router<Pair<Any?, (HttpContent) -> Any?>>> = HashMap()

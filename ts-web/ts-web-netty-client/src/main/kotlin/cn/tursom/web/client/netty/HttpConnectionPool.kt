@@ -1,7 +1,9 @@
 package cn.tursom.web.client.netty
 
+import cn.tursom.core.seconds
 import io.netty.handler.timeout.WriteTimeoutHandler
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -21,10 +23,10 @@ class HttpConnectionPool(
   }
 
   private val group = HttpExecutor.group(host, port, ssl) {
-    it.attr(NettyHttpResultResume.countKey).set(conn)
     it.pipeline()
       .addLast(NettyHttpResultResume)
       .addLast(WriteTimeoutHandler(60))
+    it.attr(NettyHttpResultResume.countKey).set(conn)
   }
   private val pool = Channel<NettyHttpConnection>(maxConn)
   private val conn = AtomicInteger()
@@ -36,6 +38,7 @@ class HttpConnectionPool(
       conn.decrementAndGet()
       pool.receive()
     }
+    delay(10.seconds().toMillis())
     val result = try {
       handler(client)
     } catch (e: Exception) {

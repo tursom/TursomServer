@@ -6,7 +6,7 @@ class Cookie(
   var domain: String? = null,
   var path: String? = null,
   var maxAge: Long = 0,
-  var sameSite: SameSite? = null
+  var sameSite: SameSite? = null,
 ) {
   override fun toString(): String {
     return "$name=$value${

@@ -1,11 +1,16 @@
 package cn.tursom.datagram.server
 
 import cn.tursom.channel.BufferedAsyncChannel
+import cn.tursom.core.ByteBufferUtil
+import cn.tursom.core.ThreadLocalSimpleDateFormat
+import cn.tursom.core.buffer.impl.ArrayByteBuffer
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.datagram.AsyncDatagramClient
 import cn.tursom.log.impl.Slf4jImpl
 import cn.tursom.socket.NioClient
 import cn.tursom.socket.server.BufferedNioServer
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 val logger = Slf4jImpl.getLogger()
@@ -14,12 +19,12 @@ val echoHandler: suspend BufferedAsyncChannel.() -> Unit = {
   while (true) {
     val buffer = read()
     logger.debug("$this recv from client $remoteAddress: ${buffer.toString(buffer.readable)}")
-    Throwable().printStackTrace()
     write(buffer)
   }
 }
 
 fun main() {
+  GlobalScope.launch {}
   val port = 12345
   val pool = DirectMemoryPool(1024, 16)
   val server = BufferedNioServer(port, pool, handler = echoHandler)
@@ -45,7 +50,12 @@ fun main() {
         print(">>>")
         val line = input.readLine()
         if (line.isEmpty()) continue
-        client.write(line)
+        client.write(ArrayByteBuffer(
+          ByteBufferUtil.wrap("["),
+          ByteBufferUtil.wrap(ThreadLocalSimpleDateFormat.cn.now()),
+          ByteBufferUtil.wrap("] send from client: "),
+          ByteBufferUtil.wrap(line),
+        ))
         val read = try {
           client.read(3000)
         } catch (e: Exception) {

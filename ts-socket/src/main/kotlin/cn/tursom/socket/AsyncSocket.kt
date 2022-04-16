@@ -5,8 +5,9 @@ import cn.tursom.channel.BufferedAsyncChannel
 import cn.tursom.channel.read
 import cn.tursom.channel.write
 import cn.tursom.core.buffer.ByteBuffer
+import cn.tursom.core.buffer.NioBuffers.readNioBuffers
+import cn.tursom.core.buffer.NioBuffers.writeNioBuffers
 import cn.tursom.core.buffer.read
-import cn.tursom.core.buffer.write
 import cn.tursom.core.pool.MemoryPool
 import java.net.SocketAddress
 import java.net.SocketException
@@ -19,17 +20,17 @@ interface AsyncSocket : AsyncNioChannel {
   override val remoteAddress: SocketAddress get() = channel.remoteAddress
   override fun getBuffed(pool: MemoryPool): BufferedAsyncChannel = BufferedNioSocket(this, pool)
 
-  override suspend fun write(buffer: Array<out ByteBuffer>, timeout: Long): Long =
-    write(timeout) { channel.write(buffer) }
+  override suspend fun write(buffer: Array<out ByteBuffer>, offset: Int, length: Int, timeout: Long): Long =
+    write(timeout) { buffer.readNioBuffers(offset, length) { channel.write(it) } }
 
-  override suspend fun read(buffer: Array<out ByteBuffer>, timeout: Long): Long =
-    read(timeout) { channel.read(buffer) }
+  override suspend fun read(buffer: Array<out ByteBuffer>, offset: Int, length: Int, timeout: Long): Long =
+    read(timeout) { buffer.writeNioBuffers(offset, length) { channel.read(it) } }
 
   override suspend fun write(
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long
+    timeout: Long,
   ): Long = write(timeout) {
     file.transferTo(position, count, channel)
   }
@@ -38,7 +39,7 @@ interface AsyncSocket : AsyncNioChannel {
     file: FileChannel,
     position: Long,
     count: Long,
-    timeout: Long
+    timeout: Long,
   ): Long = read(timeout) {
     file.transferFrom(channel, position, count)
   }

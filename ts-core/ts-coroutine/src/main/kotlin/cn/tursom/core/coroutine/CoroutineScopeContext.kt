@@ -2,13 +2,12 @@ package cn.tursom.core.coroutine
 
 import cn.tursom.core.cast
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 class CoroutineScopeContext(
-  var coroutineScope: CoroutineScope = GlobalScope
+  var coroutineScope: CoroutineScope = GlobalScope,
 ) : CoroutineContext.Element {
   override val key: CoroutineContext.Key<*> get() = Companion
 

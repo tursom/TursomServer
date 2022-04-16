@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
   implementation(project(":ts-core"))
+  implementation(project(":ts-core:ts-coroutine"))
   implementation(project(":ts-core:ts-encrypt"))
   implementation(project(":ts-core:ts-buffer"))
   implementation(project(":ts-core:ts-pool"))

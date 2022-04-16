@@ -3,7 +3,7 @@ package cn.tursom.core
 @Suppress("unused")
 class ListClassLoader(
   //url: Array<out URL>,
-  parent: ClassLoader = getSystemClassLoader()
+  parent: ClassLoader = getSystemClassLoader(),
 ) : ClassLoader(parent),
   MutableList<ClassLoader> by ArrayList() {
 

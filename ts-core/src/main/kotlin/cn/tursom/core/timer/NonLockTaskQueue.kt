@@ -38,7 +38,7 @@ class NonLockTaskQueue : TaskQueue {
     override val timeout: Long,
     override val task: () -> Unit,
     override val createTime: Long,
-    @Volatile var next: TaskListNode?
+    @Volatile var next: TaskListNode?,
   ) : TimerTask {
     @Volatile
     override var canceled: Boolean = false

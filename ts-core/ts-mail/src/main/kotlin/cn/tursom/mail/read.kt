@@ -20,7 +20,7 @@ fun addMailListener(
   freq: Long, timeUnit: TimeUnit,
   listener: MessageCountListener,
   newFolder: () -> Folder? = { null },
-  onHeartBeat: Folder. () -> Unit = {}
+  onHeartBeat: Folder. () -> Unit = {},
 ): ScheduledFuture<*> {
   folder.addMessageCountListener(listener)
   var mailFOlder = folder
@@ -42,7 +42,7 @@ fun addMailListener(
   newFolder: () -> Folder,
   freq: Long, timeUnit: TimeUnit,
   listener: MessageCountListener,
-  onHeartBeat: Folder. () -> Unit = {}
+  onHeartBeat: Folder. () -> Unit = {},
 ): ScheduledFuture<*> = addMailListener(newFolder(), freq, timeUnit, listener, newFolder, onHeartBeat)
 
 fun getStore(host: String, port: Int, account: String, password: String): Store {
@@ -113,7 +113,7 @@ fun forEachUnreadMail(
   port: Int,
   account: String,
   password: String,
-  onMsg: (from: InternetAddress, msg: String) -> Boolean
+  onMsg: (from: InternetAddress, msg: String) -> Boolean,
 ) {
   forEachMail(host, port, account, password) { message ->
     // 跳过已读邮件

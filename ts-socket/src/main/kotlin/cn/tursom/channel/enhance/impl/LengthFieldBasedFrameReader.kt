@@ -9,7 +9,7 @@ import cn.tursom.core.pool.LongBitSetDirectMemoryPool
 import cn.tursom.core.pool.MemoryPool
 
 class LengthFieldBasedFrameReader(
-  private val prevReader: ChannelReader<ByteBuffer>
+  private val prevReader: ChannelReader<ByteBuffer>,
 ) : ChannelReader<ByteBuffer> {
   private var lastRead: ByteBuffer? = null
 
@@ -20,16 +20,16 @@ class LengthFieldBasedFrameReader(
       it.close()
       size
     }
-    val bufList = ArrayList<ByteBuffer>()
+    val bufList = ListByteBuffer()
     var readSize = 0
     lastRead?.let { buffer ->
-      bufList.add(buffer)
+      bufList.append(buffer)
       readSize += buffer.readable
     }
     while (readSize < maxSize) {
       val buffer = prevReader.read(pool, timeout - (CurrentTimeMillisClock.now - startTime))
       readSize += buffer.readable
-      bufList.add(
+      bufList.append(
         if (readSize > maxSize) {
           lastRead = buffer.slice(
             buffer.readPosition + readSize - maxSize,
@@ -48,7 +48,7 @@ class LengthFieldBasedFrameReader(
         }
       )
     }
-    return ListByteBuffer(bufList)
+    return bufList
   }
 
   override fun close() = prevReader.close()

@@ -4,7 +4,7 @@ import java.lang.ref.SoftReference
 
 open class UpdatableThreadLocal<T>(
   @Volatile
-  private var new: () -> T
+  private var new: () -> T,
 ) : ThreadLocal<T>() {
   @Suppress("LeakingThis")
   private val thisSoft: SoftReference<UpdatableThreadLocal<*>> = SoftReference(this)

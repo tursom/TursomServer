@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 @Suppress("MemberVisibilityCanBePrivate")
 class NettyExceptionContent(
   val ctx: ChannelHandlerContext,
-  override val cause: Throwable
+  override val cause: Throwable,
 ) : ExceptionContent, NettyResponseHeaderAdapter() {
   override var finished: Boolean = false
   val responseBodyBuf: CompositeByteBuf = ctx.alloc().compositeBuffer()!!

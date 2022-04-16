@@ -5,7 +5,7 @@ import cn.tursom.core.buffer.ByteBuffer
 class DirectByteBuffer(
   private var buffer: java.nio.ByteBuffer,
   override var readPosition: Int = 0,
-  override var writePosition: Int = 0
+  override var writePosition: Int = 0,
 ) : ByteBuffer {
   constructor(size: Int) : this(java.nio.ByteBuffer.allocateDirect(size))
 
@@ -30,10 +30,12 @@ class DirectByteBuffer(
     return buffer
   }
 
-  override fun finishRead(buffer: java.nio.ByteBuffer) {
+  override fun finishRead(buffer: java.nio.ByteBuffer): Int {
+    val rp = readPosition
     if (buffer === this.buffer) {
       readPosition = buffer.position()
     }
+    return readPosition - rp
   }
 
   override fun writeBuffer(): java.nio.ByteBuffer {
@@ -44,10 +46,12 @@ class DirectByteBuffer(
     return buffer
   }
 
-  override fun finishWrite(buffer: java.nio.ByteBuffer) {
+  override fun finishWrite(buffer: java.nio.ByteBuffer): Int {
+    val wp = writePosition
     if (buffer === this.buffer) {
       writePosition = buffer.position()
     }
+    return writePosition - wp
   }
 
   override fun reset() {

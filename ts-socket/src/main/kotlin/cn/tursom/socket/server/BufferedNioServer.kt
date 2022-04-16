@@ -1,5 +1,6 @@
 package cn.tursom.socket.server
 
+import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.pool.DirectMemoryPool
 import cn.tursom.core.pool.ExpandableMemoryPool
 import cn.tursom.core.pool.MarkedMemoryPool
@@ -7,7 +8,6 @@ import cn.tursom.core.pool.MemoryPool
 import cn.tursom.socket.BufferedAsyncSocket
 import cn.tursom.socket.BufferedNioSocket
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 
 /**
  * 带内存池的 NIO 套接字服务器。
@@ -19,7 +19,7 @@ open class BufferedNioServer(
   backlog: Int = 50,
   coroutineScope: CoroutineScope = GlobalScope,
   autoCloseSocket: Boolean = true,
-  handler: suspend BufferedAsyncSocket.() -> Unit
+  handler: suspend BufferedAsyncSocket.() -> Unit,
 ) : NioServer(port, backlog, coroutineScope, autoCloseSocket, {
   MarkedMemoryPool(memoryPool).use { marked ->
     BufferedNioSocket(this, marked).handler()
@@ -32,7 +32,7 @@ open class BufferedNioServer(
     backlog: Int = 50,
     coroutineScope: CoroutineScope = GlobalScope,
     autoCloseSocket: Boolean = true,
-    handler: suspend BufferedAsyncSocket.() -> Unit
+    handler: suspend BufferedAsyncSocket.() -> Unit,
   ) : this(
     port,
     ExpandableMemoryPool { DirectMemoryPool(blockSize, blockCount) },

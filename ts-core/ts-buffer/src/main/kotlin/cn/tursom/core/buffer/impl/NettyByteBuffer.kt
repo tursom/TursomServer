@@ -8,6 +8,7 @@ import cn.tursom.core.reference.FreeReference
 import cn.tursom.core.uncheckedCast
 import cn.tursom.log.impl.Slf4jImpl
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import java.io.OutputStream
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,7 +18,12 @@ class NettyByteBuffer(
   val byteBuf: ByteBuf,
   autoClose: Boolean = false,
 ) : ByteBuffer, AsyncFile.Reader, AsyncFile.Writer, NioBuffers.Arrays {
-  companion object : Slf4jImpl()
+  companion object : Slf4jImpl() {
+    fun toByteBuf(buffer: ByteBuffer) = when (buffer) {
+      is NettyByteBuffer -> buffer.byteBuf
+      else -> Unpooled.wrappedBuffer(buffer.getBytes())
+    }
+  }
 
   constructor(
     byteBuf: ByteBuf,
@@ -116,16 +122,16 @@ class NettyByteBuffer(
     return byteBuf.internalNioBuffer(readPosition, readable).slice()
   }
 
-  override fun finishRead(buffer: java.nio.ByteBuffer) {
-    byteBuf.readerIndex(buffer.position())
+  override fun finishRead(buffer: java.nio.ByteBuffer): Int {
+    return -(byteBuf.readerIndex() - byteBuf.readerIndex(buffer.position()).readerIndex())
   }
 
   override fun writeBuffer(): java.nio.ByteBuffer {
     return byteBuf.internalNioBuffer(writePosition, writeable).slice()
   }
 
-  override fun finishWrite(buffer: java.nio.ByteBuffer) {
-    byteBuf.writerIndex(buffer.position())
+  override fun finishWrite(buffer: java.nio.ByteBuffer): Int {
+    return -(byteBuf.writerIndex() - byteBuf.writerIndex(buffer.position()).writerIndex())
   }
 
   override val readOffset: Int get() = byteBuf.arrayOffset() + byteBuf.readerIndex()
@@ -284,13 +290,16 @@ class NettyByteBuffer(
     return nioBuffers
   }
 
-  override fun finishRead(buffers: Iterator<java.nio.ByteBuffer>) {
+  override fun finishRead(buffers: Array<out java.nio.ByteBuffer>): Long {
+    val iterator = buffers.iterator()
     var readPositionResult = 0
     repeat(nioReadBuffersNum) {
-      readPositionResult += buffers.next().position()
+      readPositionResult += iterator.next().position()
     }
     nioReadBuffersNum = 0
-    byteBuf.readerIndex(byteBuf.readerIndex() + readPositionResult - nioReadPosition)
+    val readed = readPositionResult - nioReadPosition
+    byteBuf.readerIndex(byteBuf.readerIndex() + readed)
+    return readed.toLong()
   }
 
   override fun writeBufferArray(): Array<out java.nio.ByteBuffer> {
@@ -300,13 +309,16 @@ class NettyByteBuffer(
     return nioBuffers
   }
 
-  override fun finishWrite(buffers: Iterator<java.nio.ByteBuffer>) {
+  override fun finishWrite(buffers: Array<out java.nio.ByteBuffer>): Long {
+    val iterator = buffers.iterator()
     var writePositionResult = 0
     repeat(nioWriteBuffersNum) {
-      writePositionResult += buffers.next().position()
+      writePositionResult += iterator.next().position()
     }
     nioWriteBuffersNum = 0
-    byteBuf.writerIndex(byteBuf.writerIndex() + writePositionResult - nioWritePosition)
+    val written = writePositionResult - nioWritePosition
+    byteBuf.writerIndex(byteBuf.writerIndex() + written)
+    return written.toLong()
   }
 
   override fun toString(): String {

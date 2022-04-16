@@ -7,7 +7,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 class FilterRouter<T>(
-  val matchPair: Pair<Char, Char> = '{' to '}'
+  val matchPair: Pair<Char, Char> = '{' to '}',
 ) : Router<T> {
   companion object {
     val slashOnceMore = Regex("/+")
@@ -52,7 +52,7 @@ class FilterRouter<T>(
     val route: String,
     val value: T?,
     val onDestroy: ((oldValue: T) -> Unit)?,
-    val matcher: Matcher
+    val matcher: Matcher,
   )
 
   class DefaultMatcher(route: String, matchPair: Pair<Char, Char> = '{' to '}') : Matcher {

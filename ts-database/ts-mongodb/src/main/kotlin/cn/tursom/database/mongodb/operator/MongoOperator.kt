@@ -27,7 +27,7 @@ interface MongoOperator<T : Any> : BsonFactory<T>, Closeable {
 
   suspend fun saveDocument(
     documents: List<Document>,
-    options: InsertManyOptions = InsertManyOptions()
+    options: InsertManyOptions = InsertManyOptions(),
   ): InsertManyResult?
 
   suspend fun insertOne(entity: T, options: InsertOneOptions = InsertOneOptions()): InsertOneResult? {

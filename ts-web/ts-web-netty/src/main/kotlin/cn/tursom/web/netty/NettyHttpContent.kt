@@ -22,7 +22,7 @@ import kotlin.collections.set
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 open class NettyHttpContent(
   val ctx: ChannelHandlerContext,
-  val request: HttpRequest
+  val request: HttpRequest,
 ) : MutableHttpContent, NettyResponseHeaderAdapter() {
   val decoder = HttpPostRequestDecoder(request)
   override var requestSendFully: Boolean = false
