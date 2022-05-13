@@ -468,6 +468,21 @@ inline fun <T> Any.notifyAll(action: () -> T) = synchronized(this) {
   t
 }
 
+fun Any.wait() {
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).wait()
+}
+
+fun Any.notify() {
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).notify()
+}
+
+fun Any.notifyAll() {
+  @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+  (this as Object).notifyAll()
+}
+
 inline val KClass<*>.companionObjectInstanceOrNull: Any?
   get() = try {
     companionObjectInstance
@@ -669,11 +684,13 @@ fun File.ungz(): File {
   if (!isFile) {
     throw UnsupportedOperationException("$name is not file")
   }
-  val ungzFile = File(if (name.endsWith(".gz")) {
-    name.dropLast(3)
-  } else {
-    "$name.ungz"
-  })
+  val ungzFile = File(
+    if (name.endsWith(".gz")) {
+      name.dropLast(3)
+    } else {
+      "$name.ungz"
+    }
+  )
   ungzFile.outputStream().use { os ->
     GZIPInputStream(inputStream()).use { inputStream ->
       inputStream.copyTo(os)
@@ -699,4 +716,9 @@ fun StringBuilder(vararg strings: String): StringBuilder {
   val builder = kotlin.text.StringBuilder(strings.sumOf { it.length })
   builder.append(value = strings)
   return builder
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Throwable.throws(): Nothing {
+  throw this
 }

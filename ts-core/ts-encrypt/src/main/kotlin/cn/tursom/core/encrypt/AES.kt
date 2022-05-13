@@ -9,6 +9,8 @@ import javax.crypto.spec.SecretKeySpec
 class AES(
   @Suppress("CanBeParameter") val secKey: SecretKey,
 ) : Encrypt {
+  override val algorithm: String get() = "AES"
+
   private val decryptCipher = Cipher.getInstance("AES")!!
   private val encryptCipher = Cipher.getInstance("AES")!!
 

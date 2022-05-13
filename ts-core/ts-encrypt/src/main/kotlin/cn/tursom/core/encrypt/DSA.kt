@@ -11,8 +11,8 @@ import java.security.spec.X509EncodedKeySpec
 class DSA(
   publicKey: DSAPublicKey,
   privateKey: DSAPrivateKey? = null,
-) : AbstractPublicKeyEncrypt("DSA", publicKey, privateKey) {
-
+  algorithm: String = "DSA",
+) : AbstractPublicKeyEncrypt(algorithm, publicKey, privateKey) {
   override val decryptMaxLen = Int.MAX_VALUE
   override val encryptMaxLen = Int.MAX_VALUE
 
@@ -24,14 +24,23 @@ class DSA(
     }
   }
 
-  constructor(keyPair: KeyPair) : this(keyPair.public as DSAPublicKey, keyPair.private as DSAPrivateKey)
+  constructor(keyPair: KeyPair, algorithm: String = "DSA") : this(
+    keyPair.public as DSAPublicKey,
+    keyPair.private as DSAPrivateKey,
+    algorithm,
+  )
 
-  constructor(keySize: Int = 1024) : this(KeyPairGenerator.getInstance("DSA").let {
-    it.initialize(keySize)
-    it.generateKeyPair()
-  })
+  constructor(keySize: Int = 1024, algorithm: String = "DSA") : this(
+    KeyPairGenerator.getInstance("DSA").let {
+      it.initialize(keySize)
+      it.generateKeyPair()
+    },
+    algorithm,
+  )
 
-  constructor(publicKey: ByteArray) : this(
-    KeyFactory.getInstance("DSA").generatePublic(X509EncodedKeySpec(publicKey)) as DSAPublicKey
+  constructor(publicKey: ByteArray, algorithm: String = "DSA") : this(
+    KeyFactory.getInstance("DSA").generatePublic(X509EncodedKeySpec(publicKey)) as DSAPublicKey,
+    null,
+    algorithm,
   )
 }

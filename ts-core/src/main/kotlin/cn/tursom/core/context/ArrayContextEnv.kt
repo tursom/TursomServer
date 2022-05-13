@@ -17,6 +17,13 @@ class ArrayContextEnv : ContextEnv {
     private val idGenerator: AtomicInteger,
   ) : Context {
     private var array = arrayOfNulls<Any?>(idGenerator.get())
+    override fun get(id: Int): Any? {
+      return if (array.size > id) {
+        array[id]
+      } else {
+        null
+      }
+    }
 
     override operator fun <T> get(key: ContextKey<T>): T? {
       checkEnv(key)
@@ -42,7 +49,8 @@ class ArrayContextEnv : ContextEnv {
     private val idGenerator: AtomicInteger,
   ) : Context {
     override fun <T> get(key: ContextKey<T>): T? = null
-    override fun <T> get(key: DefaultContextKey<T>): T = key.provider()
+    override fun get(id: Int): Any? = null
+    override fun <T> get(key: DefaultContextKey<T>): T = key.provider(this)
     override fun <T> set(key: ContextKey<T>, value: T) =
       ArrayContext(envId, idGenerator).set(key, value)
   }

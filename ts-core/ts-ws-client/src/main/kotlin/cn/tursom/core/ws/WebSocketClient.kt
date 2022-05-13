@@ -23,10 +23,11 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import java.net.URI
 import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T, H>>(
   url: String,
   open val handler: H,
@@ -35,15 +36,26 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   val compressed: Boolean = true,
   val maxContextLength: Int = 4096,
   private val headers: Map<String, String>? = null,
-  private val handshakerUri: URI? = null,
+  private val handshakeUri: URI? = null,
   val autoRelease: Boolean = true,
   var initChannel: ((ch: SocketChannel) -> Unit)? = null,
 ) {
+  companion object {
+    private val threadId = AtomicInteger()
+    private val group: EventLoopGroup = NioEventLoopGroup(0, ThreadFactory {
+      val thread = Thread(it, "WebSocketClient-${threadId.incrementAndGet()}")
+      thread.isDaemon = true
+      thread
+    })
+  }
+
   private val uri: URI = URI.create(url)
   var ch: Channel? = null
     internal set
   var closed: Boolean = false
     private set
+  private val onOpenLock = AtomicBoolean()
+  val onOpen get() = onOpenLock.get()
 
   private val hook = ShutdownHook.addHook(true) {
     close()
@@ -54,7 +66,18 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   }
 
   fun open(): ChannelFuture? {
-    close()
+    if (!onOpenLock.compareAndSet(false, true)) {
+      return null
+    }
+    try {
+      close()
+      return open1()
+    } finally {
+      onOpenLock.set(false)
+    }
+  }
+
+  private fun open1(): ChannelFuture? {
     val scheme = if (uri.scheme == null) "ws" else uri.scheme
     val host = if (uri.host == null) "127.0.0.1" else uri.host
     val port = if (uri.port == -1) {
@@ -85,7 +108,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
     }
     val handshakerAdapter = WebSocketClientHandshakerAdapter(
       WebSocketClientHandshakerFactory.newHandshaker(
-        handshakerUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
+        handshakeUri ?: uri, WebSocketVersion.V13, null, true, httpHeaders
       ), uncheckedCast(), handler
     )
     val handler = WebSocketClientChannelHandler(uncheckedCast(), handler, autoRelease)
@@ -186,20 +209,18 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   }
 
   open fun onClose() {
-    closed = true
-    notifyAll { }
+    synchronized(this) {
+      closed = true
+      notifyAll()
+    }
   }
 
   fun waitClose() {
-    if (!closed) wait { }
-  }
-
-  companion object {
-    private val threadId = AtomicInteger()
-    val group: EventLoopGroup = NioEventLoopGroup(0, ThreadFactory {
-      val thread = Thread(it, "WebSocketClient-${threadId.incrementAndGet()}")
-      thread.isDaemon = true
-      thread
-    })
+    if (!closed) synchronized(this) {
+      if (closed) {
+        return
+      }
+      wait()
+    }
   }
 }

@@ -3,12 +3,14 @@ package cn.tursom.core.context
 
 interface Context {
   val envId: Int
+
+  operator fun get(id: Int): Any?
   operator fun <T> get(key: DefaultContextKey<T>): T {
     var value = get(key as ContextKey<T>)
     return if (value != null) {
       value
     } else {
-      value = key.provider()
+      value = key.provider(this)
       set(key, value)
       value
     }

@@ -11,10 +11,10 @@ import java.security.spec.X509EncodedKeySpec
 class RSA(
   publicKey: RSAPublicKey,
   privateKey: RSAPrivateKey? = null,
-  modeOfOperation: BlockCipherModeOfOperation = BlockCipherModeOfOperation.ECB,
-) : AbstractPublicKeyEncrypt("RSA", publicKey, privateKey, modeOfOperation = modeOfOperation) {
-
+  algorithm: String = "RSA",
+) : AbstractPublicKeyEncrypt(algorithm, publicKey, privateKey) {
   val keySize get() = (publicKey as RSAPublicKey).modulus.bitLength()
+
   override val decryptMaxLen get() = keySize / 8
   override val encryptMaxLen get() = decryptMaxLen - 11
 
@@ -22,37 +22,37 @@ class RSA(
     if (privateKey == null) {
       this
     } else {
-      RSA(publicKey, modeOfOperation = modeOfOperation)
+      RSA(publicKey)
     }
   }
 
   constructor(
     keyPair: KeyPair,
-    modeOfOperation: BlockCipherModeOfOperation = BlockCipherModeOfOperation.ECB,
+    algorithm: String = "RSA",
   ) : this(
     keyPair.public as RSAPublicKey,
     keyPair.private as RSAPrivateKey,
-    modeOfOperation
+    algorithm,
   )
 
   constructor(
     keySize: Int = 1024,
-    modeOfOperation: BlockCipherModeOfOperation = BlockCipherModeOfOperation.ECB,
+    algorithm: String = "RSA",
   ) : this(
     KeyPairGenerator.getInstance("RSA").let {
       it.initialize(keySize)
       it.generateKeyPair()
     },
-    modeOfOperation
+    algorithm,
   )
 
   constructor(
     publicKey: ByteArray,
-    modeOfOperation: BlockCipherModeOfOperation = BlockCipherModeOfOperation.ECB,
+    algorithm: String = "RSA",
   ) : this(
     KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(publicKey)) as RSAPublicKey,
     null,
-    modeOfOperation
+    algorithm,
   )
 }
 

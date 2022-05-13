@@ -14,6 +14,9 @@ class HashMapContextEnv : ContextEnv {
     override val envId: Int,
   ) : Context {
     private var map = HashMap<Int, Any?>()
+    override fun get(id: Int): Any? {
+      return map[id]
+    }
 
     override fun <T> get(key: ContextKey<T>): T? {
       checkEnv(key)

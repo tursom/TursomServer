@@ -11,14 +11,16 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.AlgorithmParameterSpec
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
+import javax.crypto.Cipher
+import javax.crypto.NullCipher
 
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ECC(
   publicKey: ECPublicKey,
   privateKey: ECPrivateKey? = null,
-) : AbstractPublicKeyEncrypt("EC", publicKey, privateKey) {
-
+  algorithm: String = "EC",
+) : AbstractPublicKeyEncrypt(algorithm, publicKey, privateKey) {
   override val decryptMaxLen = Int.MAX_VALUE
   override val encryptMaxLen = Int.MAX_VALUE
 
@@ -30,25 +32,36 @@ class ECC(
     }
   }
 
-  constructor(keyPair: KeyPair) : this(keyPair.public as ECPublicKey, keyPair.private as ECPrivateKey)
-  constructor(keySize: Int = 256, spec: AlgorithmParameterSpec) : this(KeyPairGenerator.getInstance("EC").let {
+  constructor(
+    keyPair: KeyPair,
+    algorithm: String = "EC",
+  ) : this(keyPair.public as ECPublicKey, keyPair.private as ECPrivateKey, algorithm)
+
+  constructor(
+    keySize: Int = 256,
+    spec: AlgorithmParameterSpec,
+    algorithm: String = "EC",
+  ) : this(KeyPairGenerator.getInstance("EC").let {
     val generator = KeyPairGenerator.getInstance("EC")
     generator.initialize(spec, SecureRandom())
     generator.initialize(keySize)
     generator.generateKeyPair()
-  })
+  }, algorithm)
 
   constructor(
     keySize: Int = 256,
     standardCurveLine: String = StandardCurveLine.secp256k1.name.replace('_', ' '),
+    algorithm: String = "EC",
   ) : this(
     keySize,
-    ECGenParameterSpec(standardCurveLine)
+    ECGenParameterSpec(standardCurveLine),
+    algorithm,
   )
 
-  constructor(keySize: Int = 256, standardCurveLine: StandardCurveLine) : this(
+  constructor(keySize: Int = 256, standardCurveLine: StandardCurveLine, algorithm: String = "EC") : this(
     keySize,
-    standardCurveLine.name.replace('_', ' ')
+    standardCurveLine.name.replace('_', ' '),
+    algorithm,
   )
 
   constructor(publicKey: ByteArray) : this(
@@ -56,6 +69,17 @@ class ECC(
   )
 
   override fun signature(digest: String): String = "${digest}withECDSA"
+
+  override val encryptCipher by lazy {
+    val cipher = NullCipher()
+    cipher.init(Cipher.ENCRYPT_MODE, privateKey ?: publicKey)
+    cipher
+  }
+  override val decryptCipher by lazy {
+    val cipher = NullCipher()
+    cipher.init(Cipher.DECRYPT_MODE, privateKey ?: publicKey)
+    cipher
+  }
 
   @Suppress("EnumEntryName", "SpellCheckingInspection")
   enum class StandardCurveLine {
@@ -74,7 +98,7 @@ class ECC(
         Unsafe {
           Class.forName("sun.security.ec.CurveDB").getField("nameMap").uncheckedCast<Map<String, Any>>().keys
         }
-      } catch (e: Exception) {
+      } catch (e: Throwable) {
         emptySet()
       }
     }

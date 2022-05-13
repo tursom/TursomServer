@@ -1,10 +1,21 @@
 package cn.tursom.core.context
 
+import cn.tursom.core.uncheckedCast
+
 open class ContextKey<T>(
   val envId: Int,
   val id: Int,
 ) {
-  fun withDefault(provider: () -> T) = DefaultContextKey(envId, id, provider)
+  fun withDefault(provider: ContextKey<T>.(Context) -> T) = DefaultContextKey(envId, id, provider)
+  fun withSynchronizedDefault(provider: ContextKey<T>.(Context) -> T) = DefaultContextKey<T>(envId, id) { context ->
+    synchronized(context) {
+      context[id]?.uncheckedCast() ?: run {
+        val value = provider(context)
+        context[this] = value
+        value
+      }
+    }
+  }
 
   override fun hashCode(): Int {
     return id
