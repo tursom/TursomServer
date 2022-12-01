@@ -440,7 +440,7 @@ fun Any.serialize(): ByteArray {
 }
 
 /**
- * 使用 condition 做条件判断，如果返回 true 则使用 then 生成结果，否则范湖自身
+ * 使用 condition 做条件判断，如果返回 true 则使用 then 生成结果，否则返回自身
  */
 inline fun <T> T.ifThen(condition: T.() -> Boolean, then: () -> T) = if (condition()) then() else this
 
