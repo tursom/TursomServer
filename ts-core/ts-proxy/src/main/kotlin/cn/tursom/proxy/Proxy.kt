@@ -27,33 +27,33 @@ object Proxy {
   }
 
   fun addProxy(obj: Any, proxy: ProxyMethod): Boolean {
-    val container = getContainer(obj) ?: return false
-    (container as? MutableProxyContainer)?.addProxy(proxy) ?: return false
+    val container = getContainer(obj) as? MutableProxyContainer ?: return false
+    container.addProxy(proxy)
     return true
   }
 
-  inline operator fun <T> get(
+  inline operator fun <T : Any> get(
     clazz: Class<T>,
     container: MutableProxyContainer = defaultContainer(),
     builder: (Class<T>) -> T,
   ): Pair<T, MutableProxyContainer> {
     val target = getCachedTarget(clazz)
     val obj = builder(target)
-    injectCallback(obj as Factory) { container }
+    injectCallback(obj as Factory, container)
     return obj to container
   }
 
-  inline fun <reified T> get() = get(T::class.java)
-  inline fun <reified T> get(
+  inline fun <reified T : Any> get() = get(T::class.java)
+  inline fun <reified T : Any> get(
     argumentTypes: Array<out Class<*>>,
     arguments: Array<out Any?>,
     container: MutableProxyContainer = defaultContainer(),
   ) = get(T::class.java, argumentTypes, arguments, container)
 
-  operator fun <T> get(clazz: Class<T>, container: MutableProxyContainer = defaultContainer()) =
+  operator fun <T : Any> get(clazz: Class<T>, container: MutableProxyContainer = defaultContainer()) =
     get(clazz, container, Class<T>::newInstance)
 
-  operator fun <T> get(
+  operator fun <T : Any> get(
     clazz: Class<T>,
     argumentTypes: Array<out Class<*>>,
     arguments: Array<out Any?>,
@@ -62,7 +62,7 @@ object Proxy {
     it.getConstructor(*argumentTypes).newInstance(*arguments)
   }
 
-  fun <T> newEnhancer(clazz: Class<T>, vararg interfaces: Class<*>): Enhancer {
+  fun <T : Any> newEnhancer(clazz: Class<T>, vararg interfaces: Class<*>): Enhancer {
     val enhancer = Enhancer()
     enhancer.setSuperclass(clazz)
     if (interfaces.isNotEmpty()) {
@@ -74,15 +74,17 @@ object Proxy {
   }
 
   @JvmOverloads
-  inline fun injectCallback(obj: Any, container: () -> ProxyContainer = { defaultContainer() }): ProxyContainer {
+  fun injectCallback(obj: Any, container: ProxyContainer = defaultContainer()): ProxyContainer {
     obj as Factory
-    if (obj.getCallback(0) == null || obj.getCallback(0) == ProxyDispatcher) {
-      obj.setCallback(0, ProxyInterceptor(container()))
+    if (obj.getCallback(0) != null && obj.getCallback(0) != ProxyDispatcher) {
+      return (obj.getCallback(0) as ProxyInterceptor).container
     }
-    return (obj.getCallback(0) as ProxyInterceptor).container
+
+    obj.setCallback(0, ProxyInterceptor(container))
+    return container
   }
 
-  fun <T> getCachedTarget(clazz: Class<T>): Class<T> = cache.computeIfAbsent(clazz) {
+  fun <T : Any> getCachedTarget(clazz: Class<T>): Class<T> = cache.computeIfAbsent(clazz) {
     newEnhancer(clazz).createClass()
   }.uncheckedCast()
 }

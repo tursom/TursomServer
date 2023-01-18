@@ -67,7 +67,7 @@ object ProxyRunner {
     val result = container.forFirstProxy { p ->
       if (classes.isEmpty() || classes.stream().anyMatch { c: Class<*> -> c.isInstance(p) }) {
         val result = p.onProxy(obj, container, method, args, proxy)
-        if (forFirstProxy.cache && result.success && result.cache) {
+        if (forFirstProxy.cache && result.success) {
           container.context[proxyMethodCacheKey].update(container.lastModify, proxy, p::onProxy)
         }
         return@forFirstProxy result

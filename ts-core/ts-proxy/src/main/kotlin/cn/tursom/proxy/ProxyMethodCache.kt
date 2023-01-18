@@ -4,7 +4,13 @@ import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
-typealias ProxyMethodCacheFunction = (obj: Any, c: ProxyContainer, method: Method, args: Array<out Any?>, proxy: MethodProxy) -> ProxyResult<*>
+typealias ProxyMethodCacheFunction = (
+  obj: Any,
+  c: ProxyContainer,
+  method: Method,
+  args: Array<out Any?>,
+  proxy: MethodProxy
+) -> ProxyResult<*>
 
 class ProxyMethodCache(
   private var lastModify: Long = 0,
@@ -16,6 +22,10 @@ class ProxyMethodCache(
   private val functionMap = ConcurrentHashMap<MethodProxy, ProxyMethodCacheFunction>()
 
   fun update(lastModify: Long, proxy: MethodProxy, function: ProxyMethodCacheFunction = functionMap[proxy] ?: failed) {
+    if (this.lastModify != lastModify) {
+      functionMap.clear()
+    }
+
     this.lastModify = lastModify
     functionMap[proxy] = function
   }
@@ -30,6 +40,6 @@ class ProxyMethodCache(
   ): ProxyResult<*>? = if (lastModify != this.lastModify) {
     null
   } else {
-    (functionMap[proxy] ?: failed)(obj, c, method, args, proxy)
+    functionMap[proxy]?.invoke(obj, c, method, args, proxy)
   }
 }
