@@ -1,57 +1,86 @@
 package cn.tursom.proxy
 
+import cn.tursom.core.allFieldsSequence
+import cn.tursom.core.static
+import com.esotericsoftware.reflectasm.MethodAccess
+import net.sf.cglib.proxy.InvocationHandler
+import net.sf.cglib.proxy.MethodProxy
 import org.junit.Test
 import org.objectweb.asm.ClassWriter
 import java.io.File
 
 class Example {
+  companion object{
+    var bytes: ByteArray? = null
+
+    fun saveBytes(b: ByteArray) {
+      bytes = b
+    }
+  }
+
   open class TestClass protected constructor() {
-    //@get:ForEachProxy
     open var a: Int = 0
   }
 
   class GetA(
-    private val t: TestClass,
-  ) : ProxyMethod {
-    fun getA(): Int {
-      Proxy.callSuper.set(true)
-      return t.a + 1
-    }
+    t: TestClass,
+  ) {
+    val t: TestClass = Proxy.getSuperCaller(t)
+
+    val a: Int
+      get() = t.a + 1
+
+    //fun getA(): Int {
+    //  return t.a + 1
+    //}
   }
 
   @Test
   fun getClass() {
+    val access = MethodAccess.get(TestClass::class.java)
+    println(access)
+
     val writer = ClassWriter(0)
     val enhancer = Proxy.newEnhancer(TestClass::class.java)
+
+    enhancer.setCallbackType(InvocationHandler::class.java)
+    enhancer.setCallbackFilter { 0 }
+
     val clazz = enhancer.createClass()
-    CglibUtil.setStaticCallbacks(clazz, arrayOf(ProxyInterceptor()))
-    val instance = clazz.newInstance()
+    //CglibUtil.setStaticCallbacks(clazz, arrayOf(ProxyInterceptor()))
+    //val instance = clazz.newInstance()
     enhancer.generateClass(writer)
-    File("TestClass.class").writeBytes(writer.toByteArray())
+    File("TestClass_InvocationHandler.class").writeBytes(writer.toByteArray())
+    clazz.allFieldsSequence.forEach {
+      if (!it.static) return@forEach
+
+      it.isAccessible = true
+      println("${it.name} = ${it[null]}")
+
+      if (it.type == MethodProxy::class.java) {
+        val methodProxy = it[null] as MethodProxy
+        println(methodProxy.signature)
+        println(methodProxy.superName)
+        println(methodProxy.superIndex)
+      }
+    }
+  }
+
+  @Test
+  fun getMethodAccessClass() {
+    val (t, container) = Proxy.get<TestClass>()
+
+    MethodAccess.get(t.javaClass)!!
+    //File("TestClass_MethodAccess.class").writeBytes(bytes!!)
   }
 
   @Test
   fun test() {
-    //val enhancer = Enhancer()
-    //enhancer.setSuperclass(TestClass::class.java)
-    //enhancer.setCallback(ProxyDispatcher)
-    //val t = enhancer.create() as TestClass
-    //val enhancer = Enhancer()
-    //enhancer.setSuperclass(TestClass::class.java)
-    //enhancer.setCallback(ProxyRefDispatcher {
-    //  println("on Dispatcher")
-    //  ProxyInterceptor()
-    //})
-    //
-    //val t = enhancer.create() as TestClass
-    //val writer = ClassWriter(0)
-    //enhancer.generateClass(writer)
-    //File("TestClass_ProxyRefDispatcher.class").writeBytes(writer.toByteArray())
     val (t, container) = Proxy.get<TestClass>()
-    //val t = Proxy.getCachedTarget(TestClass::class.java).newInstance()
-    //val container = Proxy.injectCallback(t)
-    //container as MutableProxyContainer
-    container.addProxy(GetA(t))
+    val getA = GetA(t)
+    println(getA.t == t)
+
+    container.addProxy(getA)
 
     println(t.javaClass)
     repeat(10) {
