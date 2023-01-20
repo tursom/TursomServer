@@ -313,7 +313,6 @@ open class RoutedHttpHandler(
     fun autoReturn(result: Any?, content: HttpContent, doLog: Boolean = true) {
       if (content.finished || result is Unit) return
       if (doLog) log?.debug("{}: autoReturn: {}", content.remoteAddress, result)
-      result ?: return
       when (result) {
         null -> content.finish(404)
         is ByteBuffer -> content.finishText(result)
@@ -336,7 +335,6 @@ open class RoutedHttpHandler(
     fun finishHtml(result: Any?, content: HttpContent, doLog: Boolean = true) {
       if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishHtml {}", content.remoteAddress, result)
-      result ?: return
       when (result) {
         null -> content.finish(404)
         is ByteBuffer -> content.finishHtml(result)
@@ -355,7 +353,6 @@ open class RoutedHttpHandler(
     fun finishText(result: Any?, content: HttpContent, doLog: Boolean = true) {
       if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishText {}", content.remoteAddress, result)
-      result ?: return
       when (result) {
         null -> content.finish(404)
         is ByteBuffer -> content.finishText(result)
@@ -374,7 +371,6 @@ open class RoutedHttpHandler(
     fun finishJson(result: Any?, content: HttpContent, doLog: Boolean = true) {
       if (content.finished || result is Unit) return
       if (doLog) log?.debug("{} finishJson {}", content.remoteAddress, result)
-      result ?: return
       when (result) {
         null -> content.finish(404)
         is ByteBuffer -> content.finishJson(result)

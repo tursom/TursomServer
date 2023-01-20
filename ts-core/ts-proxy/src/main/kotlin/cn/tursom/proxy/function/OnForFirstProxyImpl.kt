@@ -32,6 +32,7 @@ class OnForFirstProxyImpl(
   ): Any? {
     method!!
     proxy!!
+    obj!!
 
     container.forEach { p ->
       if (classes.isNotEmpty() && classes.none { c: Class<*> -> c.isInstance(p) }) {
@@ -40,7 +41,7 @@ class OnForFirstProxyImpl(
 
       val handler = ProxyMethod.getHandler(p, method) ?: return@forEach
       if (ffpAnnotation.cache) {
-        container.ctx[ProxyMethodCache.ctxKey].update(proxy, handler)
+        container.ctx[ProxyMethodCache.ctxKey].update(obj, container, method, proxy, handler)
       }
       return handler(obj, container, method, args, proxy)
     }
@@ -68,15 +69,15 @@ class OnForFirstProxyImpl(
       val exceptionConstructor = ffpAnnotation.errClass.java.getConstructor(String::class.java)
       if (ffpAnnotation.cache) {
         container.ctx[ProxyMethodCache.ctxKey].update(
-          proxy, ExceptionProxyMethodCacheFunctionImpl(exceptionConstructor, errMsg)
+          obj, container, method, proxy, ExceptionProxyMethodCacheFunctionImpl(exceptionConstructor, errMsg)
         )
       }
       throw exceptionConstructor.newInstance(errMsg)
     }
     if (ffpAnnotation.cache) {
       container.ctx[ProxyMethodCache.ctxKey].update(
-        proxy,
-        CallSuperProxyMethodCacheFunction,
+        obj, container, method, proxy,
+        CallSuperProxyMethodCacheFunction[obj, method]
       )
     }
     return proxy.invokeSuper(obj, args)

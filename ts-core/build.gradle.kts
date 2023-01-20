@@ -15,6 +15,4 @@ dependencies {
   testApi(group = "junit", name = "junit", version = "4.13.2")
 }
 
-
-
-
+autoConfigPublish()

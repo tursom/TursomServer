@@ -1,5 +1,6 @@
 package cn.tursom.gradle
 
+import contains
 import excludeTest
 import ext
 import org.gradle.api.DefaultTask
@@ -37,19 +38,7 @@ class TursomGradlePlugin : Plugin<Project> {
 
     target.excludeTest()
 
-    try {
-      target.extensions.configure<PublishingExtension>("publishing") {
-        target.publish(it)
-      }
-    } catch (e: Exception) {
-    }
-
-    if (try {
-        target.tasks.findByName("install")
-      } catch (e: Exception) {
-        null
-      } == null
-    ) run install@{
+    if (!target.tasks.contains("install")) run install@{
       val publishToMavenLocal = target.tasks.findByName("publishToMavenLocal") ?: return@install
       target.tasks.register("install", DefaultTask::class.java) {
         it.finalizedBy(publishToMavenLocal)
@@ -85,6 +74,7 @@ fun put(target: Project, key: String, value: Any?) {
     null -> return
     is String, is Byte, is Short, is Int, is Long, is Float, is Double, is Char ->
       setProperty(target, key, value)
+
     else -> {
       setProperty(target, key, value)
       if (value is Map<*, *>) {

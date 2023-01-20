@@ -2,7 +2,7 @@
 import java.util.*
 
 plugins {
-  kotlin("jvm") version "1.3.72"
+  kotlin("jvm") version "1.7.10"
   `java-gradle-plugin`
   `maven-publish`
 }
@@ -14,10 +14,10 @@ try {
     ext.set(k.toString(), v)
     try {
       setProperty(k.toString(), v)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
   }
-} catch (e: Exception) {
+} catch (_: Exception) {
 }
 
 group = "cn.tursom"
@@ -25,11 +25,13 @@ group = "cn.tursom"
 version = "1.0-SNAPSHOT"
 
 repositories {
-  mavenCentral()
+  maven {
+    url = uri("https://nvm.tursom.cn/repository/maven-public/")
+  }
 }
 
 dependencies {
-  implementation(group = "org.yaml", name = "snakeyaml", version = "1.29")
+  implementation(group = "org.yaml", name = "snakeyaml", version = "1.33")
   implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
 }
 
@@ -60,7 +62,7 @@ publishing {
         }
       }
     } catch (e: Exception) {
-      println("cannot push to repository tursom")
+      println("cannot push to repository tursom: ${e.javaClass}: ${e.message}")
     }
     try {
       maven {

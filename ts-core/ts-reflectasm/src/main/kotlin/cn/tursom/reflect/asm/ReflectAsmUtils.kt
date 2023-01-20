@@ -62,6 +62,7 @@ object ReflectAsmUtils {
         } catch (_: Exception) {
         }
       }
+      fieldAccessList.add(MethodAccess.get(analyzeFieldAccessClass)!!)
       methodAccessMap[this] = fieldAccessList
       fieldAccessList
     }
@@ -75,6 +76,41 @@ object ReflectAsmUtils {
     clazz.methodAccessList.forEach { methodAccess ->
       repeat(methodAccess.methodNames.size) { i ->
         if (methodAccess.methodNames[i] == methodName && methodAccess.parameterTypes[i] match paramTypes &&
+          methodAccess.returnTypes[i] canCast returnType
+        ) {
+          return methodAccess to i
+        }
+      }
+    }
+    return null
+  }
+
+  fun getMethodSequence(
+    clazz: Class<*>,
+    methodName: String,
+    vararg paramTypes: Class<*>,
+    returnType: Class<*> = Any::class.java,
+  ) = sequence {
+    clazz.methodAccessList.forEach { methodAccess ->
+      repeat(methodAccess.methodNames.size) { i ->
+        if (methodAccess.methodNames[i] == methodName && methodAccess.parameterTypes[i] match paramTypes &&
+          methodAccess.returnTypes[i] canCast returnType
+        ) {
+          yield(methodAccess to i)
+        }
+      }
+    }
+  }
+
+  fun getMethodByRegex(
+    clazz: Class<*>,
+    methodName: Regex,
+    vararg paramTypes: Class<*>,
+    returnType: Class<*> = Any::class.java,
+  ): Pair<MethodAccess, Int>? {
+    clazz.methodAccessList.forEach { methodAccess ->
+      repeat(methodAccess.methodNames.size) { i ->
+        if (methodName.matches(methodAccess.methodNames[i]) && methodAccess.parameterTypes[i] match paramTypes &&
           methodAccess.returnTypes[i] canCast returnType
         ) {
           return methodAccess to i

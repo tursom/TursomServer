@@ -15,11 +15,10 @@ class CachedOnForEachProxyImpl(
     a: Array<out Any?>?,
     proxy: MethodProxy?,
   ): Any? {
-    proxy!!
-
     proxyList.forEach { p ->
       p(o, c, m, a, proxy)
     }
-    return proxy.invokeSuper(o, a)
+
+    return proxy!!.invokeSuper(o, a)
   }
 }

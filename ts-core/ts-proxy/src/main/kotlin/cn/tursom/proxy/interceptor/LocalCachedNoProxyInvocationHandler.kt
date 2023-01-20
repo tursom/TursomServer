@@ -1,5 +1,6 @@
 package cn.tursom.proxy.interceptor
 
+import cn.tursom.reflect.asm.ReflectAsmInvoker
 import cn.tursom.reflect.asm.ReflectAsmUtils
 import com.esotericsoftware.reflectasm.MethodAccess
 import net.sf.cglib.proxy.InvocationHandler
@@ -8,10 +9,6 @@ import java.lang.reflect.Method
 class LocalCachedNoProxyInvocationHandler(
   val proxy: Any,
 ) : InvocationHandler {
-  companion object {
-    private val fastInvoker: MethodAccess.(Any, Int, Array<out Any?>?) -> Any? = MethodAccess::invoke
-  }
-
   private var handler: (method: Method?, args: Array<out Any>?) -> Any? = DefaultHandler()
 
   override fun invoke(ignore: Any, method: Method?, args: Array<out Any>?): Any? {
@@ -29,7 +26,7 @@ class LocalCachedNoProxyInvocationHandler(
         method.returnType,
       )!!
       handler = MethodAccessHandler(methodAccess, index)
-      return fastInvoker(methodAccess, proxy, index, args)
+      return ReflectAsmInvoker.invoke(methodAccess, proxy, index, args)
     }
   }
 
@@ -37,6 +34,7 @@ class LocalCachedNoProxyInvocationHandler(
     private val methodAccess: MethodAccess,
     private val index: Int,
   ) : (Method?, Array<out Any>?) -> Any? {
-    override fun invoke(method: Method?, args: Array<out Any>?) = fastInvoker(methodAccess, proxy, index, args)
+    override fun invoke(method: Method?, args: Array<out Any>?) =
+      ReflectAsmInvoker.invoke(methodAccess, proxy, index, args)
   }
 }

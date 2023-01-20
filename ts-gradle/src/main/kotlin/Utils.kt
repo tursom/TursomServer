@@ -1,11 +1,14 @@
 import org.gradle.api.DomainObjectCollection
+import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.internal.authentication.DefaultBasicAuthentication
 import java.util.concurrent.TimeUnit
-
-var nettyVersion = "4.1.68.Final"
 
 fun Project.excludeTest() {
   if (gradle.startParameter.taskNames.firstOrNull { taskName ->
@@ -17,88 +20,9 @@ fun Project.excludeTest() {
       named("compileTestJava") { it.enabled = false }
       try {
         named("compileTestKotlin") { it.enabled = false }
-      } catch (e: Exception) {
+      } catch (_: Exception) {
       }
       named("processTestResources") { it.enabled = false }
-    }
-  }
-}
-
-fun Project.publish(publish: PublishingExtension) {
-  val properties = rootProject.properties
-  publish.repositories { repositoryHandler ->
-    try {
-      repositoryHandler.maven { repository ->
-        repository.name = "tursom"
-        repository.url = if (version.toString().endsWith("SNAPSHOT")) {
-          uri("https://nvm.tursom.cn/repository/maven-snapshots/")
-        } else {
-          uri("https://nvm.tursom.cn/repository/maven-releases/")
-        }
-        repository.credentials { credentials ->
-          val artifactoryUser: String = rootProject.ext["tursom.artifactoryUser"]!!.toString()
-          val artifactoryPassword: String = rootProject.ext["tursom.artifactoryPassword"]!!.toString()
-          credentials.username = artifactoryUser
-          credentials.password = artifactoryPassword
-        }
-      }
-    } catch (e: Exception) {
-      println("cannot publish to repository tursom:\n${e.javaClass}: ${e.message}")
-    }
-
-    val repositoriesRegex = "publishRepositories\\.[a-zA-z][a-zA-z0-9]*".toRegex()
-    properties.keys.asSequence().filter {
-      it matches repositoriesRegex
-    }.forEach { repositoryName ->
-      try {
-        val artifactoryUser = rootProject.ext["$repositoryName.artifactoryUser"]?.toString()
-          ?: throw Exception("no artifactory user found")
-        val artifactoryPassword = rootProject.ext["$repositoryName.artifactoryPassword"]?.toString()
-          ?: throw Exception("no artifactory password found")
-        repositoryHandler.maven { repository ->
-          repository.name = properties["$repository.name"]?.toString()
-            ?: repositoryName.substringAfterLast('.')
-          val releasesRepoUrl = properties["$repositoryName.release"]?.let {
-            uri(it.toString())
-          }
-          val snapshotRepoUrl = properties["$repositoryName.snapshot"]?.let {
-            uri(it.toString())
-          }
-          val repoUrl = properties["$repositoryName.url"]?.let {
-            uri(it.toString())
-          }
-          repository.url = if (version.toString().endsWith("SNAPSHOT") && snapshotRepoUrl != null) {
-            snapshotRepoUrl
-          } else {
-            releasesRepoUrl
-          } ?: repoUrl ?: throw Exception("no repo found")
-          repository.credentials {
-            it.username = artifactoryUser
-            it.password = artifactoryPassword
-          }
-        }
-      } catch (e: Exception) {
-        println(
-          "cannot publish to repository ${repositoryName.substringAfterLast('.')}:\n" +
-            "${e.javaClass}: ${e.message}"
-        )
-      }
-    }
-  }
-  publish.publications {
-    it.create("maven", MavenPublication::class.java) { mavenPublication ->
-      mavenPublication.groupId = project.group.toString()
-      mavenPublication.artifactId = project.name
-      mavenPublication.version = project.version.toString()
-
-      try {
-        mavenPublication.from(components.getByName("java"))
-      } catch (e: Exception) {
-      }
-      try {
-        mavenPublication.artifact(tasks.getByName("kotlinSourcesJar"))
-      } catch (e: Exception) {
-      }
     }
   }
 }
@@ -110,7 +34,7 @@ fun DomainObjectCollection<Configuration>.noExpire() {
   }
 }
 
-fun Project.userTursomRepositories(
+fun Project.useTursomRepositories(
   useAliyunMirror: Boolean = false,
   mavenCentral: Boolean = false,
   tursom: Boolean = true
@@ -132,6 +56,19 @@ fun Project.userTursomRepositories(
   }
   try {
     configurations.noExpire()
-  } catch (e: Exception) {
+  } catch (_: Exception) {
   }
 }
+
+fun <T> NamedDomainObjectCollection<T>.contains(name: String) = try {
+  findByName(name)
+} catch (e: Exception) {
+  null
+} != null
+
+operator fun Project.get(key: String) = ext[key]?.toString()
+
+val Project.isTestRunning
+  get() = gradle.startParameter.taskNames.firstOrNull { taskName ->
+    taskName.endsWith(":test")
+  } != null

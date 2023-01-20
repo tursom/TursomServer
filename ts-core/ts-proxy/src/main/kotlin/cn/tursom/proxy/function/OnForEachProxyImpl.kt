@@ -30,7 +30,6 @@ class OnForEachProxyImpl(
     proxy: MethodProxy?,
   ): Any? {
     m!!
-    proxy!!
 
     val proxyList = if (cache) ArrayList() else emptyProxyList
     c.forEach { p ->
@@ -42,9 +41,13 @@ class OnForEachProxyImpl(
         }
       }
     }
+
+    proxy!!
+
     if (cache) {
       c.ctx[ProxyMethodCache.ctxKey].update(
-        proxy, CachedOnForEachProxyImpl(proxyList)
+        o!!, c, m, proxy,
+        CachedOnForEachProxyImpl(proxyList),
       )
     }
     return proxy.invokeSuper(o, a)

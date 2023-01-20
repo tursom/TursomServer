@@ -2,37 +2,32 @@ package cn.tursom.proxy
 
 import cn.tursom.core.allFieldsSequence
 import cn.tursom.core.static
+import cn.tursom.proxy.container.ProxyContainer
+import cn.tursom.proxy.container.ProxyMethodCacheFunction
+import cn.tursom.proxy.function.ProxyMethod
 import com.esotericsoftware.reflectasm.MethodAccess
 import net.sf.cglib.proxy.InvocationHandler
 import net.sf.cglib.proxy.MethodProxy
 import org.junit.Test
 import org.objectweb.asm.ClassWriter
 import java.io.File
+import java.lang.reflect.Method
 
 class Example {
-  companion object{
+  companion object {
     var bytes: ByteArray? = null
-
-    fun saveBytes(b: ByteArray) {
-      bytes = b
-    }
   }
 
   open class TestClass protected constructor() {
-    open var a: Int = 0
+    open var a: Int? = 0
   }
 
   class GetA(
     t: TestClass,
-  ) {
+  ) : ProxyMethod {
     val t: TestClass = Proxy.getSuperCaller(t)
 
-    val a: Int
-      get() = t.a + 1
-
-    //fun getA(): Int {
-    //  return t.a + 1
-    //}
+    val a get() = (t.a ?: 0) + 1
   }
 
   @Test
@@ -95,9 +90,35 @@ class Example {
     container.addProxy(GetA(t))
 
     println(t.javaClass)
-    repeat(1000000000) {
+    for (l in 0..10_000_000_000L) {
       t.a = t.a
-      //println(t.a)
+    }
+  }
+
+  interface IntContainer {
+    var i: Int?
+  }
+
+  class IntContainerImpl(override var i: Int?) : IntContainer
+
+  class IntProxy(
+    private val c: IntContainer,
+  ) : IntContainer {
+    override var i: Int?
+      get() = (c.i ?: 0) + 1
+      set(value) {
+        c.i = value
+      }
+  }
+
+  private val a: IntContainerImpl = IntContainerImpl(0)
+
+  @Test
+  fun benchmarkOrigin() {
+    val p: IntContainer = IntProxy(a)
+
+    for (l in 0..10000000000L) {
+      p.i = p.i
     }
   }
 }

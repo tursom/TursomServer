@@ -2,6 +2,7 @@ package cn.tursom.proxy.function
 
 import cn.tursom.proxy.container.ProxyContainer
 import cn.tursom.proxy.container.ProxyMethodCacheFunction
+import cn.tursom.reflect.asm.ReflectAsmInvoker
 import cn.tursom.reflect.asm.ReflectAsmUtils
 import com.esotericsoftware.reflectasm.MethodAccess
 import net.sf.cglib.proxy.MethodProxy
@@ -13,19 +14,35 @@ internal class ReflectASMProxyMethodInvoker(
   private val index: Int,
 ) : ProxyMethodCacheFunction {
   companion object {
-    private val fastInvoker: MethodAccess.(Any, Int, Array<out Any?>?) -> Any? = MethodAccess::invoke
-
     operator fun get(
       proxy: Any,
       method: Method,
     ): ReflectASMProxyMethodInvoker? {
       val reflectAsmMethod = try {
-        ReflectAsmUtils.getMethod(
+        val methodParamTypes = method.parameterTypes
+        val matchedMethods = ReflectAsmUtils.getMethodSequence(
           proxy.javaClass,
           method.name,
-          paramTypes = method.parameterTypes,
+          paramTypes = methodParamTypes,
           returnType = method.returnType,
-        )
+        ).toList()
+        when {
+          matchedMethods.isEmpty() -> null
+
+          matchedMethods.size == 1 -> matchedMethods.first()
+
+          else -> matchedMethods.minBy { (methodAccess, methodIndex) ->
+            var parameterIndex = 0
+            methodAccess.parameterTypes[methodIndex].sumOf { parameterType ->
+              if (methodParamTypes[parameterIndex++] != parameterType) {
+                0L
+              } else {
+                1L
+              }
+            }
+          }
+
+        }
       } catch (e: Exception) {
         e.printStackTrace()
         null
@@ -36,6 +53,8 @@ internal class ReflectASMProxyMethodInvoker(
     }
   }
 
+  fun toJava() = JavaReflectASMProxyMethodInvoker(self, methodAccess, index)
+
   override fun invoke(
     obj: Any?,
     c: ProxyContainer,
@@ -43,6 +62,6 @@ internal class ReflectASMProxyMethodInvoker(
     args: Array<out Any?>?,
     proxy: MethodProxy?,
   ): Any? {
-    return fastInvoker(methodAccess, self, index, args)
+    return ReflectAsmInvoker.invoke(methodAccess, self, index, args)
   }
 }

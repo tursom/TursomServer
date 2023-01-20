@@ -15,6 +15,7 @@ class NettyChunkedInput(private val chunked: Chunked) : ChunkedInput<ByteBuf> {
   override fun length() = chunked.length
   override fun isEndOfInput(): Boolean = chunked.endOfInput
 
+  @Deprecated("Deprecated in Java", ReplaceWith("readChunk(allocator)"))
   override fun readChunk(ctx: ChannelHandlerContext?): ByteBuf = readChunk()
   override fun readChunk(allocator: ByteBufAllocator?): ByteBuf = readChunk()
 

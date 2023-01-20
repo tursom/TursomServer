@@ -4,21 +4,20 @@ import cn.tursom.proxy.annotation.ForEachProxy
 import cn.tursom.proxy.annotation.ForFirstProxy
 import cn.tursom.proxy.container.ProxyContainer
 import cn.tursom.proxy.container.ProxyMethodCacheFunction
+import cn.tursom.reflect.asm.ReflectAsmInvoker
 import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
 
-internal class JavaReflectProxyMethodInvoker(
+internal class JvmReflectProxyMethodInvoker(
   private val self: Any,
   private val method: Method,
 ) : ProxyMethodCacheFunction {
   companion object {
-    private val fastInvoker: Method.(Any?, Array<out Any?>?) -> Any? = Method::invoke
-
     operator fun get(
       proxy: Any,
       method: Method,
-    ): JavaReflectProxyMethodInvoker? {
-      var invoker: JavaReflectProxyMethodInvoker? = null
+    ): JvmReflectProxyMethodInvoker? {
+      var invoker: JvmReflectProxyMethodInvoker? = null
 
       val selfMethod: Method
       try {
@@ -39,9 +38,7 @@ internal class JavaReflectProxyMethodInvoker(
         selfMethod = proxy.javaClass.getMethod(methodName, *method.parameterTypes)
         selfMethod.isAccessible = true
 
-        invoker = JavaReflectProxyMethodInvoker(proxy, method)
-
-        //handlerCacheMap[method] = ProxyResult(invoker, true)
+        invoker = JvmReflectProxyMethodInvoker(proxy, method)
       } catch (_: Exception) {
       }
 
@@ -56,6 +53,6 @@ internal class JavaReflectProxyMethodInvoker(
     args: Array<out Any?>?,
     proxy: MethodProxy?,
   ): Any? {
-    return fastInvoker(this.method, self, args)
+    return ReflectAsmInvoker.invoke(this.method, self, args)
   }
 }

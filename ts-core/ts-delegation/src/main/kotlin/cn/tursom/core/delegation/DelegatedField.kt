@@ -8,10 +8,12 @@ import kotlin.reflect.KProperty
  * 如果你还需要对这个属性进行加锁，你就可以在后方加一个 .locked 即可
  * 如果还需要用指定的锁，在后面再加一个 (lock) 就玩成了
  * 使用例：
+ * ```
  * class XXXImpl: XXX, FieldChangeListener by FieldChangeListenerImpl() {
  *     val lock = ReentrantLock()
  *     val field by listened(0).locker(lock)
  * }
+ * ```
  */
 interface DelegatedField<in T, out V> {
   /**

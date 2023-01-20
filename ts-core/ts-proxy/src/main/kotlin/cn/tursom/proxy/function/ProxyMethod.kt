@@ -14,6 +14,13 @@ interface ProxyMethod {
     // NO-OP
   }
 
+  fun onGet(f: ProxyMethodCacheFunction, method: Method): ProxyMethodCacheFunction = f
+
+  /**
+   * disabled on default.
+   *
+   * override onCached to enable it
+   */
   fun onProxyInvoke(
     o: Any?,
     c: ProxyContainer,
@@ -25,12 +32,25 @@ interface ProxyMethod {
     return next(o, c, m, a, proxy)
   }
 
+  /**
+   * 当有缓存更新时被调用
+   *
+   * 你可以以此替换缓存方法
+   */
+  fun onProxyHandlerCacheUpdate(
+    f: ProxyMethodCacheFunction,
+    obj: Any,
+    container: ProxyContainer,
+    method: Method,
+    proxy: MethodProxy,
+  ) = f
+
   companion object {
     fun getHandler(proxy: Any, method: Method): ProxyMethodCacheFunction? {
       var handler = getReflectHandler(proxy, method) ?: return null
 
       if (proxy is ProxyMethod) {
-        handler = ProxyMethodInvoker(proxy, handler)
+        handler = proxy.onGet(handler, method)
       }
 
       return handler
@@ -39,10 +59,10 @@ interface ProxyMethod {
     private fun getReflectHandler(proxy: Any, method: Method): ProxyMethodCacheFunction? {
       val reflectAsmHandler = ReflectASMProxyMethodInvoker[proxy, method]
       if (reflectAsmHandler != null) {
-        return reflectAsmHandler
+        return reflectAsmHandler.toJava()
       }
 
-      val javaReflectHandler = JavaReflectProxyMethodInvoker[proxy, method]
+      val javaReflectHandler = JvmReflectProxyMethodInvoker[proxy, method]
       if (javaReflectHandler != null) {
         return javaReflectHandler
       }

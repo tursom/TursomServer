@@ -7,6 +7,7 @@ import cn.tursom.proxy.container.ListProxyContainer
 import cn.tursom.proxy.container.MutableProxyContainer
 import cn.tursom.proxy.container.ProxyContainer
 import cn.tursom.proxy.function.ProxyMethod
+import cn.tursom.proxy.interceptor.CachedMethodInterceptor
 import cn.tursom.proxy.interceptor.LocalCachedProxyInterceptor
 import cn.tursom.proxy.interceptor.ProxyInterceptor
 import cn.tursom.reflect.final
@@ -23,14 +24,18 @@ object Proxy {
     it.final = false
   }
 
-  fun getContainer(obj: Any): ProxyContainer? {
-    if (obj !is Factory) return null
+  fun getContainer(obj: Factory): ProxyContainer? {
     val interceptor = obj.getCallback(0) as? ProxyInterceptor ?: return null
     return interceptor.container
   }
 
+  fun getMutableContainer(obj: Factory): MutableProxyContainer? {
+    val interceptor = obj.getCallback(0) as? ProxyInterceptor ?: return null
+    return interceptor.container as? MutableProxyContainer
+  }
+
   fun addProxy(obj: Any, proxy: ProxyMethod): Boolean {
-    val container = getContainer(obj) as? MutableProxyContainer ?: return false
+    val container = getContainer(obj as Factory) as? MutableProxyContainer ?: return false
     container.addProxy(proxy)
     return true
   }
@@ -48,7 +53,7 @@ object Proxy {
     container.target = obj
     container.ctx[directAccessorKey] = directAccessor
 
-    injectCallback(obj as Factory, container, directAccessor)
+    injectCallback(obj as Factory, container, directAccessor as Factory)
 
     return obj to container
   }
@@ -137,6 +142,7 @@ object Proxy {
 
   fun <T : Any> newEnhancer(clazz: Class<T>, vararg interfaces: Class<*>): Enhancer {
     val enhancer = Enhancer()
+
     enhancer.setSuperclass(clazz)
     if (interfaces.isNotEmpty()) {
       enhancer.setInterfaces(interfaces)
@@ -151,15 +157,17 @@ object Proxy {
   }
 
   @JvmOverloads
-  fun injectCallback(obj: Any, container: ProxyContainer = defaultContainer(), target: Any = obj): ProxyContainer {
-    obj as Factory
+  fun injectCallback(
+    obj: Factory,
+    container: ProxyContainer = defaultContainer(),
+    target: Factory = obj,
+  ): ProxyContainer {
     if (obj.getCallback(0) != null && obj.getCallback(0) is ProxyInterceptor) {
       return (obj.getCallback(0) as ProxyInterceptor).container
     }
 
-    val nonProxyClasses: MutableSet<Class<*>> = HashSet(listOf(Any::class.java))
     repeat(obj.callbacks.size) {
-      obj.setCallback(it, LocalCachedProxyInterceptor(container, nonProxyClasses, target))
+      obj.setCallback(it, LocalCachedProxyInterceptor(container, target))
     }
     return container
   }
@@ -170,27 +178,30 @@ object Proxy {
 
   fun <T : Any> getSuperCaller(
     obj: T,
-  ): T = getContainer(obj)?.ctx?.get(directAccessorKey).uncheckedCast()
+  ): T = getContainer(obj as Factory)?.ctx?.get(directAccessorKey).uncheckedCast()
 
-  fun addNonProxyClass(target: Any, nonProxyClass: Class<*>): Boolean {
-    if (target !is Factory ||
-      target.getCallback(0) == null ||
-      target.getCallback(0) !is ProxyInterceptor
-    ) {
-      throw IllegalArgumentException()
-    }
-
-    return (target.getCallback(0) as ProxyInterceptor).nonProxyClasses.add(nonProxyClass)
+  fun addNonProxyClass(target: Factory, nonProxyClass: Class<*>): Boolean {
+    val container = getMutableContainer(target) ?: throw IllegalArgumentException()
+    return container.nonProxyClasses.add(nonProxyClass)
   }
 
-  fun removeNonProxyClass(target: Any, nonProxyClass: Class<*>): Boolean {
-    if (target !is Factory ||
-      target.getCallback(0) == null ||
-      target.getCallback(0) !is ProxyInterceptor
-    ) {
-      throw IllegalArgumentException()
-    }
+  fun removeNonProxyClass(target: Factory, nonProxyClass: Class<*>): Boolean {
+    val container = getMutableContainer(target) ?: throw IllegalArgumentException()
+    return container.nonProxyClasses.remove(nonProxyClass)
+  }
 
-    return (target.getCallback(0) as ProxyInterceptor).nonProxyClasses.remove(nonProxyClass)
+  fun clearCallbackCache(target: Factory, container: ProxyContainer) {
+    target.callbacks.forEachIndexed { index, callback ->
+      if (callback == null) {
+        target.setCallback(index, LocalCachedProxyInterceptor(container, target))
+        return@forEachIndexed
+      }
+
+      if (callback !is CachedMethodInterceptor) {
+        return@forEachIndexed
+      }
+
+      callback.clearCache()
+    }
   }
 }

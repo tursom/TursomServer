@@ -1,6 +1,6 @@
 package cn.tursom.database.ktorm.ext
 
-import cn.tursom.proxy.ProxyMethod
+import cn.tursom.proxy.function.ProxyMethod
 import cn.tursom.reflect.asm.ReflectAsmKtField
 import org.ktorm.expression.SqlExpression
 import org.ktorm.expression.SqlFormatter

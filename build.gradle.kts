@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.6.20"
+  kotlin("jvm") version "1.8.0"
   `maven-publish`
   id("ts-gradle")
 }
@@ -10,12 +10,7 @@ allprojects {
   group = "cn.tursom"
   version = "1.0-SNAPSHOT"
 
-  repositories {
-    //mavenCentral()
-    maven {
-      url = uri("https://nvm.tursom.cn/repository/maven-public/")
-    }
-  }
+  useTursomRepositories()
 
   tasks.withType<JavaCompile> {
     tasks.withType<KotlinCompile>().configureEach {
@@ -23,9 +18,7 @@ allprojects {
       kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
 
-    if (project.gradle.startParameter.taskNames.firstOrNull { taskName ->
-        taskName.endsWith(":test")
-      } == null) {
+    if (!isTestRunning) {
       tasks.withType<Test> {
         enabled = false
       }
@@ -37,6 +30,8 @@ allprojects {
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     //kotlinOptions.useIR = true
   }
+
+  autoConfigPublish()
 }
 
 
@@ -49,8 +44,4 @@ dependencies {
 
 artifacts {
   archives(tasks["kotlinSourcesJar"])
-}
-
-publishing {
-  publish(this)
 }

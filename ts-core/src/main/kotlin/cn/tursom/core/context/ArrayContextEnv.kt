@@ -4,7 +4,7 @@ import cn.tursom.core.uncheckedCast
 import java.util.concurrent.atomic.AtomicInteger
 
 class ArrayContextEnv : ContextEnv {
-  val envId = ContextEnv.newEnvId()
+  override val envId = ContextEnv.newEnvId()
   private val idGenerator = AtomicInteger()
   private val emptyContext = EmptyArrayContext(envId, idGenerator)
 

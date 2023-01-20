@@ -1,7 +1,9 @@
 package cn.tursom.proxy.container
 
+import cn.tursom.proxy.function.ProxyMethod
 import cn.tursom.proxy.util.IntMap
 import net.sf.cglib.proxy.MethodProxy
+import java.lang.reflect.Method
 
 class ProxyMethodCache {
   companion object {
@@ -18,9 +20,22 @@ class ProxyMethodCache {
     }
   }
 
-  fun update(proxy: MethodProxy, function: ProxyMethodCacheFunction) {
+  fun update(
+    obj: Any,
+    container: ProxyContainer,
+    method: Method,
+    proxy: MethodProxy,
+    function: ProxyMethodCacheFunction,
+  ) {
+    var handler = function
+    container.forEach {
+      if (it !is ProxyMethod) return@forEach
+
+      handler = it.onProxyHandlerCacheUpdate(handler, obj, container, method, proxy)
+    }
+
     synchronized(this) {
-      functionMap[proxy.superIndex] = function
+      functionMap[proxy.superIndex] = handler
     }
   }
 

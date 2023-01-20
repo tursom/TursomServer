@@ -11,4 +11,5 @@ interface ProxyContainer : Iterable<Any> {
   // to impl, use override val context: Context = ProxyContainer.contextEnv.newContext()
   val ctx: Context
   val target: Any
+  val nonProxyClasses: Set<Class<*>>
 }

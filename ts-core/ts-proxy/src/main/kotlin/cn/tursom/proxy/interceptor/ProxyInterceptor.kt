@@ -13,25 +13,25 @@ import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
 
 open class ProxyInterceptor(
-  val container: ProxyContainer = ListProxyContainer(),
-  val nonProxyClasses: MutableSet<Class<*>> = HashSet(listOf(Any::class.java)),
+  val container: ProxyContainer = ListProxyContainer(nonProxyClasses = HashSet(listOf(Any::class.java))),
 ) : MethodInterceptor {
-  override fun intercept(obj: Any?, method: Method?, args: Array<out Any?>?, proxy: MethodProxy): Any? {
+  override fun intercept(obj: Any?, method: Method?, args: Array<out Any?>?, proxy: MethodProxy?): Any? {
     val cache = container.ctx[ProxyMethodCache.ctxKey]
-    var handler = cache[proxy]
+    var handler = cache[proxy!!]
     if (handler != null) {
       return handler(obj, container, method, args, proxy)
     }
 
+    obj!!
     method!!
 
-    nonProxyClasses.forEach { nonProxyClass ->
+    container.nonProxyClasses.forEach { nonProxyClass ->
       nonProxyClass.declaredMethods.forEach {
         if (it.name == method.name &&
           it.returnType.isAssignableFrom(method.returnType) &&
           it.parameterTypes.contentEquals(method.parameterTypes)
         ) {
-          cache.update(proxy, CallSuperProxyMethodCacheFunction)
+          cache.update(obj, container, method, proxy, CallSuperProxyMethodCacheFunction[obj, method])
           return proxy.invokeSuper(obj, args)
         }
       }

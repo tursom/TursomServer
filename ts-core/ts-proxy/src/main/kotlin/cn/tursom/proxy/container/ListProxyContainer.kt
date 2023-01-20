@@ -1,19 +1,22 @@
 package cn.tursom.proxy.container
 
 import cn.tursom.core.context.Context
+import cn.tursom.proxy.Proxy
 import cn.tursom.proxy.function.ProxyMethod
-import cn.tursom.proxy.util.CglibUtil
-import net.sf.cglib.proxy.MethodProxy
+import net.sf.cglib.proxy.Factory
 
 
 class ListProxyContainer(
   private val proxyList: MutableCollection<Any> = ArrayList(),
+  override val nonProxyClasses: MutableSet<Class<*>> = HashSet(listOf(Any::class.java)),
 ) : MutableProxyContainer {
   override lateinit var target: Any
   override val ctx: Context = ProxyContainer.ctxEnv.newContext()
 
   private fun clearCache() {
     ctx[ProxyMethodCache.ctxKey].clear()
+
+    Proxy.clearCallbackCache(target as Factory, this)
   }
 
   override fun addProxy(proxy: Any) {
