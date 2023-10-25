@@ -3,8 +3,8 @@ package cn.tursom.log
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.spi.ThrowableProxyUtil
 import ch.qos.logback.core.LayoutBase
-import cn.tursom.core.ThreadLocalSimpleDateFormat
-import cn.tursom.core.Utils.gson
+import cn.tursom.core.util.ThreadLocalSimpleDateFormat
+import cn.tursom.core.util.Utils.gson
 
 open class JsonLayout : LayoutBase<ILoggingEvent>() {
   data class LayoutData(

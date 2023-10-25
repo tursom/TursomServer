@@ -1,15 +1,15 @@
 /**
  * QueryWrapper kotlin 化改造
- * @author 王景阔
+ * @author tursom
  */
 @file:Suppress("unused")
 @file:OptIn(UncheckedCast::class)
 
 package cn.tursom.database.mybatisplus
 
-import cn.tursom.core.UncheckedCast
-import cn.tursom.core.allFieldsSequence
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.UncheckedCast
+import cn.tursom.core.util.allFieldsSequence
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.log.impl.Slf4jImpl
 import com.baomidou.mybatisplus.core.conditions.AbstractWrapper
 import com.baomidou.mybatisplus.core.conditions.ISqlSegment

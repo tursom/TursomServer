@@ -2,7 +2,7 @@
 
 package cn.tursom.reflect
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import java.lang.reflect.Method
 
 inline fun <R> Class<*>.getDeclaredMethod(

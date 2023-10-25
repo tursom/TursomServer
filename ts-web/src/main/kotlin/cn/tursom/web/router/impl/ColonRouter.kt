@@ -1,6 +1,6 @@
 package cn.tursom.web.router.impl
 
-import cn.tursom.core.binarySearch
+import cn.tursom.core.util.binarySearch
 import cn.tursom.web.router.Router
 import cn.tursom.web.router.impl.colonnode.AnyColonNode
 import cn.tursom.web.router.impl.colonnode.ColonNode

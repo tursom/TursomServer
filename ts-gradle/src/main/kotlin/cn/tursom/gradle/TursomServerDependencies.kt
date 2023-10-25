@@ -6,7 +6,7 @@ import org.gradle.api.Action
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 
-var defaultVersion = "1.0-SNAPSHOT"
+private const val defaultVersion = "1.0-SNAPSHOT"
 
 private fun DependencyHandler.add(
   configurationName: String,

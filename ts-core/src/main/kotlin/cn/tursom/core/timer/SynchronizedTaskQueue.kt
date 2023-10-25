@@ -1,6 +1,6 @@
 package cn.tursom.core.timer
 
-import cn.tursom.core.CurrentTimeMillisClock
+import cn.tursom.core.util.CurrentTimeMillisClock
 
 class SynchronizedTaskQueue : TaskQueue {
   val root: TaskNode = TaskNode(0, {}, null, null)

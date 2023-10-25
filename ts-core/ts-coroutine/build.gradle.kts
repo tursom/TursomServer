@@ -1,12 +1,11 @@
 plugins {
   kotlin("jvm")
-  `maven-publish`
   id("ts-gradle")
 }
 
 dependencies {
   implementation(project(":ts-core"))
-  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+  api(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = coroutineVersion)
 }
 
 

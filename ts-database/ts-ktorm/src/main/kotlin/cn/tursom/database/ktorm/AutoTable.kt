@@ -3,7 +3,7 @@ package cn.tursom.database.ktorm
 import cn.tursom.core.clone.Property
 import cn.tursom.core.clone.inject
 import cn.tursom.core.clone.instance
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.database.ktorm.annotations.KtormTableField
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.BaseTable

@@ -1,14 +1,13 @@
 package cn.tursom.gradle
 
+import autoConfigPublish
 import contains
 import excludeTest
 import ext
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
 import org.yaml.snakeyaml.Yaml
-import publish
 import java.io.FileNotFoundException
 import java.util.*
 
@@ -44,6 +43,8 @@ class TursomGradlePlugin : Plugin<Project> {
         it.finalizedBy(publishToMavenLocal)
       }
     }
+
+    target.autoConfigPublish()
   }
 }
 

@@ -1,6 +1,6 @@
 package cn.tursom.core.coroutine
 
-import cn.tursom.core.cast
+import cn.tursom.core.util.cast
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

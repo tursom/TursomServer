@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.lang.ref.PhantomReference
 import java.lang.ref.Reference

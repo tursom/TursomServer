@@ -1,6 +1,6 @@
 package cn.tursom.web.router.impl.colonnode
 
-import cn.tursom.core.binarySearch
+import cn.tursom.core.util.binarySearch
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class ColonNode<T>(

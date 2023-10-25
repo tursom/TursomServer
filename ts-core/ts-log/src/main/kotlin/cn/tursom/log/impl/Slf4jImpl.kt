@@ -1,6 +1,6 @@
 package cn.tursom.log.impl
 
-import cn.tursom.core.getCallerClassName
+import cn.tursom.core.util.getCallerClassName
 import cn.tursom.log.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

@@ -1,6 +1,6 @@
 package cn.tursom.reflect
 
-import cn.tursom.core.*
+import cn.tursom.core.util.*
 import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier

@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import kotlin.concurrent.thread
 
@@ -17,6 +17,4 @@ object CurrentTimeMillisClock {
       }
     }
   }
-
-  //val now get() = System.currentTimeMillis()
 }

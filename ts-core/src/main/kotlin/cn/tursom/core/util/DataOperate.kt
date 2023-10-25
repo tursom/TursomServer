@@ -1,6 +1,6 @@
 @file:Suppress("unused", "DuplicatedCode")
 
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.io.*
 import java.nio.ByteOrder
@@ -16,44 +16,44 @@ fun Double.reverseBytes() = Double.fromBits(toBits().reverseBytes())
 
 fun Char.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(2)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun Short.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(2)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun Int.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(4)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun Long.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(8)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun Float.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(4)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun Double.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val array = ByteArray(8)
-  array.put(this, 0, byteOrder)
+  array[0, byteOrder] = this
   return array
 }
 
 fun CharArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 2)
   repeat(size) {
-    newArray.put(this[it], it * 2, byteOrder)
+    newArray[it * 2, byteOrder] = this[it]
   }
   return newArray
 }
@@ -61,7 +61,7 @@ fun CharArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArra
 fun ShortArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 2)
   repeat(size) {
-    newArray.put(this[it], it * 2, byteOrder)
+    newArray[it * 2, byteOrder] = this[it]
   }
   return newArray
 }
@@ -69,7 +69,7 @@ fun ShortArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArr
 fun IntArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 4)
   repeat(size) {
-    newArray.put(this[it], it * 4, byteOrder)
+    newArray[it * 4, byteOrder] = this[it]
   }
   return newArray
 }
@@ -77,7 +77,7 @@ fun IntArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray
 fun LongArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 8)
   repeat(size) {
-    newArray.put(this[it], it * 8, byteOrder)
+    newArray[it * 8, byteOrder] = this[it]
   }
   return newArray
 }
@@ -85,7 +85,7 @@ fun LongArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArra
 fun FloatArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 4)
   repeat(size) {
-    newArray.put(this[it], it * 4, byteOrder)
+    newArray[it * 4, byteOrder] = this[it]
   }
   return newArray
 }
@@ -93,7 +93,7 @@ fun FloatArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArr
 fun DoubleArray.toByteArray(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): ByteArray {
   val newArray = ByteArray(size * 8)
   repeat(size) {
-    newArray.put(this[it], it * 8, byteOrder)
+    newArray[it * 8, byteOrder] = this[it]
   }
   return newArray
 }
@@ -226,37 +226,53 @@ fun Long.ntoh(): Long {
   }
 }
 
-fun ByteArray.put(char: Char, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
+operator fun ByteArray.set(
+  offset: Int = 0,
+  byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  char: Char
+) {
   val value = char.code
   when (byteOrder) {
     ByteOrder.BIG_ENDIAN -> {
       this[offset + 1] = value.toByte()
       this[offset] = (value shr 8).toByte()
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = value.toByte()
       this[offset + 1] = (value shr 8).toByte()
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
 
-fun ByteArray.put(short: Short, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
+operator fun ByteArray.set(
+  offset: Int = 0,
+  byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  short: Short
+) {
   val value = short.toInt()
   when (byteOrder) {
     ByteOrder.BIG_ENDIAN -> {
       this[offset + 1] = value.toByte()
       this[offset] = (value shr 8).toByte()
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = value.toByte()
       this[offset + 1] = (value shr 8).toByte()
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
 
-fun ByteArray.put(int: Int, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
+operator fun ByteArray.set(
+  offset: Int = 0,
+  byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  int: Int,
+) {
   when (byteOrder) {
     ByteOrder.BIG_ENDIAN -> {
       this[offset + 3] = int.toByte()
@@ -264,17 +280,23 @@ fun ByteArray.put(int: Int, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BI
       this[offset + 1] = (int shr 16).toByte()
       this[offset] = (int shr 24).toByte()
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = int.toByte()
       this[offset + 1] = (int shr 8).toByte()
       this[offset + 2] = (int shr 16).toByte()
       this[offset + 3] = (int shr 24).toByte()
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
 
-fun ByteArray.put(long: Long, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
+operator fun ByteArray.set(
+  offset: Int = 0,
+  byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  long: Long
+) {
   when (byteOrder) {
     ByteOrder.BIG_ENDIAN -> {
       this[offset + 7] = long.toByte()
@@ -286,6 +308,7 @@ fun ByteArray.put(long: Long, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.
       this[offset + 1] = (long shr 48).toByte()
       this[offset] = (long shr 56).toByte()
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       this[offset] = long.toByte()
       this[offset + 1] = (long shr 8).toByte()
@@ -296,129 +319,130 @@ fun ByteArray.put(long: Long, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.
       this[offset + 6] = (long shr 48).toByte()
       this[offset + 7] = (long shr 56).toByte()
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
 
-fun ByteArray.put(float: Float, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
-  put(float.toBits(), offset, byteOrder)
+operator fun ByteArray.set(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, float: Float) {
+  set(offset, byteOrder, float.toBits())
 }
 
-fun ByteArray.put(double: Double, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN) {
-  put(double.toBits(), offset, byteOrder)
+operator fun ByteArray.set(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, double: Double) {
+  set(offset, byteOrder, double.toBits())
 }
 
-fun ByteArray.put(
-  charArray: CharArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  charArray: CharArray,
 ) {
   var index = offset
   if (addLength) {
-    put(charArray.size, index, byteOrder)
+    set(index, byteOrder, charArray.size)
     index += 4
   }
   charArray.forEach {
-    put(it, index, byteOrder)
+    set(index, byteOrder, it)
     index += 2
   }
 }
 
-fun ByteArray.put(
-  shortArray: ShortArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  shortArray: ShortArray,
 ) {
   var index = offset
   if (addLength) {
-    put(shortArray.size, index, byteOrder)
+    set(index, byteOrder, shortArray.size)
     index += 4
   }
   shortArray.forEach {
-    put(it, index, byteOrder)
+    set(index, byteOrder, it)
     index += 2
   }
 }
 
-fun ByteArray.put(
-  intArray: IntArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  intArray: IntArray,
 ) {
   var index = offset
   if (addLength) {
-    put(intArray.size, index, byteOrder)
+    set(index, byteOrder, intArray.size)
     index += 4
   }
   intArray.forEach {
-    put(it)
+    set(index, byteOrder, it)
     index += 4
   }
 }
 
-fun ByteArray.put(
-  longArray: LongArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  longArray: LongArray,
 ) {
   var index = offset
   if (addLength) {
-    put(longArray.size, index, byteOrder)
+    set(index, byteOrder, longArray.size)
     index += 4
   }
   longArray.forEach {
-    put(it, index, byteOrder)
+    set(index, byteOrder, it)
     index += 8
   }
 }
 
-fun ByteArray.put(
-  floatArray: FloatArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  floatArray: FloatArray,
 ) {
   var index = offset
   if (addLength) {
-    put(floatArray.size, index, byteOrder)
+    set(index, byteOrder, floatArray.size)
     index += 4
   }
   floatArray.forEach {
-    put(it, index, byteOrder)
+    set(index, byteOrder, it)
     index += 4
   }
 }
 
-fun ByteArray.put(
-  doubleArray: DoubleArray,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = true,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  doubleArray: DoubleArray,
 ) {
   var index = offset
   if (addLength) {
-    put(doubleArray.size, index, byteOrder)
+    set(index, byteOrder, doubleArray.size)
     index += 4
   }
   doubleArray.forEach {
-    put(it, index, byteOrder)
+    set(index, byteOrder, it)
     index += 8
   }
 }
 
-fun ByteArray.put(
-  str: String,
+operator fun ByteArray.set(
   offset: Int = 0,
   addLength: Boolean = false,
   byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN,
+  str: String,
 ): Int {
   val utf8Array = str.toByteArray()
   return if (addLength) {
-    put(utf8Array.size, 0, byteOrder)
+    set(0, byteOrder, utf8Array.size)
     utf8Array.copyInto(this, offset + 4)
     utf8Array.size + 4
   } else {
@@ -513,7 +537,7 @@ fun Int.asFloat(): Float = Float.fromBits(this)
 fun Long.asDouble(): Double = Double.fromBits(this)
 
 
-fun ByteArray.put(obj: Any, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN): Int {
+operator fun ByteArray.set(offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, obj: Any): Int {
   return when (obj) {
     is Byte -> if (offset < size) {
       this[offset] = obj
@@ -521,65 +545,77 @@ fun ByteArray.put(obj: Any, offset: Int = 0, byteOrder: ByteOrder = ByteOrder.BI
     } else {
       throw IndexOutOfBoundsException()
     }
+
     is Char -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       2
     }
+
     is Short -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       2
     }
+
     is Int -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       4
     }
+
     is Long -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       8
     }
+
     is Float -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       4
     }
+
     is Double -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       8
     }
 
     is ByteArray -> if (size < offset + obj.size) {
-      put(obj.size, offset, byteOrder)
+      set(offset, byteOrder, obj.size)
       obj.copyInto(this, offset + 4)
       obj.size + 4
     } else {
       throw IndexOutOfBoundsException()
     }
+
     is CharArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 2 + 4
     }
+
     is ShortArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 2 + 4
     }
+
     is IntArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 4 + 4
     }
+
     is LongArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 8 + 4
     }
+
     is FloatArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 4 + 4
     }
+
     is DoubleArray -> {
-      put(obj, offset, byteOrder)
+      set(offset, byteOrder, obj)
       obj.size * 8 + 4
     }
 
     is String -> {
-      put(obj, offset, true, byteOrder)
+      set(offset, true, byteOrder, obj)
     }
 
     else -> throw WrongPushTypeException()
@@ -682,10 +718,12 @@ inline fun Char.toBytes(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, action: (By
       action((value shr 8).toByte())
       action(value.toByte())
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       action(value.toByte())
       action((value shr 8).toByte())
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
@@ -697,10 +735,12 @@ inline fun Short.toBytes(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, action: (B
       action((value shr 8).toByte())
       action(value.toByte())
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       action(value.toByte())
       action((value shr 8).toByte())
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
@@ -713,12 +753,14 @@ inline fun Int.toBytes(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, action: (Byt
       action((this shr 8).toByte())
       action(this.toByte())
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       action(this.toByte())
       action((this shr 8).toByte())
       action((this shr 16).toByte())
       action((this shr 24).toByte())
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
@@ -735,6 +777,7 @@ inline fun Long.toBytes(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, action: (By
       action((this shr 8).toByte())
       action(this.toByte())
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       action(this.toByte())
       action((this shr 8).toByte())
@@ -745,6 +788,7 @@ inline fun Long.toBytes(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, action: (By
       action((this shr 48).toByte())
       action((this shr 56).toByte())
     }
+
     else -> throw UnsupportedOperationException()
   }
 }
@@ -763,9 +807,11 @@ inline fun toChar(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, get: () -> Byte):
       val late = get()
       get().toInt() or (late.toInt() shl 8)
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       get().toInt() or (get().toInt() shl 8)
     }
+
     else -> throw UnsupportedOperationException()
   }.toChar()
 }
@@ -776,9 +822,11 @@ inline fun toShort(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, get: () -> Byte)
       val late = get()
       get().toInt() or (late.toInt() shl 8)
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       get().toInt() or (get().toInt() shl 8)
     }
+
     else -> throw UnsupportedOperationException()
   }.toShort()
 }
@@ -792,10 +840,12 @@ inline fun toInt(byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN, get: () -> Byte): 
       get().toInt() and 0xff or (i3.toInt() shl 8 and 0xff00) or
         (i2.toInt() shl 16 and 0xff0000) or (i1.toInt() shl 24 and 0xff000000.toInt())
     }
+
     ByteOrder.LITTLE_ENDIAN -> {
       get().toInt() and 0xff or (get().toInt() shl 8 and 0xff00) or
         (get().toInt() shl 16 and 0xff0000) or (get().toInt() shl 24 and 0xff000000.toInt())
     }
+
     else -> throw UnsupportedOperationException()
   }
 }

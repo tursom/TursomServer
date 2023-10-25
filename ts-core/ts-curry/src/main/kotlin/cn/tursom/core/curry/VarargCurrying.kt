@@ -2,9 +2,9 @@
 
 package cn.tursom.core.curry
 
-import cn.tursom.core.allMethods
-import cn.tursom.core.plus
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.allMethods
+import cn.tursom.core.util.plus
+import cn.tursom.core.util.uncheckedCast
 
 
 class VarargCurrying<A, R>(

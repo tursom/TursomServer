@@ -6,8 +6,8 @@
 package cn.tursom.core.buffer
 
 import cn.tursom.core.buffer.impl.ArrayByteBuffer
-import cn.tursom.core.toBytes
-import cn.tursom.core.toInt
+import cn.tursom.core.util.toBytes
+import cn.tursom.core.util.toInt
 import java.nio.ByteOrder
 import java.nio.channels.GatheringByteChannel
 import java.nio.channels.ReadableByteChannel

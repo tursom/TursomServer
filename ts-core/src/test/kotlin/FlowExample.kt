@@ -1,4 +1,4 @@
-import cn.tursom.core.usingNanoTime
+import cn.tursom.core.util.usingNanoTime
 import org.junit.Test
 import java.lang.reflect.Field
 import java.lang.reflect.Method

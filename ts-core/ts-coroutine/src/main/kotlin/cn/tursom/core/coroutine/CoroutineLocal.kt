@@ -1,7 +1,7 @@
 package cn.tursom.core.coroutine
 
-import cn.tursom.core.cast
-import cn.tursom.core.toHexString
+import cn.tursom.core.util.cast
+import cn.tursom.core.util.toHexString
 import kotlinx.coroutines.Job
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext

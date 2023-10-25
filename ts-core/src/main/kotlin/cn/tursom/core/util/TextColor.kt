@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 object TextColor {
   const val reset = "\u001b[0m"

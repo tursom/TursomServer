@@ -1,7 +1,7 @@
 package cn.tursom.reflect.asm
 
-import cn.tursom.core.toUpperCase
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.toUpperCase
+import cn.tursom.core.util.uncheckedCast
 import com.esotericsoftware.reflectasm.MethodAccess
 
 class ReflectAsmKtField<T, V>(

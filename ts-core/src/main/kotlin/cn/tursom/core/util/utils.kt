@@ -1,19 +1,15 @@
 @file:Suppress("unused")
 
-package cn.tursom.core
+package cn.tursom.core.util
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import sun.reflect.Reflection
 import java.io.*
-import java.lang.reflect.Field
-import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.zip.Deflater
@@ -26,10 +22,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.experimental.and
-import kotlin.jvm.internal.PropertyReference
 import kotlin.random.Random
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberProperties
@@ -40,7 +34,7 @@ object Utils {
   const val dollar = '$'
   val random = Random(System.currentTimeMillis())
 
-  val bufferThreadLocal = SimpThreadLocal { ByteArray(1024) }
+  val bufferThreadLocal = ThreadLocal { ByteArray(1024) }
 
   @Suppress("unused", "SpellCheckingInspection")
   val gson: Gson by lazy {
@@ -75,13 +69,6 @@ object Utils {
   @Suppress("SpellCheckingInspection")
   internal val DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
 
-  val receiverField: Field by lazy {
-    kotlin.jvm.internal.CallableReference::class.java.getDeclaredField("receiver").apply { isAccessible = true }
-  }
-  val ownerField: Field by lazy {
-    kotlin.jvm.internal.CallableReference::class.java.getDeclaredField("owner").apply { isAccessible = true }
-  }
-
   val strValue = String::class.java.declaredFields.firstOrNull {
     it.type == CharArray::class.java
   }?.also {
@@ -89,6 +76,8 @@ object Utils {
     it.final = false
   }
 }
+
+fun <T : Any> ThreadLocal(new: () -> T) = ThreadLocal.withInitial(new)
 
 fun CharArray.packageToString(): String {
   return if (size < 64 * 1024 || Utils.strValue == null) {
@@ -267,14 +256,11 @@ fun ByteArray.base64UrlDecode(): ByteArray = Base64.getUrlDecoder().decode(this)
 fun String.base64MimeDecode(): String = Base64.getMimeDecoder().decode(this).toUTF8String()
 fun ByteArray.base64MimeDecode(): ByteArray = Base64.getMimeDecoder().decode(this)
 
-fun String.digest(type: String) = toByteArray().digest(type)?.toHexString()
+fun String.digest(type: String) = toByteArray().digest(type).toHexString()
 
-fun ByteArray.digest(type: String) = try {
+fun ByteArray.digest(type: String): ByteArray {
   val instance = MessageDigest.getInstance(type)
-  instance.digest(this)
-} catch (e: NoSuchAlgorithmException) {
-  e.printStackTrace()
-  null
+  return instance.digest(this)
 }
 
 fun <A : Annotation, V : Any> A.changeAnnotationValue(field: KProperty1<A, V>, value: V): Boolean {
@@ -319,92 +305,6 @@ inline fun usingNanoTime(action: () -> Unit): Long {
   val t2 = System.nanoTime()
   return t2 - t1
 }
-
-inline fun Class<*>.forAllFields(action: (Field) -> Unit) {
-  allFieldsSequence.forEach(action)
-}
-
-val Class<*>.allFields: List<Field>
-  get() {
-    val fieldList = ArrayList<Field>()
-    forAllFields(fieldList::add)
-    return fieldList
-  }
-
-val Class<*>.allFieldsSequence: Sequence<Field>
-  get() = sequence {
-    var clazz = this@allFieldsSequence
-    while (clazz != Any::class.java) {
-      clazz.declaredFields.forEach { field ->
-        yield(field)
-      }
-      clazz = clazz.superclass
-    }
-  }
-
-fun Class<*>.getFieldForAll(name: String): Field? {
-  forAllFields {
-    if (it.name == name) return it
-  }
-  return null
-}
-
-inline fun Class<*>.forAllMethods(action: (Method) -> Unit) {
-  allMethodsSequence.forEach(action)
-}
-
-fun Class<*>.getMethodForAll(name: String, vararg parameterTypes: Class<*>?): Method? {
-  forAllMethods {
-    if (it.name == name && parameterTypes.contentEquals(it.parameterTypes)) return it
-  }
-  return null
-}
-
-val Class<*>.allMethods: List<Method>
-  get() {
-    val fieldList = ArrayList<Method>()
-    forAllMethods(fieldList::add)
-    return fieldList
-  }
-
-val Class<*>.allMethodsSequence: Sequence<Method>
-  get() = sequence {
-    var clazz = this@allMethodsSequence
-    while (clazz != Any::class.java) {
-      clazz.declaredMethods.forEach {
-        yield(it)
-      }
-      clazz = clazz.superclass
-    }
-    clazz.declaredMethods.forEach {
-      yield(it)
-    }
-  }
-
-/**
- * 获取一个 KProperty<*> 对应的对象
- */
-val KProperty<*>.receiver: Any?
-  get() = if (this is PropertyReference) {
-    boundReceiver
-  } else try {
-    Utils.receiverField.get(this)
-  } catch (e: Exception) {
-    null
-  } ?: javaClass.getFieldForAll("receiver")?.let {
-    it.isAccessible = true
-    it.get(this)
-  }
-
-val KProperty<*>.owner: Class<*>?
-  get() = try {
-    Utils.ownerField.get(this)?.uncheckedCast<Class<*>>()
-  } catch (e: Exception) {
-    null
-  } ?: javaClass.getFieldForAll("owner")?.let {
-    it.isAccessible = true
-    it.get(this)?.castOrNull()
-  }
 
 tailrec fun Long.base62(sBuilder: StringBuilder = StringBuilder()): String {
   return if (this == 0L) {
@@ -527,32 +427,6 @@ fun mongoLegal(value: Any?) = when {
   value.javaClass.name.endsWith("DTO") -> true
   value.javaClass.name.endsWith("VO") -> true
   else -> false
-}
-
-fun getCallerClass(thisClassName: List<String>): Class<*>? {
-  var clazz: Class<*>?
-  var callStackDepth = 1
-  do {
-    clazz = getCallerClass(callStackDepth++)
-    val clazzName = clazz?.name
-    if (clazzName != "cn.tursom.core.UtilsKt" && clazzName !in thisClassName) {
-      break
-    }
-  } while (clazz != null)
-  return clazz
-}
-
-fun getCallerClassName(thisClassName: List<String>): String? {
-  return getCallerClass(thisClassName)?.name
-}
-
-fun getCallerClass(callStackDepth: Int): Class<*>? {
-  @Suppress("DEPRECATION")
-  return Reflection.getCallerClass(callStackDepth)
-}
-
-fun getCallerClassName(callStackDepth: Int): String? {
-  return getCallerClass(callStackDepth)?.name
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -720,5 +594,10 @@ fun StringBuilder(vararg strings: String): StringBuilder {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Throwable.throws(): Nothing {
+  throw this
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline operator fun Throwable.unaryMinus(): Nothing {
   throw this
 }

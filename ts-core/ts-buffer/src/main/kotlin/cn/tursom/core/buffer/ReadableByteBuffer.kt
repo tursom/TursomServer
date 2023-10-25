@@ -1,7 +1,7 @@
 package cn.tursom.core.buffer
 
-import cn.tursom.core.Utils
-import cn.tursom.core.reverseBytes
+import cn.tursom.core.util.Utils
+import cn.tursom.core.util.reverseBytes
 import java.io.OutputStream
 import java.nio.ByteOrder
 import kotlin.math.min

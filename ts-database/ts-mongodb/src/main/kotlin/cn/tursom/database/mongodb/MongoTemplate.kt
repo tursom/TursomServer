@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.database.mongodb.operator.MongoOperator
 import cn.tursom.database.mongodb.operator.MongoOperatorImpl
 import com.mongodb.MongoClientSettings

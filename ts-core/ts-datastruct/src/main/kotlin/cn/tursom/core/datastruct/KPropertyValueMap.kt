@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties

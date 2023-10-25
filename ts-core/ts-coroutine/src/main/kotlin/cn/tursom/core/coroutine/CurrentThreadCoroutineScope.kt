@@ -1,13 +1,13 @@
 package cn.tursom.core.coroutine
 
-import cn.tursom.core.SimpThreadLocal
-import cn.tursom.core.cast
+import cn.tursom.core.util.ThreadLocal
+import cn.tursom.core.util.cast
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 object CurrentThreadCoroutineScope {
-  private val eventLoopThreadLocal: SimpThreadLocal<CoroutineDispatcher> = SimpThreadLocal {
+  private val eventLoopThreadLocal: ThreadLocal<CoroutineDispatcher> = ThreadLocal {
     newBlockingEventLoop()
   }
 

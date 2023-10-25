@@ -4,11 +4,10 @@ import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.authentication.http.BasicAuthentication
 
 fun Project.autoConfigPublish() {
   try {
-    extensions.configure("publishing", ::publish)
+    extensions.configure(PublishingExtension::class.java, ::publish)
   } catch (e: Exception) {
     println("auto config publish failed: ${e.javaClass} ${e.message}")
   }
@@ -36,9 +35,9 @@ private fun Project.createTursomPublishRepository(repositoryHandler: RepositoryH
       }
 
       repository.url = if (version.endsWith("SNAPSHOT")) {
-        uri("https://nvm.tursom.cn/repository/maven-snapshots/")
+        uri("https://jmp.mvn.tursom.cn:20080/repository/maven-snapshots/")
       } else {
-        uri("https://nvm.tursom.cn/repository/maven-releases/")
+        uri("https://jmp.mvn.tursom.cn:20080/repository/maven-releases/")
       }
 
       repository.authentication{ ac ->
@@ -129,7 +128,8 @@ private fun Project.createMavenPublications(pc: PublicationContainer) {
     }
     try {
       mavenPublication.artifact(tasks.getByName("kotlinSourcesJar"))
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+      e.printStackTrace()
     }
   }
 }

@@ -1,7 +1,7 @@
 package cn.tursom.database.ktorm.ext
 
-import cn.tursom.core.allFieldsSequence
 import cn.tursom.core.reflect.InstantAllocator
+import cn.tursom.core.util.allFieldsSequence
 import cn.tursom.proxy.Proxy
 import org.ktorm.database.Database
 import org.ktorm.database.SqlDialect

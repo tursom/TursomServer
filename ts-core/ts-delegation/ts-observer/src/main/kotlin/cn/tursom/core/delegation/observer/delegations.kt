@@ -2,10 +2,10 @@
 
 package cn.tursom.core.delegation.observer
 
-import cn.tursom.core.UncheckedCast
-import cn.tursom.core.cast
 import cn.tursom.core.delegation.*
-import cn.tursom.core.receiver
+import cn.tursom.core.util.UncheckedCast
+import cn.tursom.core.util.cast
+import cn.tursom.core.util.receiver
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty0

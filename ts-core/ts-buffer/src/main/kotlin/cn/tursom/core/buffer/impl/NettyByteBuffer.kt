@@ -5,7 +5,7 @@ import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.ByteBufferExtensionKey
 import cn.tursom.core.buffer.NioBuffers
 import cn.tursom.core.reference.FreeReference
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.log.impl.Slf4jImpl
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled

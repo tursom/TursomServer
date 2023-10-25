@@ -1,7 +1,7 @@
 package cn.tursom.channel
 
-import cn.tursom.core.assert
 import cn.tursom.core.timer.TimerTask
+import cn.tursom.core.util.assert
 import cn.tursom.niothread.NioProtocol
 import cn.tursom.niothread.NioThread
 import java.nio.channels.SelectionKey

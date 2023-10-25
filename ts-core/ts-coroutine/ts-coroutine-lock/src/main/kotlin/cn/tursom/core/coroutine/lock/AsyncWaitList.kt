@@ -1,6 +1,6 @@
 package cn.tursom.core.coroutine.lock
 
-import cn.tursom.core.Unsafe.unsafe
+import cn.tursom.core.util.Unsafe.unsafe
 import java.io.Closeable
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume

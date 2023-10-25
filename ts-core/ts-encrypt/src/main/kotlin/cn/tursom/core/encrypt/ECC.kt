@@ -1,7 +1,7 @@
 package cn.tursom.core.encrypt
 
-import cn.tursom.core.Unsafe
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.Unsafe
+import cn.tursom.core.util.uncheckedCast
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator

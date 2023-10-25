@@ -1,6 +1,6 @@
 package cn.tursom.core.json
 
-import com.sun.org.apache.xalan.internal.lib.ExsltMath.power
+import kotlin.math.pow
 
 object Json {
   class JsonFormatException(message: String? = null) : RuntimeException(message) {
@@ -41,10 +41,12 @@ object Json {
       content.index += 4
       true
     }
+
     content.json.startsWith("false", content.index) -> {
       content.index += 5
       false
     }
+
     else -> throw JsonFormatException(content)
   }
 
@@ -100,7 +102,7 @@ object Json {
         }
       }
       content.index++
-      number = number.toDouble() * power(10.0, parseInt(content).toLong() * if (powerNegative) -1.0 else 1.0)
+      number = number.toDouble() * 10.0.pow(parseInt(content).toLong() * if (powerNegative) -1.0 else 1.0)
     }
     return if (negative) when (number) {
       is Int -> -number
@@ -129,14 +131,17 @@ object Json {
             }
             builder.append(char.toChar())
           }
+
           else -> builder.append(content.json[content.index])
         }
         content.index++
       }
+
       '"' -> {
         content.index++
         return builder.toString()
       }
+
       else -> builder.append(content.json[content.index++])
     }
     throw JsonFormatException(content)

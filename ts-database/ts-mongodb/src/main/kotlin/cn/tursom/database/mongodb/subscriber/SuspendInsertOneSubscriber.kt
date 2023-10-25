@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb.subscriber
 
-import cn.tursom.core.Disposable
+import cn.tursom.core.util.Disposable
 import cn.tursom.database.mongodb.MongoUtil
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription

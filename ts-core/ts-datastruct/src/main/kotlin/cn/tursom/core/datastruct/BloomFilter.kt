@@ -1,7 +1,7 @@
 package cn.tursom.core.datastruct
 
 import cn.tursom.core.hash.MurmurHash3
-import cn.tursom.core.toByteArray
+import cn.tursom.core.util.toByteArray
 import kotlin.math.pow
 
 @Suppress("MemberVisibilityCanBePrivate")

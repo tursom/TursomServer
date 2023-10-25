@@ -1,9 +1,9 @@
 package cn.tursom.channel.enhance
 
-import cn.tursom.core.ShutdownHook
 import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.pool.HeapMemoryPool
 import cn.tursom.core.pool.MemoryPool
+import cn.tursom.core.util.ShutdownHook
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import java.io.Closeable
@@ -24,7 +24,7 @@ class ChannelPipeline<V>(
   }
 
   @Suppress("unused")
-  private val hook = ShutdownHook.addHook(softReference = true) {
+  private val hook = ShutdownHook.addSoftShutdownHook {
     close()
   }
 

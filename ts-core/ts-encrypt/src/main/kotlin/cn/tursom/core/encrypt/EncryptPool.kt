@@ -1,8 +1,8 @@
 package cn.tursom.core.encrypt
 
-import cn.tursom.core.Utils
 import cn.tursom.core.datastruct.concurrent.BlockingArrayList
 import cn.tursom.core.pool.Pool
+import cn.tursom.core.util.Utils
 
 open class EncryptPool<T : Encrypt>(
   initSize: Int = 0,

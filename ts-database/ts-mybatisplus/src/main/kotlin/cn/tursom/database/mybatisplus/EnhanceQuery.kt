@@ -1,6 +1,6 @@
 package cn.tursom.database.mybatisplus
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import com.baomidou.mybatisplus.core.conditions.Wrapper
 import com.baomidou.mybatisplus.core.conditions.query.Query
 import kotlin.reflect.KProperty

@@ -1,8 +1,8 @@
 package cn.tursom.niothread
 
-import cn.tursom.core.NonLockLinkedList
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
+import java.util.concurrent.LinkedTransferQueue
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 class WorkerLoopNioThread(
@@ -14,7 +14,7 @@ class WorkerLoopNioThread(
 ) : NioThread {
   override val closed: Boolean get() = !selector.isOpen
 
-  val waitQueue = NonLockLinkedList<() -> Unit>()
+  val waitQueue = LinkedTransferQueue<() -> Unit>()
   //val taskQueue = LinkedBlockingDeque<Future<Any?>>()
 
   override val thread = Thread {
@@ -57,7 +57,7 @@ class WorkerLoopNioThread(
 
   override fun <T> submit(task: () -> T): NioThreadTaskFuture<T> {
     val f = Future<T>()
-    waitQueue {
+    waitQueue.add {
       try {
         f.resume(task())
       } catch (e: Throwable) {

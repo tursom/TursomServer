@@ -1,6 +1,6 @@
 package cn.tursom.core.timer
 
-import cn.tursom.core.CurrentTimeMillisClock
+import cn.tursom.core.util.CurrentTimeMillisClock
 import java.lang.Thread.sleep
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor

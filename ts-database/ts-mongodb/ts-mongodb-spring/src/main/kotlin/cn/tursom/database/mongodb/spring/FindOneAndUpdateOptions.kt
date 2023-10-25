@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb.spring
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import org.bson.conversions.Bson
 

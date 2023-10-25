@@ -1,8 +1,8 @@
 package cn.tursom.reflect
 
-import cn.tursom.core.UncheckedCast
-import cn.tursom.core.cast
-import cn.tursom.core.forAllMethods
+import cn.tursom.core.util.UncheckedCast
+import cn.tursom.core.util.cast
+import cn.tursom.core.util.forAllMethods
 import cn.tursom.log.impl.Slf4jImpl
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType

@@ -2,21 +2,22 @@
 
 package cn.tursom.reflect
 
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.VarHandle
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Modifier
 
 
-private val fieldModifiersField: Field? = try {
-  Field::class.java.getDeclaredField("modifiers").apply {
-    isAccessible = true
-  }
-} catch (e: Throwable) {
+private val MODIFIERS: VarHandle? = try {
+  val lookup = MethodHandles.privateLookupIn(Field::class.java, MethodHandles.lookup());
+  lookup.findVarHandle(Field::class.java, "modifiers", Int::class.java);
+} catch (_: Exception) {
   null
 }
 
 var fieldModifiers: (Field, Int) -> Unit = { field, modifier ->
-  fieldModifiersField!!.set(field, modifier)
+  MODIFIERS!!.set(field, modifier)
 }
 
 var Field.public: Boolean

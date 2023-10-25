@@ -1,8 +1,8 @@
 package cn.tursom.proxy
 
-import cn.tursom.core.allMethodsSequence
-import cn.tursom.core.isPrivate
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.allMethodsSequence
+import cn.tursom.core.util.isPrivate
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.proxy.container.ListProxyContainer
 import cn.tursom.proxy.container.MutableProxyContainer
 import cn.tursom.proxy.container.ProxyContainer
@@ -10,7 +10,6 @@ import cn.tursom.proxy.function.ProxyMethod
 import cn.tursom.proxy.interceptor.CachedMethodInterceptor
 import cn.tursom.proxy.interceptor.LocalCachedProxyInterceptor
 import cn.tursom.proxy.interceptor.ProxyInterceptor
-import cn.tursom.reflect.final
 import net.sf.cglib.proxy.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -18,11 +17,6 @@ object Proxy {
   var defaultContainer: () -> MutableProxyContainer = { ListProxyContainer() }
   private val cache = ConcurrentHashMap<Class<*>, Class<*>>()
   val directAccessorKey = ProxyContainer.ctxEnv.newKey<Any>()
-
-  private val methodProxyFieldSignature = MethodProxy::class.java.getDeclaredField("sig1").also {
-    it.isAccessible = true
-    it.final = false
-  }
 
   fun getContainer(obj: Factory): ProxyContainer? {
     val interceptor = obj.getCallback(0) as? ProxyInterceptor ?: return null

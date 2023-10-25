@@ -1,6 +1,6 @@
 package cn.tursom.database.ktorm.typeadapter
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.database.ktorm.TypeAdapter
 import cn.tursom.database.ktorm.simpTableField
 import org.ktorm.schema.BaseTable

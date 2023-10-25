@@ -1,9 +1,7 @@
 package cn.tursom.proxy
 
-import cn.tursom.core.allFieldsSequence
-import cn.tursom.core.static
-import cn.tursom.proxy.container.ProxyContainer
-import cn.tursom.proxy.container.ProxyMethodCacheFunction
+import cn.tursom.core.util.allFieldsSequence
+import cn.tursom.core.util.static
 import cn.tursom.proxy.function.ProxyMethod
 import com.esotericsoftware.reflectasm.MethodAccess
 import net.sf.cglib.proxy.InvocationHandler
@@ -11,7 +9,6 @@ import net.sf.cglib.proxy.MethodProxy
 import org.junit.Test
 import org.objectweb.asm.ClassWriter
 import java.io.File
-import java.lang.reflect.Method
 
 class Example {
   companion object {

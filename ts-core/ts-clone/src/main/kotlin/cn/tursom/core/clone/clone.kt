@@ -1,8 +1,8 @@
 package cn.tursom.core.clone
 
-import cn.tursom.core.*
 import cn.tursom.core.datastruct.ArrayMap
 import cn.tursom.core.reflect.InstantAllocator
+import cn.tursom.core.util.*
 import cn.tursom.log.impl.Slf4jImpl
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -73,7 +73,7 @@ fun <T : Any> List<Any?>.clone(
 
 /**
  * 新建并拷贝
- * @author 王景阔
+ * @author tursom
  * 创建类型 T 的实例
  * 并将对象两个的所有同名字段拷贝进新建的实例中
  * @return 新建的实例

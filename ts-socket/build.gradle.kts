@@ -1,6 +1,5 @@
 plugins {
   kotlin("jvm")
-  `maven-publish`
   id("ts-gradle")
 }
 
@@ -11,7 +10,7 @@ dependencies {
   implementation(project(":ts-core:ts-buffer"))
   implementation(project(":ts-core:ts-pool"))
   implementation(project(":ts-core:ts-log"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+  implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = coroutineVersion)
 }
 
 

@@ -1,8 +1,8 @@
 package cn.tursom.database.mongodb
 
-import cn.tursom.core.isStatic
-import cn.tursom.core.isTransient
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.isStatic
+import cn.tursom.core.util.isTransient
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.database.mongodb.annotation.Collection
 import cn.tursom.database.mongodb.annotation.Ignore
 import org.bson.BsonValue

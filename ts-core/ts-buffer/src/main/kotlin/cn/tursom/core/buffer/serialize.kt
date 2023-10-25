@@ -9,8 +9,8 @@ package cn.tursom.core.buffer
  * will support
  */
 
-import cn.tursom.core.Unsafe.unsafe
-import cn.tursom.core.isStatic
+import cn.tursom.core.util.Unsafe.unsafe
+import cn.tursom.core.util.isStatic
 
 class UnsupportedException : Exception()
 

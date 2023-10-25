@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit

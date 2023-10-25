@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter

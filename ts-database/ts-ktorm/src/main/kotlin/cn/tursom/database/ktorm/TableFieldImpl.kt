@@ -1,6 +1,6 @@
 package cn.tursom.database.ktorm
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.database.ktorm.annotations.KtormTableField
 import cn.tursom.log.impl.Slf4jImpl
 import java.lang.reflect.Modifier
@@ -13,7 +13,7 @@ import kotlin.reflect.jvm.jvmName
 
 /**
  * 自动注入表单名称映射
- * @author 王景阔
+ * @author tursom
  * 实现使用 类名[属性对象] 的方式来获取数据库属性名
  * 同时为 KProperty<*>.tableField 实现缓存加速
  */

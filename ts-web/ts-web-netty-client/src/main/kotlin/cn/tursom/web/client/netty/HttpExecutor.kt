@@ -1,6 +1,6 @@
 package cn.tursom.web.client.netty
 
-import cn.tursom.core.seconds
+import cn.tursom.core.util.seconds
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer

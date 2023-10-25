@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 
 class DefaultValueMap<K, V>(
   private val map: Map<K, V?>,

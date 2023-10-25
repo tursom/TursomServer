@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.lang.reflect.Field
 import java.lang.reflect.Member

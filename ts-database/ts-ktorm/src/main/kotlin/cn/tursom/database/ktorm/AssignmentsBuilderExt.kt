@@ -1,6 +1,6 @@
 package cn.tursom.database.ktorm
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import org.ktorm.dsl.AssignmentsBuilder
 import org.ktorm.schema.ColumnDeclaring
 import kotlin.reflect.KProperty1

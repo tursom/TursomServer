@@ -1,6 +1,6 @@
 /**
  * SQL 访问增强工具，实现从属性到数据库字段的自动映射
- * @author 王景阔
+ * @author tursom
  * 例：
  * Files::name.tableField
  * 可获得 Files 的 name 属性对应的字段名。
@@ -24,7 +24,7 @@ import kotlin.reflect.jvm.javaGetter
 
 /**
  * 数据库访问增强接口
- * @author 王景阔
+ * @author tursom
  * 设计上使用代理模式实现字段名缓存
  */
 interface TableField<T> {

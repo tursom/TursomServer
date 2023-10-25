@@ -2,10 +2,9 @@
 
 package cn.tursom.core.delegation
 
-import cn.tursom.core.SimpThreadLocal
-import cn.tursom.core.castOrNull
-import cn.tursom.core.receiver
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.castOrNull
+import cn.tursom.core.util.receiver
+import cn.tursom.core.util.uncheckedCast
 import java.util.concurrent.Executor
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReadWriteLock
@@ -91,7 +90,7 @@ fun <T, V> MutableDelegatedField<T, V>.readWriteLocked(readWriteLock: ReadWriteL
   ReadWriteLockMutableDelegatedField(this, readWriteLock)
 
 
-fun <T, V> ThreadLocal<V?>.delegated(): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField(this)
+fun <T, V> ThreadLocal<V>.delegated(): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField(this)
 fun <T, V> T.delegated(
   threadLocal: ThreadLocal<V?>,
 ): MutableDelegatedField<T, V?> = ThreadLocalMutableDelegatedField(threadLocal)
@@ -108,16 +107,6 @@ fun <T, V> T.threadLocalDelegated(type: Class<out V?>): MutableDelegatedField<T,
 @Suppress("UNUSED_PARAMETER")
 fun <T, V : Any> T.threadLocalDelegated(type: KClass<V>): MutableDelegatedField<T, V?> =
   ThreadLocalMutableDelegatedField()
-
-fun <T, V : Any> SimpThreadLocal<V>.delegated(): MutableDelegatedField<T, V> =
-  SimpThreadLocalMutableDelegatedField(this)
-
-fun <T, V : Any> T.threadLocalDelegated(
-  threadLocal: ThreadLocal<V?> = ThreadLocal(),
-  new: () -> V,
-): MutableDelegatedField<T, V> = SimpThreadLocalMutableDelegatedField(SimpThreadLocal(threadLocal, new))
-//fun <T, V> T.threadLocalDelegated(simpThreadLocal: SimpThreadLocal<V>): MutableDelegatedField<T, V> =
-//    SimpThreadLocalMutableDelegatedField(simpThreadLocal)
 
 fun <T, V> MutableDelegatedField<T, V>.filter(
   filter: T.(old: V, new: V) -> Boolean,

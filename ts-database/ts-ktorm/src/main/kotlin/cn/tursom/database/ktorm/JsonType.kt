@@ -1,6 +1,6 @@
 package cn.tursom.database.ktorm
 
-import cn.tursom.core.Utils
+import cn.tursom.core.util.Utils
 import com.google.gson.Gson
 import org.ktorm.schema.SqlType
 import java.lang.reflect.Type

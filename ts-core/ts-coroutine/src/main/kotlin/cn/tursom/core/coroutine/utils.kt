@@ -2,10 +2,10 @@
 
 package cn.tursom.core.coroutine
 
-import cn.tursom.core.cast
-import cn.tursom.core.forAllFields
-import cn.tursom.core.isInheritanceFrom
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.cast
+import cn.tursom.core.util.forAllFields
+import cn.tursom.core.util.isInheritanceFrom
+import cn.tursom.core.util.uncheckedCast
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce

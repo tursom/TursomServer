@@ -1,7 +1,6 @@
 package cn.tursom.database.redis
 
-import cn.tursom.core.ScheduledExecutorPool
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import cn.tursom.log.Slf4j
 import cn.tursom.log.impl.Slf4jImpl
 import redis.clients.jedis.*
@@ -12,7 +11,8 @@ import redis.clients.jedis.params.ZAddParams
 import redis.clients.jedis.params.ZIncrByParams
 import java.io.Closeable
 import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -40,40 +40,43 @@ class AsyncJedis(
     fun Pipeline.getPipelinedResponseLength(): Int = getPipelinedResponseLength.invoke(this).uncheckedCast()
 
     private val threadId = AtomicInteger(0)
-    private val threadPool = ScheduledExecutorPool {
-      val thread = Thread(it)
-      thread.name = "AsyncJedisWorker-${threadId.incrementAndGet()}"
-      thread.isDaemon = true
-      thread
-    }
-    private val responseSet = Response::class.java.getDeclaredField("set").apply {
-      isAccessible = true
-    }
-    private val getPipelinedResponseLength =
-      Queable::class.java.getDeclaredMethod("getPipelinedResponseLength").apply {
-        isAccessible = true
-      }
+
+    private val responseSet = Response::class.java
+      .getDeclaredField("set")
+      .apply { isAccessible = true }
+    private val getPipelinedResponseLength = Queable::class.java
+      .getDeclaredMethod("getPipelinedResponseLength")
+      .apply { isAccessible = true }
     private val Response<*>.set: Boolean get() = responseSet[this].uncheckedCast()
-    private val pipelineClientField = MultiKeyPipelineBase::class.java.getDeclaredField("client").apply {
-      isAccessible = true
-    }
+    private val pipelineClientField = MultiKeyPipelineBase::class.java
+      .getDeclaredField("client")
+      .apply { isAccessible = true }
     private val Pipeline.client get() = pipelineClientField.get(this).uncheckedCast<Client>()
   }
 
-  private val syncThread: Thread
-  private val syncExecutor: ScheduledExecutorService
-  private val workExecutor: ScheduledExecutorService
+  private val syncExecutor = Executors.newSingleThreadScheduledExecutor {
+    val thread = Thread(it)
+    thread.name = "AsyncJedisWorker-${threadId.incrementAndGet()}"
+    thread.isDaemon = true
+    thread
+  }
+  private val syncThread = run {
+    var thread: Thread? = null
+    val latch = CountDownLatch(1)
+    syncExecutor.execute {
+      thread = Thread.currentThread()
+      latch.countDown()
+    }
+    latch.await()
+    thread!!
+  }
+
   private val taskLock = ReentrantLock()
   private val pipelines = ConcurrentLinkedDeque<Pipeline>()
   private val tasks = ConcurrentLinkedDeque<() -> Boolean>()
   private val handleRequest = AtomicInteger(0)
 
   init {
-    val workThreadAndExecutor = threadPool.get()
-    syncThread = workThreadAndExecutor.first
-    syncExecutor = workThreadAndExecutor.second
-    workExecutor = syncExecutor
-    //workExecutor = threadPool.get().second
     pipelines.add(jedisPool.resource.pipelined())
   }
 
@@ -159,7 +162,7 @@ class AsyncJedis(
         error("an exception caused on pipeline sync", e)
       }
     }
-    //workExecutor.execute {
+
     // 遍历任务列表，清除已完成的任务
     val notHandledTasks = ArrayList<() -> Boolean>()
     var task = tasks.poll()
@@ -174,7 +177,6 @@ class AsyncJedis(
 
     debug("sync finished")
     syncing.set(false)
-    //}
   }
 
   private var lowerTime = 0

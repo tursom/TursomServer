@@ -1,6 +1,6 @@
 package cn.tursom.core.reflect
 
-import cn.tursom.core.allMethodsSequence
+import cn.tursom.core.util.allMethodsSequence
 import java.lang.reflect.Method
 
 class ReturnTypeMethodFilter<R>(

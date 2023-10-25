@@ -6,7 +6,7 @@ import cn.tursom.core.buffer.NioBuffers.finishRead
 import cn.tursom.core.buffer.NioBuffers.finishWrite
 import cn.tursom.core.buffer.NioBuffers.getReadNioBufferList
 import cn.tursom.core.buffer.NioBuffers.getWriteNioBufferList
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 
 class ArrayByteBuffer(
   vararg buffers: ByteBuffer,

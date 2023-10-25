@@ -1,7 +1,7 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import cn.tursom.core.reference.FreeSoftReference
-import com.sun.org.slf4j.internal.LoggerFactory
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -53,12 +53,23 @@ object ShutdownHook {
   private val availableThreadCount = Runtime.getRuntime().availableProcessors() * 2
   private val activeThreadCount = AtomicInteger()
 
-  fun addHook(softReference: Boolean = false, hook: () -> Unit): Hook {
+  fun addShutdownHook(hook: () -> Unit): Hook {
     if (activeThreadCount.incrementAndGet() <= availableThreadCount) {
       addWorkThread()
     }
 
-    val reference = if (softReference) SoftHookReference(hook) else HardHookReference(hook)
+    val reference = HardHookReference(hook)
+
+    shutdownHooks.add(reference)
+    return Hook(hook, reference)
+  }
+
+  fun addSoftShutdownHook(hook: () -> Unit): Hook{
+    if (activeThreadCount.incrementAndGet() <= availableThreadCount) {
+      addWorkThread()
+    }
+
+    val reference = SoftHookReference(hook)
 
     shutdownHooks.add(reference)
     return Hook(hook, reference)

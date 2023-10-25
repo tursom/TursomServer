@@ -2,8 +2,8 @@
 
 package cn.tursom.database.ktorm
 
-import cn.tursom.core.Utils
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.Utils
+import cn.tursom.core.util.uncheckedCast
 import com.google.gson.Gson
 import org.ktorm.database.Database
 import org.ktorm.dsl.*

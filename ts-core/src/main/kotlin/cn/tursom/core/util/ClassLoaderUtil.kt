@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.io.File
 import java.net.URL
@@ -9,18 +9,15 @@ import java.util.jar.JarFile
 val ClassLoader.classes: List<Class<*>>
   get() = ClassLoaderUtil.classes.get(this) as List<Class<*>>
 
-fun ClassLoader.getClassByPackage(
+fun ClassLoader.listClassByPackage(
   packageName: String,
   childPackage: Boolean = true,
 ): List<String> = ClassLoaderUtil.getClassByPackage(packageName, childPackage, this)
 
-inline fun <reified T> T.getClassByPackage(
-  packageName: String,
-  childPackage: Boolean = true,
-): List<String> = ClassLoaderUtil.getClassByPackage(packageName, childPackage, T::class.java.classLoader)
-
 object ClassLoaderUtil {
-  internal val classes = ClassLoader::class.java.getDeclaredField("classes").also { it.isAccessible = true }
+  internal val classes = ClassLoader::class.java
+    .getDeclaredField("classes")
+    .also { it.isAccessible = true }
 
   /**
    * 获取某包下所有类
@@ -115,7 +112,7 @@ object ClassLoaderUtil {
           }
         }
       }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     return myClassName
   }

@@ -1,7 +1,7 @@
 package cn.tursom.core.buffer
 
-import cn.tursom.core.Utils
-import cn.tursom.core.forEachIndex
+import cn.tursom.core.util.Utils
+import cn.tursom.core.util.forEachIndex
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteOrder

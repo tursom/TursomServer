@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb.spring
 
-import cn.tursom.core.isNotNullOrEmpty
+import cn.tursom.core.util.isNotNullOrEmpty
 import org.bson.Document
 import org.springframework.data.mongodb.core.query.Update
 import kotlin.reflect.KProperty

@@ -1,8 +1,8 @@
 package cn.tursom.http
 
-import cn.tursom.core.Utils.gson
 import cn.tursom.core.coroutine.GlobalScope
 import cn.tursom.core.coroutine.MainDispatcher
+import cn.tursom.core.util.Utils.gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.nodes.Document

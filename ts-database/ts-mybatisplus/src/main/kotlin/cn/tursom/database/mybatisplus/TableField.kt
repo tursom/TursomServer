@@ -1,6 +1,6 @@
 /**
  * SQL 访问增强工具，实现从属性到数据库字段的自动映射
- * @author 王景阔
+ * @author tursom
  * 例：
  * Files::name.tableField
  * 可获得 Files 的 name 属性对应的字段名。
@@ -10,9 +10,9 @@
 
 package cn.tursom.database.mybatisplus
 
-import cn.tursom.core.*
 import cn.tursom.core.reference.StrongReference
 import cn.tursom.core.reflect.getAnnotation
+import cn.tursom.core.util.*
 import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper

@@ -1,11 +1,11 @@
 package cn.tursom.core.ws
 
-import cn.tursom.core.ShutdownHook
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.NettyByteBuffer
-import cn.tursom.core.notifyAll
-import cn.tursom.core.uncheckedCast
-import cn.tursom.core.wait
+import cn.tursom.core.util.ShutdownHook
+import cn.tursom.core.util.notifyAll
+import cn.tursom.core.util.uncheckedCast
+import cn.tursom.core.util.wait
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -57,7 +57,7 @@ open class WebSocketClient<in T : WebSocketClient<T, H>, H : WebSocketHandler<T,
   private val onOpenLock = AtomicBoolean()
   val onOpen get() = onOpenLock.get()
 
-  private val hook = ShutdownHook.addHook(true) {
+  private val hook = ShutdownHook.addSoftShutdownHook {
     close()
   }
 

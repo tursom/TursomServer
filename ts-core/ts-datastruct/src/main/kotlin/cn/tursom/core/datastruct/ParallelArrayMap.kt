@@ -1,6 +1,6 @@
 package cn.tursom.core.datastruct
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class ParallelArrayMap<K, V>(initialCapacity: Int = 16) : SimpMap<K, V> {

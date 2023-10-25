@@ -1,6 +1,6 @@
 package cn.tursom.core.coroutine
 
-import cn.tursom.core.cast
+import cn.tursom.core.util.cast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext

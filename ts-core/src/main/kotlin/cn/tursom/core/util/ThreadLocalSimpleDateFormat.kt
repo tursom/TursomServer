@@ -1,18 +1,18 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 import java.text.SimpleDateFormat
 import java.util.*
 
 class ThreadLocalSimpleDateFormat(
   val format: String = "YYYY-MM-dd'T'HH:mm:ssZZ",
-) : SimpThreadLocal<SimpleDateFormat>(null, {
-  SimpleDateFormat(format)
-}) {
+) : ThreadLocal<SimpleDateFormat>() {
   fun format(date: Any) = get().format(date)
   fun format(date: Date) = get().format(date)
   fun parse(date: String) = get().parse(date)
 
   fun now() = format(System.currentTimeMillis())
+
+  override fun initialValue() = SimpleDateFormat(format)
 
   companion object {
     val iso8601 = ThreadLocalSimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssZZ")

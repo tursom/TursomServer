@@ -1,8 +1,8 @@
 package cn.tursom.database.mongodb.spring
 
-import cn.tursom.core.isStatic
-import cn.tursom.core.isTransient
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.isStatic
+import cn.tursom.core.util.isTransient
+import cn.tursom.core.util.uncheckedCast
 import org.bson.BsonValue
 import org.bson.Document
 import org.bson.conversions.Bson

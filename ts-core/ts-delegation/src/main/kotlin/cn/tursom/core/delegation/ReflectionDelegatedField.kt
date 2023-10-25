@@ -1,8 +1,8 @@
 package cn.tursom.core.delegation
 
-import cn.tursom.core.final
-import cn.tursom.core.getFieldForAll
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.final
+import cn.tursom.core.util.getFieldForAll
+import cn.tursom.core.util.uncheckedCast
 import java.lang.reflect.Field
 
 class ReflectionDelegatedField<in T, V>(

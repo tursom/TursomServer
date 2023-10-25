@@ -1,10 +1,10 @@
 package cn.tursom.core.delegation
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import kotlin.reflect.KProperty0
 
 class ThreadLocalMutableDelegatedField<in T, V>(
-  private val threadLocal: ThreadLocal<V?> = ThreadLocal(),
+  private val threadLocal: ThreadLocal<V> = ThreadLocal(),
 ) : MutableDelegatedField<T, V?> {
 
   override fun <K> get(key: DelegatedFieldAttachmentKey<K>): K? {

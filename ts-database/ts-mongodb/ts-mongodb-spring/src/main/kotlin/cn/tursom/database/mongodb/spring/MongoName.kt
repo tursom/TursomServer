@@ -1,6 +1,6 @@
 package cn.tursom.database.mongodb.spring
 
-import cn.tursom.core.StringBuilder
+import cn.tursom.core.util.StringBuilder
 import cn.tursom.database.mongodb.spring.function.Function1
 import cn.tursom.database.mongodb.spring.function.field
 import org.springframework.data.annotation.Id

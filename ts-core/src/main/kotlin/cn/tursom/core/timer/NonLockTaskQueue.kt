@@ -1,6 +1,6 @@
 package cn.tursom.core.timer
 
-import cn.tursom.core.CurrentTimeMillisClock
+import cn.tursom.core.util.CurrentTimeMillisClock
 import java.util.concurrent.atomic.AtomicReference
 
 class NonLockTaskQueue : TaskQueue {

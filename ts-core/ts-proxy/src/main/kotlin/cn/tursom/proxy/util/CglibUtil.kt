@@ -1,12 +1,9 @@
 package cn.tursom.proxy.util
 
-import cn.tursom.core.final
-import cn.tursom.core.static
 import cn.tursom.reflect.asm.ReflectAsmUtils
 import net.sf.cglib.core.Signature
 import net.sf.cglib.proxy.Callback
 import net.sf.cglib.proxy.MethodProxy
-import java.lang.reflect.Field
 
 object CglibUtil {
   fun getFactoryData(clazz: Class<*>): Any? {

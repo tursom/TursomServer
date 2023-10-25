@@ -1,7 +1,7 @@
 package cn.tursom.database.mongodb
 
-import cn.tursom.core.isStatic
-import cn.tursom.core.isTransient
+import cn.tursom.core.util.isStatic
+import cn.tursom.core.util.isTransient
 import cn.tursom.database.mongodb.annotation.Ignore
 import org.bson.Document
 

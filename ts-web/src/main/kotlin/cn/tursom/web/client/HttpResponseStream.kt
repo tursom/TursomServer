@@ -2,9 +2,9 @@ package cn.tursom.web.client
 
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.HeapByteBuffer
-import cn.tursom.core.fromJson
-import cn.tursom.core.fromJsonTyped
-import cn.tursom.core.toUTF8String
+import cn.tursom.core.util.fromJson
+import cn.tursom.core.util.fromJsonTyped
+import cn.tursom.core.util.toUTF8String
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 

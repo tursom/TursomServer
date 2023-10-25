@@ -1,10 +1,10 @@
 package cn.tursom.web.client.netty
 
 import cn.tursom.core.AsyncFile
-import cn.tursom.core.Unsafe.setField
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.NettyByteBuffer
-import cn.tursom.core.toStartWith
+import cn.tursom.core.util.Unsafe.setField
+import cn.tursom.core.util.toStartWith
 import cn.tursom.log.impl.Slf4jImpl
 import cn.tursom.web.client.HttpRequest
 import cn.tursom.web.client.HttpResponse

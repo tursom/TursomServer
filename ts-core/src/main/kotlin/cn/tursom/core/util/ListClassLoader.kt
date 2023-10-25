@@ -1,4 +1,4 @@
-package cn.tursom.core
+package cn.tursom.core.util
 
 @Suppress("unused")
 class ListClassLoader(

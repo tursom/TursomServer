@@ -1,7 +1,7 @@
 package cn.tursom.web.client
 
-import cn.tursom.core.uncheckedCast
-import cn.tursom.core.urlEncode
+import cn.tursom.core.util.uncheckedCast
+import cn.tursom.core.util.urlEncode
 
 interface ParamsHolder<out T> : ParamsSetter<T> {
   val params: MutableMap<String, MutableList<String>>

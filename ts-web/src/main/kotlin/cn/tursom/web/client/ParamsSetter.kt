@@ -1,6 +1,6 @@
 package cn.tursom.web.client
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 
 interface ParamsSetter<out T> {
   fun addParam(key: String, value: String): T

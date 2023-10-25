@@ -1,7 +1,7 @@
 package cn.tursom.web.router
 
-import cn.tursom.core.allMethodsSequence
 import cn.tursom.core.coroutine.GlobalScope
+import cn.tursom.core.util.allMethodsSequence
 import cn.tursom.web.HttpContent
 import cn.tursom.web.MutableHttpContent
 import cn.tursom.web.mapping.*

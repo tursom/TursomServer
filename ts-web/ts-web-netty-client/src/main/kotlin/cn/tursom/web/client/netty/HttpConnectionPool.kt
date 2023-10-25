@@ -1,6 +1,6 @@
 package cn.tursom.web.client.netty
 
-import cn.tursom.core.seconds
+import cn.tursom.core.util.seconds
 import io.netty.handler.timeout.WriteTimeoutHandler
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay

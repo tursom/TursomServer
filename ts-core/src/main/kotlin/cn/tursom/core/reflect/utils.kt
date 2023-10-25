@@ -1,9 +1,9 @@
 package cn.tursom.core.reflect
 
-import cn.tursom.core.Unsafe.getField
-import cn.tursom.core.companionObjectInstanceOrNull
-import cn.tursom.core.isStatic
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.Unsafe.getField
+import cn.tursom.core.util.companionObjectInstanceOrNull
+import cn.tursom.core.util.isStatic
+import cn.tursom.core.util.uncheckedCast
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.*

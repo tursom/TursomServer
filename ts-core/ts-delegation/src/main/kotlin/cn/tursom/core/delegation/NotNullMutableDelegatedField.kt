@@ -1,6 +1,6 @@
 package cn.tursom.core.delegation
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import kotlin.reflect.KProperty
 
 class NotNullMutableDelegatedField<in T, V : Any>(

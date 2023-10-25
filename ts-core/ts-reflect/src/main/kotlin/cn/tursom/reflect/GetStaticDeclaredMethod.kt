@@ -2,10 +2,10 @@
 
 package cn.tursom.reflect
 
-import cn.tursom.core.allMethodsSequence
-import cn.tursom.core.companionObjectInstanceOrNull
 import cn.tursom.core.sequence.cache
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.allMethodsSequence
+import cn.tursom.core.util.companionObjectInstanceOrNull
+import cn.tursom.core.util.uncheckedCast
 import java.lang.reflect.Method
 
 inline fun <reified T> getType() = T::class.java

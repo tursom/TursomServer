@@ -2,7 +2,7 @@ package cn.tursom.web.client
 
 import cn.tursom.core.ByteBufferUtil
 import cn.tursom.core.buffer.ByteBuffer
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import kotlinx.coroutines.channels.ReceiveChannel
 import java.io.File
 

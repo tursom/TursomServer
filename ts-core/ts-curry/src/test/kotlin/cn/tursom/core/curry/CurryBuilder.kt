@@ -1,6 +1,6 @@
 package cn.tursom.core.curry
 
-import cn.tursom.core.removeLastChars
+import cn.tursom.core.util.removeLastChars
 import org.junit.Test
 
 class CurryBuilder {

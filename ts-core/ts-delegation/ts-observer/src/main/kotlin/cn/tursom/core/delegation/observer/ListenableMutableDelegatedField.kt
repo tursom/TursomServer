@@ -3,7 +3,7 @@ package cn.tursom.core.delegation.observer
 import cn.tursom.core.delegation.DecoratorMutableDelegatedField
 import cn.tursom.core.delegation.DelegatedFieldAttachmentKey
 import cn.tursom.core.delegation.MutableDelegatedField
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.reflect.KProperty
 

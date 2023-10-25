@@ -1,6 +1,6 @@
 package cn.tursom.core.context
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 
 open class ContextKey<T>(
   val envId: Int,

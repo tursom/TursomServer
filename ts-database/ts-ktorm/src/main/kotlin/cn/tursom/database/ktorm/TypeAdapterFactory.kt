@@ -1,8 +1,8 @@
 package cn.tursom.database.ktorm
 
-import cn.tursom.core.getClassByPackage
 import cn.tursom.core.reflect.InstantAllocator
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.listClassByPackage
+import cn.tursom.core.util.uncheckedCast
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.Column
 import java.util.concurrent.ConcurrentSkipListMap
@@ -38,7 +38,7 @@ object TypeAdapterFactory {
     pkg: String,
     classLoader: ClassLoader = this.javaClass.classLoader,
   ) {
-    classLoader.getClassByPackage(pkg).forEach {
+    classLoader.listClassByPackage(pkg).forEach {
       try {
         val clazz = Class.forName(it).kotlin
         if (clazz.isSubclassOf(TypeAdapter::class)) {

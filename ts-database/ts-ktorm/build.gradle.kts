@@ -1,6 +1,5 @@
 plugins {
   kotlin("jvm")
-  `maven-publish`
   id("ts-gradle")
 }
 
@@ -22,7 +21,7 @@ dependencies {
   testApi(group = "junit", name = "junit", version = "4.13.2")
   testApi(project(":ts-core:ts-proxy"))
   testApi(project(":ts-core:ts-reflectasm"))
-  testApi(group = "org.xerial", name = "sqlite-jdbc", version = "3.36.0.3")
+  testApi(group = "org.xerial", name = "sqlite-jdbc", version = "3.43.2.1")
   testApi(group = "org.ktorm", name = "ktorm-support-sqlite", version = "3.4.1")
 }
 

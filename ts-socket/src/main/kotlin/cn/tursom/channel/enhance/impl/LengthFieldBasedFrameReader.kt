@@ -1,12 +1,12 @@
 package cn.tursom.channel.enhance.impl
 
 import cn.tursom.channel.enhance.ChannelReader
-import cn.tursom.core.CurrentTimeMillisClock
 import cn.tursom.core.buffer.ByteBuffer
 import cn.tursom.core.buffer.impl.ListByteBuffer
 import cn.tursom.core.pool.ExpandableMemoryPool
 import cn.tursom.core.pool.LongBitSetDirectMemoryPool
 import cn.tursom.core.pool.MemoryPool
+import cn.tursom.core.util.CurrentTimeMillisClock
 
 class LengthFieldBasedFrameReader(
   private val prevReader: ChannelReader<ByteBuffer>,

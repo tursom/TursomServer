@@ -3,8 +3,8 @@
 package cn.tursom.database.mongodb.spring
 
 import cn.tursom.core.clone.clone
-import cn.tursom.core.toSetNotNull
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.toSetNotNull
+import cn.tursom.core.util.uncheckedCast
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult

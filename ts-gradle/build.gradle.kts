@@ -26,12 +26,12 @@ version = "1.0-SNAPSHOT"
 
 repositories {
   maven {
-    url = uri("https://nvm.tursom.cn/repository/maven-public/")
+    url = uri("https://jmp.mvn.tursom.cn:20080/repository/maven-public/")
   }
 }
 
 dependencies {
-  implementation(group = "org.yaml", name = "snakeyaml", version = "1.33")
+  implementation(group = "org.yaml", name = "snakeyaml", version = "2.0")
   implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
 }
 
@@ -51,8 +51,8 @@ publishing {
     try {
       maven {
         name = "tursom"
-        val releasesRepoUrl = uri("https://nvm.tursom.cn/repository/maven-releases/")
-        val snapshotRepoUrl = uri("https://nvm.tursom.cn/repository/maven-snapshots/")
+        val releasesRepoUrl = uri("https://jmp.mvn.tursom.cn:20080/repository/maven-releases/")
+        val snapshotRepoUrl = uri("https://jmp.mvn.tursom.cn:20080/repository/maven-snapshots/")
         url = if (project.version.toString().endsWith("SNAPSHOT")) snapshotRepoUrl else releasesRepoUrl
         credentials {
           val artifactoryUser: String = rootProject.ext["tursom.artifactoryUser"] as String

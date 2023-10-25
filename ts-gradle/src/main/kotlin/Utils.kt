@@ -2,12 +2,6 @@ import org.gradle.api.DomainObjectCollection
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.api.artifacts.repositories.PasswordCredentials
-import org.gradle.api.publish.PublicationContainer
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.internal.authentication.DefaultBasicAuthentication
 import java.util.concurrent.TimeUnit
 
 fun Project.excludeTest() {
@@ -50,7 +44,7 @@ fun Project.useTursomRepositories(
     }
     if (tursom) {
       maven {
-        it.url = uri("https://nvm.tursom.cn/repository/maven-public")
+        it.url = uri("https://jmp.mvn.tursom.cn:20080/repository/maven-public")
       }
     }
   }

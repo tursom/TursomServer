@@ -1,6 +1,6 @@
 package cn.tursom.core.delegation
 
-import cn.tursom.core.uncheckedCast
+import cn.tursom.core.util.uncheckedCast
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KProperty
 
