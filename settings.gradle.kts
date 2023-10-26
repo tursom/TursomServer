@@ -35,24 +35,25 @@ include("ts-database:ts-mybatisplus")
 include("ts-database:ts-mongodb")
 include("ts-database:ts-mongodb:ts-mongodb-spring")
 include("ts-database:ts-redis")
-//include("web", "aop", "database", "utils", "utils:xml", "utils:async-http", "web:netty-web")
-//include("socket", "socket:socket-async")
-//include("AsyncSocket")
-//include("log")
-//include("json")
-//include("utils:yaml")
-//include("web:web-coroutine")
-//include("microservices")
-//include("database:database-mysql")
-//include("database:mongodb")
-//include("database:mongodb:mongodb-async")
-//include("database:redis")
-//include("utils:ws-client")
-//include("utils:mail")
-//include("utils:csv")
-//include("utils:delegation")
-//include("utils:observer")
-//include("utils:TrafficForward")
-//include("utils:performance-test")
-//include("utils:math")
-//include("utils:json")
+
+dependencyResolutionManagement {
+  versionCatalogs {
+    create("libs") {
+      val kotlinCoroutineVersion = "1.7.3"
+      version("kotlin-coroutines", kotlinCoroutineVersion)
+      library(
+        "kotlin-coroutines-core",
+        "org.jetbrains.kotlinx",
+        "kotlinx-coroutines-core"
+      ).versionRef("kotlin-coroutines")
+    }
+  }
+}
+
+pluginManagement {
+  repositories {
+    maven {
+      url = uri("https://jmp.mvn.tursom.cn:20080/repository/maven-public/")
+    }
+  }
+}

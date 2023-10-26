@@ -14,6 +14,7 @@ dependencies {
   api(project(":ts-web"))
   api(project(":ts-web:ts-web-netty"))
   api(project(":ts-core:ts-coroutine"))
+  api(libs.kotlin.coroutines.core)
   api(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = coroutineVersion)
   api(group = "io.netty", name = "netty-all", version = nettyVersion)
   api(group = "org.slf4j", name = "slf4j-api", version = "1.7.32")

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.9.0"
+  kotlin("jvm") version "1.9.20-RC2"
   id("ts-gradle")
 }
 
@@ -14,7 +14,7 @@ allprojects {
   useTursomRepositories()
 
   tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "17"
+    //kotlinOptions.jvmTarget = "21"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     //kotlinOptions.useIR = true
   }

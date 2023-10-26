@@ -2,7 +2,7 @@
 import java.util.*
 
 plugins {
-  kotlin("jvm") version "1.7.10"
+  kotlin("jvm") version "1.9.10"
   `java-gradle-plugin`
   `maven-publish`
 }
@@ -22,7 +22,7 @@ try {
 
 group = "cn.tursom"
 //version = SimpleDateFormat("yy.MM.dd-HH.mm").format(Date())
-version = "1.0-SNAPSHOT"
+version = "1.1-SNAPSHOT"
 
 repositories {
   maven {
