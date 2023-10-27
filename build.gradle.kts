@@ -7,7 +7,7 @@ plugins {
 
   id("ts-gradle-env") apply false
   id("ts-gradle-install") apply false
-  id("ts-gradle-no-test") apply false
+  id("ts-gradle-test") apply false
   id("ts-gradle-publish") apply false
   id("ts-gradle-repos") apply false
 }
@@ -17,7 +17,7 @@ allprojects {
   apply(plugin = "maven-publish")
   apply(plugin = "ts-gradle-env")
   apply(plugin = "ts-gradle-install")
-  apply(plugin = "ts-gradle-no-test")
+  apply(plugin = "ts-gradle-test")
   apply(plugin = "ts-gradle-publish")
   apply(plugin = "ts-gradle-repos")
 

@@ -20,3 +20,11 @@ internal class ExtSqlDialectTest {
     println(formatter.sql)
   }
 }
+
+
+data class User(var name: String, var age: Int)
+
+
+fun main() {
+
+}

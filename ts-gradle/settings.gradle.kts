@@ -1,5 +1,5 @@
 include("ts-gradle-env")
-include("ts-gradle-no-test")
+include("ts-gradle-test")
 include("ts-gradle-install")
 include("ts-gradle-publish")
 include("ts-gradle-repos")

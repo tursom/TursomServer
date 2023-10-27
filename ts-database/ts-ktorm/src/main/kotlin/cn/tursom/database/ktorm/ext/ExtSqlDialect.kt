@@ -14,11 +14,11 @@ class ExtSqlDialect(
   override fun createSqlFormatter(database: Database, beautifySql: Boolean, indentSize: Int): SqlFormatter {
     val formatter = sqlDialect.createSqlFormatter(database, beautifySql, indentSize)
     val (proxyFormatter, container) = Proxy.get(formatter.javaClass) { InstantAllocator(it) }
-    run {
-      val extSqlFormatter = ExtSqlFormatter(formatter)
-      extSqlFormatter.registerVisitor(DirectSqlExpression.visitor)
-      container.addProxy(extSqlFormatter)
-    }
+
+    val extSqlFormatter = ExtSqlFormatter(formatter)
+    extSqlFormatter.registerVisitor(DirectSqlExpression.visitor)
+    container.addProxy(extSqlFormatter)
+
     formatter.javaClass.allFieldsSequence.forEach { field ->
       field.isAccessible = true
       field.set(proxyFormatter, field.get(formatter))

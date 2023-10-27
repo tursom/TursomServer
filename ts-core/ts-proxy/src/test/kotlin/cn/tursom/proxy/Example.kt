@@ -68,7 +68,7 @@ class Example {
 
   @Test
   fun test() {
-    val (t, container) = Proxy.get<TestClass>()
+    val (t, container) = Proxy.get<TestClass>(useDirectAccessor = true)
     val getA = GetA(t)
     println(getA.t == t)
 

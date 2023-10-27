@@ -20,3 +20,7 @@ artifacts {
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
 }
+
+tasks.withType<Test>() {
+  jvmArgs = listOf("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+}

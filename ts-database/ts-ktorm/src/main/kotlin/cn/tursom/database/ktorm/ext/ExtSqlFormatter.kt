@@ -1,13 +1,12 @@
 package cn.tursom.database.ktorm.ext
 
-import cn.tursom.proxy.function.ProxyMethod
 import cn.tursom.reflect.asm.ReflectAsmKtField
 import org.ktorm.expression.SqlExpression
 import org.ktorm.expression.SqlFormatter
 
 class ExtSqlFormatter(
   private val prevFormatter: SqlFormatter,
-) : ProxyMethod {
+) {
   companion object {
     private val builderField = ReflectAsmKtField.get<SqlFormatter, StringBuilder>("_builder")
   }

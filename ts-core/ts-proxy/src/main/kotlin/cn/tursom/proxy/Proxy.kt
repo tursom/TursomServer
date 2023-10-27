@@ -37,22 +37,27 @@ object Proxy {
   inline operator fun <T : Any> get(
     clazz: Class<T>,
     container: MutableProxyContainer = defaultContainer(),
+    useDirectAccessor: Boolean = false,
     builder: (Class<T>) -> T,
   ): Pair<T, MutableProxyContainer> {
     val target = getCachedTarget(clazz)
 
-    val directAccessor = builder(target)
     val obj = builder(target)
+    val directAccessor = if (useDirectAccessor) builder(target) else obj
 
     container.target = obj
-    container.ctx[directAccessorKey] = directAccessor
+    if (useDirectAccessor) container.ctx[directAccessorKey] = directAccessor
 
     injectCallback(obj as Factory, container, directAccessor as Factory)
 
     return obj to container
   }
 
-  inline fun <reified T : Any> get() = get(T::class.java)
+  inline fun <reified T : Any> get(
+    container: MutableProxyContainer = defaultContainer(),
+    useDirectAccessor: Boolean = false,
+  ) = get(T::class.java, container, useDirectAccessor)
+
   inline operator fun <reified T : Any> get(
     argumentTypes: Array<out Class<*>>,
     arguments: Array<out Any?>,
@@ -122,15 +127,20 @@ object Proxy {
     container,
   )
 
-  operator fun <T : Any> get(clazz: Class<T>, container: MutableProxyContainer = defaultContainer()) =
-    get(clazz, container, Class<T>::newInstance)
+  operator fun <T : Any> get(
+    clazz: Class<T>,
+    container: MutableProxyContainer = defaultContainer(),
+    useDirectAccessor: Boolean = false,
+  ) =
+    get(clazz, container, useDirectAccessor, Class<T>::newInstance)
 
   operator fun <T : Any> get(
     clazz: Class<T>,
     argumentTypes: Array<out Class<*>>,
     arguments: Array<out Any?>,
     container: MutableProxyContainer = defaultContainer(),
-  ) = get(clazz, container) {
+    useDirectAccessor: Boolean = false,
+  ) = get(clazz, container, useDirectAccessor) {
     it.getConstructor(*argumentTypes).newInstance(*arguments)
   }
 
