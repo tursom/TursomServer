@@ -1,8 +1,3 @@
-plugins {
-  kotlin("jvm")
-  id("ts-gradle")
-}
-
 dependencies {
   api(project(":"))
   implementation(project(":ts-core"))

@@ -39,6 +39,8 @@ include("ts-database:ts-redis")
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") {
+      version("kotlin-version", "1.9.20-RC2")
+
       val kotlinCoroutineVersion = "1.7.3"
       version("kotlin-coroutines", kotlinCoroutineVersion)
       library(

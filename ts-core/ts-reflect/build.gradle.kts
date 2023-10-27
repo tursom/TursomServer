@@ -1,9 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm")
-  id("ts-gradle")
-  kotlin("plugin.allopen") version "1.5.21"
+  kotlin("plugin.allopen")
 }
 
 dependencies {

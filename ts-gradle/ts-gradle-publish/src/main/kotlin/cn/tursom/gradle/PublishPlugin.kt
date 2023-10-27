@@ -1,9 +1,20 @@
+package cn.tursom.gradle
+
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+
+class PublishPlugin : Plugin<Project> {
+  override fun apply(target: Project) {
+    target.autoConfigPublish()
+  }
+}
 
 fun Project.autoConfigPublish() {
   try {

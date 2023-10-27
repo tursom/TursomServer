@@ -1,8 +1,3 @@
-plugins {
-  kotlin("jvm")
-  id("ts-gradle")
-}
-
 dependencies {
   api(kotlin("stdlib-jdk8"))
   api(kotlin("reflect"))

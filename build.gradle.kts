@@ -1,31 +1,39 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin("jvm") version "1.9.20-RC2"
-  id("ts-gradle")
+  val kotlinVersion = "1.9.20-RC2"
+  kotlin("jvm") version kotlinVersion
+  kotlin("plugin.allopen") version kotlinVersion apply false
+
+  id("ts-gradle-env") apply false
+  id("ts-gradle-install") apply false
+  id("ts-gradle-no-test") apply false
+  id("ts-gradle-publish") apply false
+  id("ts-gradle-repos") apply false
 }
 
 allprojects {
+  apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "maven-publish")
+  apply(plugin = "ts-gradle-env")
+  apply(plugin = "ts-gradle-install")
+  apply(plugin = "ts-gradle-no-test")
+  apply(plugin = "ts-gradle-publish")
+  apply(plugin = "ts-gradle-repos")
 
   group = "cn.tursom"
   version = "1.1-SNAPSHOT"
 
-  useTursomRepositories()
-
   tasks.withType<KotlinCompile>().configureEach {
-    //kotlinOptions.jvmTarget = "21"
+    kotlinOptions.jvmTarget = "21"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-    //kotlinOptions.useIR = true
   }
 
-  if (!isTestRunning) {
-    tasks.withType<Test> {
-      enabled = false
+  java {
+    toolchain {
+      languageVersion.set(JavaLanguageVersion.of(21))
     }
   }
-
-  //autoConfigPublish()
 }
 
 dependencies {

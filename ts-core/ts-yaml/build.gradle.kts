@@ -1,8 +1,3 @@
-plugins {
-  kotlin("jvm")
-  id("ts-gradle")
-}
-
 dependencies {
   implementation(project(":ts-core"))
   // 解析YAML

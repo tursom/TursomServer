@@ -1,8 +1,3 @@
-plugins {
-  kotlin("jvm")
-  id("ts-gradle")
-}
-
 val brotliVersion = "1.7.1"
 val operatingSystem: OperatingSystem =
   org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem()

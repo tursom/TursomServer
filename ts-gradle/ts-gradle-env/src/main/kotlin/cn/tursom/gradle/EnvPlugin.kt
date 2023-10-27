@@ -1,17 +1,14 @@
 package cn.tursom.gradle
 
-import autoConfigPublish
-import contains
-import excludeTest
-import ext
-import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.yaml.snakeyaml.Yaml
 import java.io.FileNotFoundException
 import java.util.*
 
-class TursomGradlePlugin : Plugin<Project> {
+class EnvPlugin : Plugin<Project> {
   companion object {
     val yaml = Yaml()
     var project: Project? = null
@@ -33,21 +30,8 @@ class TursomGradlePlugin : Plugin<Project> {
           loadYaml(target, propertiesFile)
       }
     }
-    //println(target.ext.properties)
-
-    target.excludeTest()
-
-    if (!target.tasks.contains("install")) run install@{
-      val publishToMavenLocal = target.tasks.findByName("publishToMavenLocal") ?: return@install
-      target.tasks.register("install", DefaultTask::class.java) {
-        it.finalizedBy(publishToMavenLocal)
-      }
-    }
-
-    target.autoConfigPublish()
   }
 }
-
 
 fun loadProperties(target: Project, propertiesFile: String) = try {
   val properties = Properties()
@@ -60,7 +44,7 @@ fun loadProperties(target: Project, propertiesFile: String) = try {
 
 fun loadYaml(target: Project, propertiesFile: String) {
   try {
-    TursomGradlePlugin.yaml.load<Map<String, Any>>(target.file(propertiesFile).inputStream()).forEach { (k, v) ->
+    EnvPlugin.yaml.load<Map<String, Any>>(target.file(propertiesFile).inputStream()).forEach { (k, v) ->
       put(target, k, v)
     }
   } catch (e: Exception) {
@@ -94,3 +78,7 @@ fun setProperty(target: Project, key: String, value: Any) {
   } catch (e: Exception) {
   }
 }
+
+val Project.ext: ExtraPropertiesExtension
+  get() = (this as ExtensionAware).extensions
+    .getByName("ext") as ExtraPropertiesExtension
