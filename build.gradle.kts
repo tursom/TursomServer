@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  val kotlinVersion = "1.9.20-RC2"
+  val kotlinVersion = "1.9.22"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.allopen") version kotlinVersion apply false
 

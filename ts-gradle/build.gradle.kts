@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 plugins {
-  kotlin("jvm") version "1.9.10" apply false
+  kotlin("jvm") version "1.9.22" apply false
   `java-gradle-plugin`
 }
 
@@ -49,21 +49,21 @@ allprojects {
         from(components["java"])
         try {
           artifact(tasks["kotlinSourcesJar"])
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
       }
     }
   }
 
   tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "21"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     //kotlinOptions.useIR = true
   }
 
   java {
     toolchain {
-      languageVersion.set(JavaLanguageVersion.of(17))
+      languageVersion.set(JavaLanguageVersion.of(21))
     }
   }
 }
@@ -133,4 +133,9 @@ fun registerPublishRepos(repositoryHandler: RepositoryHandler, project: Project)
       println("cannot push to repository $repositoryName")
     }
   }
+}
+
+val publishTask = tasks.getByName("publish")
+subprojects.forEach {
+  publishTask.dependsOn(it.tasks.getByName("publish").path)
 }
