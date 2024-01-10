@@ -51,12 +51,6 @@ private fun Project.createTursomPublishRepository(repositoryHandler: RepositoryH
         uri("https://jmp.mvn.tursom.cn:20080/repository/maven-releases/")
       }
 
-      repository.authentication{ ac ->
-        ac.forEach {
-
-        }
-      }
-
       repository.credentials(PasswordCredentials::class.java) { credentials ->
         val artifactoryUser: String = rootProject.ext["tursom.artifactoryUser"]!!.toString()
         val artifactoryPassword: String = rootProject.ext["tursom.artifactoryPassword"]!!.toString()

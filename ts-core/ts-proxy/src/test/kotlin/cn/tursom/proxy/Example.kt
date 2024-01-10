@@ -83,7 +83,7 @@ class Example {
 
   @Test
   fun benchmark() {
-    val (t, container) = Proxy.get<TestClass>()
+    val (t, container) = Proxy.get<TestClass>(useDirectAccessor = true)
     container.addProxy(GetA(t))
 
     println(t.javaClass)

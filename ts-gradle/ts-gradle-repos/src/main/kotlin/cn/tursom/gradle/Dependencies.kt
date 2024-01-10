@@ -123,6 +123,7 @@ val DependencyHandler.`ts-delegation` get() = tursomServer("ts-delegation")
 val DependencyHandler.`ts-observer` get() = tursomServer("ts-observer")
 val DependencyHandler.`ts-encrypt` get() = tursomServer("ts-encrypt")
 val DependencyHandler.`ts-hash` get() = tursomServer("ts-hash")
+val DependencyHandler.`ts-http` get() = tursomServer("ts-http")
 val DependencyHandler.`ts-json` get() = tursomServer("ts-json")
 val DependencyHandler.`ts-log` get() = tursomServer("ts-log")
 val DependencyHandler.`ts-mail` get() = tursomServer("ts-mail")
@@ -191,6 +192,10 @@ fun DependencyHandler.`ts-encrypt`(
 fun DependencyHandler.`ts-hash`(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-hash", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.`ts-http`(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-http", dependencyConfiguration = dependencyConfiguration)
 
 fun DependencyHandler.`ts-json`(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
@@ -284,6 +289,7 @@ val DependencyHandler.ts_delegation get() = tursomServer("ts-delegation")
 val DependencyHandler.ts_observer get() = tursomServer("ts-observer")
 val DependencyHandler.ts_encrypt get() = tursomServer("ts-encrypt")
 val DependencyHandler.ts_hash get() = tursomServer("ts-hash")
+val DependencyHandler.ts_http get() = tursomServer("ts-http")
 val DependencyHandler.ts_json get() = tursomServer("ts-json")
 val DependencyHandler.ts_log get() = tursomServer("ts-log")
 val DependencyHandler.ts_mail get() = tursomServer("ts-mail")
@@ -352,6 +358,10 @@ fun DependencyHandler.ts_encrypt(
 fun DependencyHandler.ts_hash(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null
 ) = tursomServer("ts-hash", dependencyConfiguration = dependencyConfiguration)
+
+fun DependencyHandler.ts_http(
+  dependencyConfiguration: Action<ExternalModuleDependency>? = null
+) = tursomServer("ts-http", dependencyConfiguration = dependencyConfiguration)
 
 fun DependencyHandler.ts_json(
   dependencyConfiguration: Action<ExternalModuleDependency>? = null

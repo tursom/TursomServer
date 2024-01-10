@@ -13,6 +13,9 @@ plugins {
 }
 
 allprojects {
+  group = "cn.tursom"
+  version = "1.1-SNAPSHOT"
+
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "maven-publish")
   apply(plugin = "ts-gradle-env")
@@ -20,9 +23,6 @@ allprojects {
   apply(plugin = "ts-gradle-test")
   apply(plugin = "ts-gradle-publish")
   apply(plugin = "ts-gradle-repos")
-
-  group = "cn.tursom"
-  version = "1.1-SNAPSHOT"
 
   tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "21"
