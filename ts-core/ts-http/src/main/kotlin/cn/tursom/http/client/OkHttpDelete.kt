@@ -32,6 +32,7 @@ fun Call.Factory.delete(
 }.execute()
 
 @JvmOverloads
+@JvmName("deleteWithParam")
 fun Call.Factory.delete(
   url: String,
   param: Map<String, String>,

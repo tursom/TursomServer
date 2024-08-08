@@ -82,3 +82,9 @@ fun setProperty(target: Project, key: String, value: Any) {
 val Project.ext: ExtraPropertiesExtension
   get() = (this as ExtensionAware).extensions
     .getByName("ext") as ExtraPropertiesExtension
+
+fun ExtraPropertiesExtension.getOrDefault(key: String, default: Any?) = if(has(key)) {
+  get(key)
+}else{
+  default
+}

@@ -4,11 +4,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.authentication.http.HttpHeaderAuthentication
+import org.gradle.internal.credentials.DefaultHttpHeaderCredentials
 
 class PublishPlugin : Plugin<Project> {
   override fun apply(target: Project) {
@@ -46,9 +49,9 @@ private fun Project.createTursomPublishRepository(repositoryHandler: RepositoryH
       }
 
       repository.url = if (version.endsWith("SNAPSHOT")) {
-        uri("https://jmp.mvn.tursom.cn:20080/repository/maven-snapshots/")
+        uri("https://mvn.tursom.cn:20080/repository/maven-snapshots/")
       } else {
-        uri("https://jmp.mvn.tursom.cn:20080/repository/maven-releases/")
+        uri("https://mvn.tursom.cn:20080/repository/maven-releases/")
       }
 
       repository.credentials(PasswordCredentials::class.java) { credentials ->
@@ -74,10 +77,16 @@ private fun Project.scanAndCreatePublishRepository(repositoryHandler: Repository
     it matches repositoriesRegex
   }.forEach { repositoryName ->
     try {
-      val artifactoryUser = rootProject.ext["$repositoryName.artifactoryUser"]?.toString()
-        ?: throw Exception("no artifactory user found")
-      val artifactoryPassword = rootProject.ext["$repositoryName.artifactoryPassword"]?.toString()
-        ?: throw Exception("no artifactory password found")
+      repositoryHandler.getByName(repositoryName)
+      return@forEach
+    } catch (_: Exception) {
+    }
+
+    try {
+      val artifactoryUser = rootProject.ext.getOrDefault("$repositoryName.artifactoryUser", null)?.toString()
+      val artifactoryPassword = rootProject.ext.getOrDefault("$repositoryName.artifactoryPassword", null)?.toString()
+      val token = rootProject.ext.getOrDefault("$repositoryName.token", null)?.toString()
+
       repositoryHandler.maven { repository ->
         repository.name = properties["$repository.name"]?.toString()
           ?: repositoryName.substringAfterLast('.')
@@ -95,10 +104,22 @@ private fun Project.scanAndCreatePublishRepository(repositoryHandler: Repository
         } else {
           releasesRepoUrl
         } ?: repoUrl ?: throw Exception("no repo found")
-        repository.credentials {
-          it.username = artifactoryUser
-          it.password = artifactoryPassword
+
+        if (artifactoryUser != null && artifactoryPassword != null) {
+          repository.credentials {
+            it.username = artifactoryUser
+            it.password = artifactoryPassword
+          }
+        } else if (token != null) {
+          repository.credentials(HttpHeaderCredentials::class.java) {
+            it.name = "Authorization"
+            it.value = "Bearer $token"
+          }
+          repository.authentication {
+            it.create("header", HttpHeaderAuthentication::class.java)
+          }
         }
+
       }
     } catch (e: Exception) {
       println(

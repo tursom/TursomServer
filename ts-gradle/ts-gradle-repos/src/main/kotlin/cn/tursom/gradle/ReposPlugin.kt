@@ -41,7 +41,7 @@ fun RepositoryHandler.useTursomRepositories(
   }
   if (tursom) {
     maven {
-      it.url = project.uri("https://jmp.mvn.tursom.cn:20080/repository/maven-public")
+      it.url = project.uri("https://mvn.tursom.cn:20080/repository/maven-public")
     }
   }
 }
