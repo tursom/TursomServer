@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
-                sh './gradelw publish'
+                sh './gradlew publish'
                 script {
                     try {
                         archiveArtifacts artifacts: "**/build/libs/*.jar",fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
