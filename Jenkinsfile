@@ -8,6 +8,7 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
+                sh './gradlew :ts-gradle:publish'
                 sh './gradlew publish'
                 script {
                     try {
